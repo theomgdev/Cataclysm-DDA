@@ -18,6 +18,12 @@ the code that change contains. Two lines of code do not get twenty lines of
 explanation. When the writing is longer than the thing it describes, cut the
 writing.
 
+Read the same ratio along the time axis and it becomes value over time. Garbage
+is not only what lands in the diff — it is also the hour spent re-deriving a
+figure already measured, or the third pass over a paragraph nobody will read.
+Time spent is denominator too, so a change that arrives clean and a day late has
+still lost.
+
 ## What garbage means
 
 Research on this settled on three properties, and they describe the problem
