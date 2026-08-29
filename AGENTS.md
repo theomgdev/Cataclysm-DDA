@@ -146,3 +146,14 @@ everything from a phone to a desktop, and upstream rejects multithreading
 outright in `doc/FREQUENTLY_MADE_SUGGESTIONS.md`. Performance work here means
 removing waste, which helps every machine by the same proportion, not adding
 parallelism that helps one and breaks others.
+
+## Is this working?
+
+You will know it is when diffs contain only what was asked for, when reviews
+stop turning into rewrites, and when questions arrive before the work rather
+than after the mistake.
+
+Everything above the upstream section is the general half, and it tracks
+[Keel](https://github.com/theomgdev/keel). Fix a general rule there first and
+bring it back here, so the two do not drift; anything below that point is this
+fork's own and belongs only here.
