@@ -1,8 +1,9 @@
-# Working in this fork
+# Working in Cataclysm: Signal
 
 This is theomgdev's fork of Cataclysm-DDA. LLM help is welcome here, unlike
 upstream, and this file says what "welcome" actually means so that neither the
-people nor the models working here have to guess.
+people nor the models working here have to guess. The fork is named for the rule
+below: signal over noise.
 
 The rule that matters most is the ratio. Add up everything you write for a
 change — the commit message, the pull request body, the comments left in the

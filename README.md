@@ -1,3 +1,20 @@
+# Cataclysm: Signal
+
+A fork of Cataclysm: Dark Days Ahead where LLM-assisted contributions are
+welcome, under one rule that gives the fork its name: signal over noise. Add up
+everything you write for a change — commit message, pull request, comments,
+markdown — and it has to come out shorter than the code it describes. Two lines
+of code do not get twenty lines of explanation. [`AGENTS.md`](AGENTS.md) is the
+whole of it, and it is short.
+
+Upstream does not accept LLM-sourced work at all, and that is their call to
+make; nothing from here is pushed to them. This fork tracks upstream and carries
+its own performance fixes on top.
+
+Everything below is upstream's README, unchanged.
+
+---
+
 # Cataclysm: Dark Days Ahead
 
 Cataclysm: Dark Days Ahead is a turn-based survival game set in a post-apocalyptic world. While some have described it as a "zombie game", there is far more to Cataclysm than that. Struggle to survive in a harsh, persistent, procedurally generated world. Scavenge the remnants of a dead civilization for food, equipment, or, if you are lucky, a vehicle with a full tank of gas to get you the hell out of Dodge. Fight to defeat or escape from a wide variety of powerful monstrosities, from zombies to giant insects to killer robots and things far stranger and deadlier, and against the others like yourself, who want what you have...
