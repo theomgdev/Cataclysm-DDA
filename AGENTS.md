@@ -117,8 +117,7 @@ mention it instead. A diff full of unrelated tidying is one of the fastest ways
 to get a reviewer to stop reading.
 
 Write the least code that solves the problem. No speculative abstraction, no
-configurability nobody asked for, no error handling for situations that cannot
-occur. If two hundred lines could have been fifty, it should have been fifty.
+error handling for situations that cannot occur. If two hundred lines could have been fifty, it should have been fifty.
 
 Research switches settle a question on a branch and then come out. Adding a flag
 to A/B two implementations is good practice while it is measuring; the moment it
@@ -146,15 +145,14 @@ disclosed, and about three quarters require a human in the loop, which is the
 same demand from the other side. A line in the pull request, or an `Assisted-by:`
 trailer on the commit, costs nothing and tells a reviewer where to look harder.
 The trailer is disclosure, not credit: it records that a model helped, while the
-author and the accountable party stay human. That distinction has a hard edge in
-projects that use the Developer Certificate of Origin — an agent must never add
-a `Signed-off-by` line, because only a person can certify it. It also does not
-transfer responsibility; the output is yours the moment you open the pull
-request. And a model may help you review, but it cannot be the thing
-that approves a change; an automated review comment is not a second pair of
-eyes, it is the same pair.
+author and the accountable party stay human. It does not transfer responsibility
+either — the output is yours the moment you open the pull request. Where a
+project uses the Developer Certificate of Origin the line is harder still: an
+agent must never add a `Signed-off-by`, because only a person can certify it.
 
-If a human cannot review every line, use more than one model rather than none —
+A model may help you review, but it cannot be the thing that approves a change;
+an automated review comment is not a second pair of eyes, it is the same pair.
+If a human cannot read every line, use more than one model rather than none —
 one looking for mistakes, one watching this ratio, and something in an advisory
 seat by default. Treat what they return as a source to filter, not a checklist
 to execute: keep the points that survive contact with the evidence, say plainly
