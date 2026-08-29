@@ -23,8 +23,10 @@ writing.
 Research on this settled on three properties, and they describe the problem
 better than any list of symptoms. Slop has *superficial competence*: consistent
 naming, tests that exist, documentation that is present, a clean diff — and it
-is still wrong or pointless underneath. It has *asymmetric effort*: seconds to
-generate, an hour to review, with the cost pushed onto whoever reads it. And it
+is still wrong or pointless underneath. It
+has *asymmetry effort*: it takes vastly less effort to generate than it would
+have without AI, while the effort to review it has not moved, so the cost lands
+on whoever reads it. And it
 is *mass producible*, which is why maintainers drown rather than merely
 disagree. An agent can open six pull requests in a day; nobody can review six.
 
