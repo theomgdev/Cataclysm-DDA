@@ -40,6 +40,14 @@ the invented naming convention. Measurement backs this up: across 211 million
 lines, duplicated blocks grew several times over, refactoring collapsed, and
 AI-heavy code churned far more than the code around it.
 
+In tests, the failure is quieter and it is the one that stings a year later.
+Generated tests love to pass. They assert too little, they mock away the very
+logic they were meant to exercise, and they check that the implementation is
+shaped the way it currently happens to be shaped rather than that the behaviour
+is right. A test that only notices when you delete the code is not a test; it is
+a tripwire around today's implementation, and it will block the refactor you
+needed while catching none of the bugs you had.
+
 In comments, the most common complaint by a distance is that there are simply
 too many of them, and that they answer "what" when the line below already says
 what. A comment that restates its own line is garbage by definition — it costs a
@@ -69,6 +77,14 @@ Passing tests are not proof of correctness. They are proof that nothing you
 already thought of is broken. Read the change again for the case nobody wrote a
 test for.
 
+Assume the happy path is right and go looking at the edges, because that is
+where generated code fails. Worth checking specifically: a brand new dependency
+pulled in for something trivial, a heavyweight library added to get one
+function, errors caught generically or swallowed in silence, names like `data`
+and `result` that say nothing, values hardcoded where configuration was meant,
+and user input interpolated straight into a query string. None of those break
+the build.
+
 Be able to defend it without the model. If you could not answer a reviewer's
 question about why a line is there, it is not ready, whoever typed it. This is
 the single rule that separates useful assistance from slop.
@@ -96,6 +112,16 @@ tool — `CLAUDE.md`, `CURSOR.md`, `GEMINI.md`, `.cursor/`, `.claude/` and the
 rest — stays local and gitignored. Those files are noise to everyone not using
 that tool, they drift out of sync with each other, and a repository that
 accumulates one per vendor has already lost the plot.
+
+Say that you had help, and own the result anyway. Most projects that allow
+assisted contributions ask for both: around half require the assistance to be
+disclosed, and about three quarters require a human in the loop, which is the
+same demand from the other side. A line in the pull request, or an `Assisted-by:`
+trailer on the commit, costs nothing and tells a reviewer where to look harder.
+It does not transfer responsibility — the output is yours the moment you open
+the pull request. And a model may help you review, but it cannot be the thing
+that approves a change; an automated review comment is not a second pair of
+eyes, it is the same pair.
 
 Finish one thing before starting the next. Volume is the whole reason this
 became a crisis — curl closed a six year old bug bounty, Ghostty went zero
