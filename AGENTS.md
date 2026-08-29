@@ -73,6 +73,30 @@ Be able to defend it without the model. If you could not answer a reviewer's
 question about why a line is there, it is not ready, whoever typed it. This is
 the single rule that separates useful assistance from slop.
 
+Keep the change surgical. Every changed line should trace back to what was
+asked. Do not improve adjacent code, do not reformat what you happened to scroll
+past, do not refactor things that are not broken, and match the surrounding
+style even where you would have done it differently. Clean up the imports and
+helpers your own change orphaned, and leave pre-existing dead code alone —
+mention it instead. A diff full of unrelated tidying is one of the fastest ways
+to get a reviewer to stop reading.
+
+Write the least code that solves the problem. No speculative abstraction, no
+configurability nobody asked for, no error handling for situations that cannot
+occur. If two hundred lines could have been fifty, it should have been fifty.
+
+Say what you assumed, and stop when you do not know. If a request has two
+readings, name both instead of silently picking one; if something is genuinely
+unclear, say what is unclear rather than guessing well. Guessing quietly is how
+a change ends up looking finished and being wrong.
+
+Do not scatter per-tool instruction files across the repository. One `AGENTS.md`
+is the contract, and every assistant reads it. Anything specific to your own
+tool — `CLAUDE.md`, `CURSOR.md`, `GEMINI.md`, `.cursor/`, `.claude/` and the
+rest — stays local and gitignored. Those files are noise to everyone not using
+that tool, they drift out of sync with each other, and a repository that
+accumulates one per vendor has already lost the plot.
+
 Finish one thing before starting the next. Volume is the whole reason this
 became a crisis — curl closed a six year old bug bounty, Ghostty went zero
 tolerance, tldraw started auto-closing outside pull requests, and Jazzband shut
