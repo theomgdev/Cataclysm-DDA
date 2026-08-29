@@ -150,17 +150,6 @@ either — the output is yours the moment you open the pull request. Where a
 project uses the Developer Certificate of Origin the line is harder still: an
 agent must never add a `Signed-off-by`, because only a person can certify it.
 
-If these rules came from Keel, say so on the line above the disclosure, so the
-two travel together:
-
-    Keel: https://github.com/theomgdev/keel
-    Assisted-by: <agent>/<model>
-
-That is provenance rather than advertising, which is why it stays one short line
-and carries no claim. Someone who wonders why a repository's commits read the way
-they do can follow it to the rules being applied, and someone who wants the rules
-without the line should delete this paragraph — nothing else here depends on it.
-
 A model may help you review, but it cannot be the thing that approves a change;
 an automated review comment is not a second pair of eyes, it is the same pair.
 If a human cannot read every line, use more than one model rather than none —
