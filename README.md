@@ -1,5 +1,7 @@
 # Cataclysm: Signal
 
+[![follows Keel](https://img.shields.io/badge/follows-Keel-1f6feb)](https://github.com/theomgdev/keel)
+
 A fork of Cataclysm: Dark Days Ahead where LLM-assisted contributions are
 welcome, under one rule that gives the fork its name: signal over noise. Add up
 everything you write for a change — commit message, pull request, comments,
