@@ -50,6 +50,16 @@ is right. A test that only notices when you delete the code is not a test; it is
 a tripwire around today's implementation, and it will block the refactor you
 needed while catching none of the bugs you had.
 
+History belongs in the commit message and the changelog, nowhere else. Code,
+README, contributing guides and every other document describe the project as it
+is now — not what used to be there, not what you measured on the way, not which
+alternative you tried and rejected. The words that mean you are about to leak
+your working process into the artifact are "used to", "previously", "it turned
+out", "measured on", and "no longer". Design rationale for a constant is
+legitimate and welcome; state the reason, not the story that produced it. Say
+that a hard edge would make the cap discontinuous, not that both boundaries were
+hard until you found otherwise.
+
 In comments, the most common complaint by a distance is that there are simply
 too many of them, and that they answer "what" when the line below already says
 what. A comment that restates its own line is garbage by definition — it costs a
@@ -87,6 +97,13 @@ and `result` that say nothing, values hardcoded where configuration was meant,
 and user input interpolated straight into a query string. None of those break
 the build.
 
+Do not over-verify either. The bar is whether a check would change what the
+documentation says or what the reader does next. Publishing a predicted number
+as though it were measured clears that bar and must be fixed; re-deriving a
+figure already measured, or restating a caveat three ways, does not. Paranoia
+reads as paranoia, not rigour, and it buries the findings that matter under
+qualifications.
+
 Be able to defend it without the model. If you could not answer a reviewer's
 question about why a line is there, it is not ready, whoever typed it. This is
 the single rule that separates useful assistance from slop.
@@ -102,6 +119,14 @@ to get a reviewer to stop reading.
 Write the least code that solves the problem. No speculative abstraction, no
 configurability nobody asked for, no error handling for situations that cannot
 occur. If two hundred lines could have been fifty, it should have been fifty.
+
+Research switches settle a question on a branch and then come out. Adding a flag
+to A/B two implementations is good practice while it is measuring; the moment it
+has answered, delete the losing path and make the winner the only one. What is
+left otherwise is API surface, documentation, tests, and a way to be configured
+wrong. A parameter earns its place when an expert would genuinely flip it in
+production, not because two implementations happen to exist. Efficiency is never
+one of those: everyone wants it, so it is not a preference to expose.
 
 Say what you assumed, and stop when you do not know. If a request has two
 readings, name both instead of silently picking one; if something is genuinely
@@ -124,6 +149,14 @@ It does not transfer responsibility — the output is yours the moment you open
 the pull request. And a model may help you review, but it cannot be the thing
 that approves a change; an automated review comment is not a second pair of
 eyes, it is the same pair.
+
+If a human cannot review every line, use more than one model rather than none —
+one looking for mistakes, one watching this ratio, and something in an advisory
+seat by default. Treat what they return as a source to filter, not a checklist
+to execute: keep the points that survive contact with the evidence, say plainly
+which ones you dropped and why. And keep the limit in view. Independent evidence
+is what turns a guess into a finding; a second model agreeing with the first is
+still a guess, just a more confident one.
 
 Finish one thing before starting the next. Volume is the whole reason this
 became a crisis — curl closed a six year old bug bounty, Ghostty went zero
