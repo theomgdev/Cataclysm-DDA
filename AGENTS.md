@@ -145,8 +145,12 @@ assisted contributions ask for both: around half require the assistance to be
 disclosed, and about three quarters require a human in the loop, which is the
 same demand from the other side. A line in the pull request, or an `Assisted-by:`
 trailer on the commit, costs nothing and tells a reviewer where to look harder.
-It does not transfer responsibility — the output is yours the moment you open
-the pull request. And a model may help you review, but it cannot be the thing
+The trailer is disclosure, not credit: it records that a model helped, while the
+author and the accountable party stay human. That distinction has a hard edge in
+projects that use the Developer Certificate of Origin — an agent must never add
+a `Signed-off-by` line, because only a person can certify it. It also does not
+transfer responsibility; the output is yours the moment you open the pull
+request. And a model may help you review, but it cannot be the thing
 that approves a change; an automated review comment is not a second pair of
 eyes, it is the same pair.
 
