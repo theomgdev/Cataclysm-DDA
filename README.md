@@ -8,8 +8,9 @@ of code do not get twenty lines of explanation. [`AGENTS.md`](AGENTS.md) is the
 whole of it, and it is short.
 
 Upstream does not accept LLM-sourced work at all, and that is their call to
-make; nothing from here is pushed to them. This fork tracks upstream and carries
-its own performance fixes on top.
+make; nothing from here is pushed to them. This fork follows upstream closely
+and builds its own things on top — performance work so far, and content and
+mechanics of its own as it goes.
 
 Everything below is upstream's README, unchanged.
 
