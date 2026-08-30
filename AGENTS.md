@@ -181,9 +181,9 @@ formatting to reach the content, the formatting lost.
 ## Do not send this fork's LLM work upstream
 
 CleverRaven bans LLM-sourced code, configuration, issue and PR text, research
-and testing results under Licensing and Authorship in `CONTRIBUTING.md`, and
-upstream's `.github/copilot-instructions.md` is a flat refusal directive, which
-this fork has replaced with its own. This was tested on 2026-08-29: pull requests
+and testing results under Licensing and Authorship in their `CONTRIBUTING.md`,
+and their `.github/copilot-instructions.md` is a flat refusal directive. This
+fork has replaced both with its own. This was tested on 2026-08-29: pull requests
 #88455 and #88456 were opened upstream and a maintainer closed both within about
 two minutes with "AI-generated code is not welcome here, and never will be". So
 work freely here, never push LLM-authored work to CleverRaven, and never present
