@@ -18,7 +18,7 @@
 
 # Gun Naming and Inclusion Guidelines
 
-Cataclysm: Dark Days Ahead includes much of the complexity embodied by guns in
+Cataclysm: Signal includes much of the complexity embodied by guns in
 the real world. This means that, as of writing, there are approximately 80
 different types of ammo in the game and an astonishing 330 or so different guns
 using these ammo types.	Many people (the author included) appreciate this large

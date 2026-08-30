@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package dev.theomgdev.cataclysmsignal;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * DocumentsProvider for Cataclysm: Dark Days Ahead.
+ * DocumentsProvider for Cataclysm: Signal.
  * Exposes the app's external private data directory (/storage/emulated/0/Android/data/package/)
  * so that users can back up saves, mods, and configs without root access.
  * <p>
@@ -25,7 +25,7 @@ import java.io.IOException;
  * file managers can access the data as long as the process is alive.
  */
 @TargetApi(Build.VERSION_CODES.KITKAT)
-public class CDDADocumentsProvider extends DocumentsProvider {
+public class SignalDocumentsProvider extends DocumentsProvider {
 
     // Root document ID - using a non-empty string for better compatibility with various file managers.
     private static final String ROOT_DOCUMENT_ID = "root";

@@ -67,7 +67,7 @@ On Windows, there is an [AStyle extension for Visual Studio 2019](https://github
 
 2. Go to `Tools` - `Options` - `AStyle Formatter` - `General`.
 
-3. Import `https://raw.githubusercontent.com/CleverRaven/Cataclysm-DDA/master/msvc-full-features/AStyleExtension-Cataclysm-DDA.cfg` on `Export/Import` tab using `Import` button:
+3. Import `https://raw.githubusercontent.com/theomgdev/Cataclysm-Signal/master/msvc-full-features/AStyleExtension-Cataclysm-Signal.cfg` on `Export/Import` tab using `Import` button:
 
 ![image](https://user-images.githubusercontent.com/16213433/54817923-1d85c200-4ca9-11e9-95ac-e1f84394429b.png)
 
@@ -89,7 +89,7 @@ See the [JSON style guide](../JSON/JSON_STYLE.md).
 
 ## ctags
 
-In addition to the usual means of creating a `tags` file via e.g. [`ctags`](http://ctags.sourceforge.net/), we provide `tools/json_tools/cddatags.py` to augment a `tags` file with locations of definitions taken from CDDA's JSON data.  `cddatags.py` is designed to safely update a tags file containing source code tags, so if you want both types of tags in your `tags` file then you can run `ctags -R . && tools/json_tools/cddatags.py`.  Alternatively, there is a rule in the `Makefile` to do this for you; just run `make ctags` or `make etags`.
+In addition to the usual means of creating a `tags` file via e.g. [`ctags`](http://ctags.sourceforge.net/), we provide `tools/json_tools/cddatags.py` to augment a `tags` file with locations of definitions taken from Signal's JSON data.  `cddatags.py` is designed to safely update a tags file containing source code tags, so if you want both types of tags in your `tags` file then you can run `ctags -R . && tools/json_tools/cddatags.py`.  Alternatively, there is a rule in the `Makefile` to do this for you; just run `make ctags` or `make etags`.
 
 
 ## clang-tidy
@@ -246,7 +246,7 @@ The rough outline of the process is:
 First of all you would need a working LLVM. You *might* be able to [download it](https://github.com/llvm/llvm-project/releases) from llvm-project github (look for file named something like `clang+llvm-19.1.5-x86_64-pc-windows-msvc.tar.xz`), and it *might* work, but there is no guarantee. I suggest you try it, and skip to the next section. If it works for you - great! You just saved yourself several hours of building it from source, if not - read on.
 
 Ideally you should try to match the llvm version you download with the one that we build the CI against, as different versions yield slightly different results. And also there is no stability promise so that the checks that compile against llvm-17 might stop doing so in llvm-20.
-At the time of writing we are building against llvm-17, if you are reading this in the future, check [the CI definition](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/.github/workflows/clang-tidy.yml) to know what's current.
+At the time of writing we are building against llvm-17, if you are reading this in the future, check [the CI definition](https://github.com/theomgdev/Cataclysm-Signal/blob/master/.github/workflows/clang-tidy.yml) to know what's current.
 
 
 The instruction for building LLVM can be found at https://clang.llvm.org/get_started.html, but duplicating here with some emphasis.
@@ -312,7 +312,7 @@ That *might* even only add an hour or so to the total time? Your call whether it
 ##### Build clang-tidy with custom checks
 
 After building clang-tidy as a library from the LLVM source, the next step is to
-build clang-tidy as an executable, with the custom checks from the CDDA source.
+build clang-tidy as an executable, with the custom checks from the Signal source.
 
 We will need to run a cmake with lots of arguments, and it gets unwieldy on the command line. So create `CMakeUserPresets.json` file at the root of cataclysm project with the following contents, replacing the paths in `<>` as appropriate:
 
@@ -515,7 +515,7 @@ are needed to build our custom clang-tidy executable later.
 ##### Build clang-tidy with custom checks
 
 After building clang-tidy as a library from the LLVM source, the next step is to
-build clang-tidy as an executable, with the custom checks from the CDDA source.
+build clang-tidy as an executable, with the custom checks from the Signal source.
 
 In this step, the following tools are required.
 - Python 3
@@ -540,7 +540,7 @@ and `<mingw-w64-root>/x86_64-w64-mingw32/bin`. FileCheck's path is `<llvm-source
 if you built it with the instructions in the previous section.
 
 Then add the following CMake options to generate the compilation database
-(substitute values inside `<>` with the actual paths) and build the CDDA source
+(substitute values inside `<>` with the actual paths) and build the Signal source
 and the custom clang-tidy executable with `mingw32-make`. In this tutorial we
 run CMake and `mingw32-make` in the `build` subdirectory. Note that `DCATA_CLANG_TIDY_EXECUTABLE`
 is defined instead of `DCATA_CLANG_TIDY_PLUGIN`.

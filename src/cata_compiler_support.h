@@ -8,7 +8,7 @@
 #endif
 
 // Added for MSVC optimizations
-// ref: https://github.com/CleverRaven/Cataclysm-DDA/pull/75376
+// ref: pull request #75376
 #ifndef CATA_FORCEINLINE
 #   ifdef _MSC_VER
 #       define CATA_FORCEINLINE __forceinline

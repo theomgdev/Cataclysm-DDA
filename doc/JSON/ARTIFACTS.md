@@ -25,7 +25,7 @@ An "artifact" is a special game item with unique "magic" effects.  It uses a bas
 
 Artifacts may have active or passive effects, requiring them to be worn, held in inventory, or wielded for their effects to work. Active effects may require 'charges', they may come with charges, or generate charges at certain intervals or when certain events occur. Passive effects apply regardless of charges if the artifact is correctly worn/held/wielded.
 
-For Dark Days Ahead, it is intended that effects of artifacts are not knowable without using them. Artifacts are intended to require the player to use and experiment with them to determine what effects, if any, they might have. Some effects are intentionally subtle or difficult to figure out, which is part of the intended gameplay.
+For Signal, it is intended that effects of artifacts are not knowable without using them. Artifacts are intended to require the player to use and experiment with them to determine what effects, if any, they might have. Some effects are intentionally subtle or difficult to figure out, which is part of the intended gameplay.
 
 Mods are permitted to remove, add, or change this secrecy as they see fit, but there is not currently a way for them to do so.
 

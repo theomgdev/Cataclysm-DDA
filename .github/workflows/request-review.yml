@@ -16,7 +16,7 @@ jobs:
   auto-request-review:
     # Do not spam reviewer with PRs in forks. If fork owners wish to alert
     # people of their changes they may change this line themselves.
-    if: github.repository == 'CleverRaven/Cataclysm-DDA'
+    if: github.repository == 'theomgdev/Cataclysm-Signal'
     name: Auto request review
     runs-on: ubuntu-latest
     steps:

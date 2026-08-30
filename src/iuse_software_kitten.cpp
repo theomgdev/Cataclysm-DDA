@@ -147,7 +147,7 @@ void robot_finds_kitten::show() const
             pos += 1 + fold_and_print( w, point( 1, pos ), getmaxx( w ) - 4, c_light_gray,
                                        _( "Originally by the illustrious Leonard Richardson, "
                                           "rewritten in PDCurses by Joseph Larson, "
-                                          "ported to CDDA gaming system by a nutcase." ) );
+                                          "ported to the Signal gaming system by a nutcase." ) );
 
             pos += 1 + fold_and_print( w, point( 1, pos ), getmaxx( w ) - 4, c_light_gray,
                                        _( "In this game, you are robot (" ) );

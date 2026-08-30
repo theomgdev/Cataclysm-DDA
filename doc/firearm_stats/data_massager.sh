@@ -2,7 +2,7 @@
 # Requires sed and sqlite3 binaries to be in your path.
 # Your job is to download the "Download: Firearms Dealer Transactions" and "Download: Personal Transfers and Registrations" files from this website: https://web.archive.org/web/20240403062154/https://www.mass.gov/info-details/data-about-firearms-licensing-and-transactions and place the csv files in same folder with this script.
 
-# Created based on https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/HOWTO_MASSAGE_MA_GUN_DATA.md
+# Created based on https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/HOWTO_MASSAGE_MA_GUN_DATA.md
 
 # Translate the date fields to ISO-8601
 sed "s_\([^/,]*\)/\([^/,]*\)/\([^/,]*\),\(.*\)_20\3-\1-\2,\4_g" *.csv

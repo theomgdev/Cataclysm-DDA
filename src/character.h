@@ -244,7 +244,7 @@ constexpr inline int operator-( const T &lhs, const sleepiness_levels &rhs )
     deprivation.
     @note Sleep deprivation kicks in if lack of sleep is avoided with stimulants or otherwise for
     long periods of time
-    @see https://github.com/CleverRaven/Cataclysm-DDA/blob/master/src/character.cpp#L5566
+    @see https://github.com/theomgdev/Cataclysm-Signal/blob/master/src/character.cpp#L5566
 */
 enum sleep_deprivation_levels {
     /// 2 days

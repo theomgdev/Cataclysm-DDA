@@ -3029,7 +3029,7 @@ TEST_CASE( "pocket_mods", "[pocket][toolmod][gunmod]" )
     }
 }
 
-// Reproduce previous segfault from https://github.com/CleverRaven/Cataclysm-DDA/issues/75156
+// Reproduce previous segfault from issue #75156
 TEST_CASE( "unload_from_spillable_container", "[item][pocket]" )
 {
     clear_avatar();

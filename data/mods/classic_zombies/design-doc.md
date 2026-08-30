@@ -1,10 +1,10 @@
 # The DDotDDD - Dark Days of the Dead Design Document
 
 ## Mission Statement
-Dark days of the dead is a Cataclysm full conversion mod meant to turn the kitchen sink of Cataclysm: DDA into a classic Romero-style zombie story.
+Dark days of the dead is a Cataclysm full conversion mod meant to turn the kitchen sink of Cataclysm: Signal into a classic Romero-style zombie story.
 
 ## Gameplay
-DDotD, like CDDA, aims for verisimilitude and the feeling of being a survivor in a Romero zombie movie. Like Dawn of the Dead, zombies should represent less of an individual deadly threat, and more of an unstoppable glacial force. Survivors should be poorly prepared and weak.
+DDotD, like Signal, aims for verisimilitude and the feeling of being a survivor in a Romero zombie movie. Like Dawn of the Dead, zombies should represent less of an individual deadly threat, and more of an unstoppable glacial force. Survivors should be poorly prepared and weak.
 
 ### Desired changes to monster stats
 Only classic zombies are allowed in DDotD. These zombies are slow moving shamblers. They have an enormous pool of hit points, but no armor. They are walking corpses, feeling no pain and continuing on in the face of incredible injuries. They can be destroyed with catastrophic damage, by completely destroying their bodies (represented by depleting their very large HP pool) or by a headshot. A deep bite from a zombie should have a very high (about 80%) chance of developing Conversion, an effect that kills you in about 3 days. (We should add an achievement for things accomplished in the time after getting Conversion). Scratches that pierce armor should have a low (about 10%) chance of causing Conversion, and gives an alternate form that takes longer, about 5 days, to kill you.
@@ -16,11 +16,11 @@ DDotD zombies *are* capable of learning. At some point we may add our own late s
 There are no aliens or interdimensional threats in DDotD.
 
 ## Setting
-The setting of DDotD should be vaguely "in the past", some time between 1980 and 2000. DDotD takes place in Alberta, Canada, in a fictionalized version of the Red Deer area. Why Alberta? Because the current CDDA mapgen of small clustered towns surrounded by fields and patches of forests on mostly flat land suits Alberta perfectly. This also allows us to have harsher winters to survive. Most buildings and loot in CDDA core will be appropriate, but guns and gun stores (with the exception of hunting rifles) are somewhat less common, and military presence substantially less so.
+The setting of DDotD should be vaguely "in the past", some time between 1980 and 2000. DDotD takes place in Alberta, Canada, in a fictionalized version of the Red Deer area. Why Alberta? Because the current Signal mapgen of small clustered towns surrounded by fields and patches of forests on mostly flat land suits Alberta perfectly. This also allows us to have harsher winters to survive. Most buildings and loot in Signal core will be appropriate, but guns and gun stores (with the exception of hunting rifles) are somewhat less common, and military presence substantially less so.
 
 ### Changes to in-game stuff for setting reasons
 #### Items and spawns
-Most changes will be for setting reasons, not balance. We will mostly use the CDDA philosophy that real life is fairly well balanced, and go from there. However as our setting is in some vague timeframe between the 80's and early 2000's, and set in Canada, we will need a number of changes to all sorts of spawns to bring them in line. Some examples would include:
+Most changes will be for setting reasons, not balance. We will mostly use the Signal philosophy that real life is fairly well balanced, and go from there. However as our setting is in some vague timeframe between the 80's and early 2000's, and set in Canada, we will need a number of changes to all sorts of spawns to bring them in line. Some examples would include:
 - Electric cars should not exist, and cordless tools need substantially less battery life or shouldn't exist at all.
 - Solar power is much rarer and less efficient.
 - Cell phones exist but do nothing now that the grid is down. They have no flashlight, no camera.
@@ -50,7 +50,7 @@ The "default start" should put you in a cabin in the woods with one other surviv
 These should be based on characters and starting scenarios from classic zombie movies, particularly the "of the dead" franchise, but also similar ones like Zombieland. For example, a Zombieland set of professions would have you starting in one of three groups: A nerdy survivor, a hardened hick survivor, or a cunning older sister with her younger sister starting as a faction member. These starts will not generally have any associated story and will have the current open world gameplay, although later we may add short starting storylines to get you to do things like gather up other survivors that match the movie setting you are from.
 
 ##### Story starts
-These starts are a bit more like current cdda, with a wider option of starting classes, but they will be more heavily curated with a specific questline from the very beginning. You will start with a quest and proceed from there along a storyline. Of course, this being CDDA at heart, you can just ignore that storyline and go do other stuff.
+These starts are a bit more like current cdda, with a wider option of starting classes, but they will be more heavily curated with a specific questline from the very beginning. You will start with a quest and proceed from there along a storyline. Of course, this being Signal at heart, you can just ignore that storyline and go do other stuff.
 
 ### Zombification Mechanics
 The zombie affliction is infectious, possibly viral or fungal. Survivors may never find out. It comes in two forms: it transmits by airborne spores, which have a low infection rate and a long latency. After infection, carriers are very quickly able to infect others, but do not develop symptoms for 2-3 weeks. Once symptomatic it progresses quickly, with death usually occurring in another week. The infectious symptoms are vague and flu-like: fever, chills, severe nausea and vomiting, muscle aches, muscle spasms, and eventually delirium and death. Due to the relatively low infection rate of the airborne form, only around half of the population were susceptible to this form, and all survivors are clearly among the immune group. However, the much higher dose of infectious agent shared by bite or even scratch from a reanimated zombie carries an increased risk of infection and generates a much faster progressing form of the illness.
@@ -69,7 +69,7 @@ The first wave of zombies further spread the illness due to unreadiness and the 
 Within three months, the world was collapsing. In the game area of Central Alberta, a wave of refugees from overrun urban centers in the South, especially the US, began flooding the highways, attempting to get away from the hell occurring in more populous regions. Instead of escaping, they brought it with them. Survivors banded together in small groups, now aware of the signs and symptoms of the illness and the danger of a bite. You are one of those survivors. For the last few weeks you've been somewhere safe, holed up, waiting for things to die down, but it's clear now that things aren't going to die down.
 
 ### Factions
-The default CDDA factions do not fit with DDotD without significant change. It is possible that some, like Isherwood, could be rewritten and readded.
+The default Signal factions do not fit with DDotD without significant change. It is possible that some, like Isherwood, could be rewritten and readded.
 
 #### The Montana Army National Guard
 An early faction I'd like to see: the Montana National Guard should have a forward base in Alberta. This group was sent up in the later part of the apocalypse to aid Canada's self-defense and try (ineffectively) to corral Americans fleeing North. Within a few days, they lost contact with command. They have chosen to establish a reinforced base, and are fighting off zombies and attempting to rally survivors. They may, at some point, change their name once their makeup is less than half American. They have been here for weeks and are running low on supplies.

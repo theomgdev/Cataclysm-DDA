@@ -123,7 +123,7 @@ class CataModule : public ClangTidyModule
 // Register the MiscTidyModule using this statically initialized variable.
 // NOLINTNEXTLINE(cata-unused-statics)
 static ClangTidyModuleRegistry::Add<cata::CataModule>
-X( "cata-module", "Adds Cataclysm-DDA checks." );
+X( "cata-module", "Adds Cataclysm-Signal checks." );
 
 } // namespace clang::tidy
 

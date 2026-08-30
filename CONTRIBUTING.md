@@ -36,11 +36,11 @@
 **Opening a new issue?** Please read [ISSUES.md](./ISSUES.md) first.
 
 **Want an introductory guide for creating game content?** You might want to
-read the [Guide to adding new content to CDDA for first time
-contributors](https://github.com/CleverRaven/Cataclysm-DDA/wiki/Guide-to-adding-new-content-to-CDDA-for-first-time-contributors)
-on the CDDA wiki.
+read the [Guide to adding new content to Signal for first time
+contributors](https://github.com/theomgdev/Cataclysm-Signal/wiki/Guide-to-adding-new-content-to-Signal-for-first-time-contributors)
+on the Signal wiki.
 
-Cataclysm:Dark Days Ahead is released under the Creative Commons Attribution ShareAlike 3.0 license. The code and content of the game is free to use, modify, and redistribute for any purpose whatsoever. See http://creativecommons.org/licenses/by-sa/3.0/ for details.
+Cataclysm:Signal is released under the Creative Commons Attribution ShareAlike 3.0 license. The code and content of the game is free to use, modify, and redistribute for any purpose whatsoever. See http://creativecommons.org/licenses/by-sa/3.0/ for details.
 This means any contribution you make to the project will also be covered by the same license, and this license is irrevocable.
 
 ## Licensing and Authorship
@@ -52,10 +52,10 @@ If you are porting content from another fork, you must arrange your commits such
 
 ## Using a good text editor
 
-Most of the Cataclysm: Dark Days Ahead game data is defined in JSON files.
+Most of the Cataclysm: Signal game data is defined in JSON files.
 These files are intended to be easy for you to edit, but there are some
 pitfalls.  Using Windows Notepad can get you into trouble, because it likes to
-insert a special character called a [BOM](https://en.wikipedia.org/wiki/Byte_order_mark) at the start of the file, which CDDA
+insert a special character called a [BOM](https://en.wikipedia.org/wiki/Byte_order_mark) at the start of the file, which Signal
 does not want.
 
 If you're going to be editing JSON files consider getting a more fully-featured
@@ -93,7 +93,7 @@ See [the Changelog Guidelines](./doc/CHANGELOG_GUIDELINES.md) for explanations o
 
 ## Contributing via GitHub
 
-Contributing to Cataclysm: Dark Days Ahead is easy — simply [fork](https://github.com/CleverRaven/Cataclysm-DDA/fork) the repository here on GitHub, make your changes, and then send us a pull request.
+Contributing to Cataclysm: Signal is easy — simply [fork](https://github.com/theomgdev/Cataclysm-Signal/fork) the repository here on GitHub, make your changes, and then send us a pull request.
 
 There are a couple of guidelines we suggest sticking to (see [#Example Workflow](#example-workflow)):
 
@@ -108,7 +108,7 @@ See [CODE_STYLE](./doc/c++/CODE_STYLE.md) for details.
 
 ## Translations
 
-The translation of Cataclysm: DDA is done using Transifex.
+The translation of Cataclysm: Signal is done using Transifex.
 Look at the [translation project](https://explore.transifex.com/cataclysm-dda-translators/cataclysm-dda/) for an up-to-date list of supported languages.
 
 See [TRANSLATING.md](./doc/TRANSLATING.md) for more information:
@@ -177,7 +177,7 @@ Helpful pages:
 
 *(This only needs to be done once.)*
 
-1. [Fork](https://github.com/CleverRaven/Cataclysm-DDA/fork) this repository here on GitHub.
+1. [Fork](https://github.com/theomgdev/Cataclysm-Signal/fork) this repository here on GitHub.
 
 **Note:** Fork is different from branch, branches are covered [later](#make-your-changes).
 
@@ -185,16 +185,16 @@ Helpful pages:
 
     ```bash
     # Clones your fork of the repository into the current directory in terminal
-    $ git clone https://github.com/YOUR_USERNAME/Cataclysm-DDA.git
+    $ git clone https://github.com/YOUR_USERNAME/Cataclysm-Signal.git
     # Alternatively if you don't want to clone an entire big history (5GB!)
-    $ git clone --depth=1 https://github.com/YOUR_USERNAME/Cataclysm-DDA.git
+    $ git clone --depth=1 https://github.com/YOUR_USERNAME/Cataclysm-Signal.git
     ```
 
 3. Set commit message template.
 
     ```bash
-    # Changes the active directory in the prompt to the newly cloned "Cataclysm-DDA" directory
-    $ cd Cataclysm-DDA
+    # Changes the active directory in the prompt to the newly cloned "Cataclysm-Signal" directory
+    $ cd Cataclysm-Signal
     # Set commit message template to the custom one in the repo
     $ git config --local commit.template .gitmessage
     ```
@@ -203,7 +203,7 @@ Helpful pages:
 
     ```bash
     # Assigns the original repository to a remote called "upstream"
-    $ git remote add -f upstream https://github.com/CleverRaven/Cataclysm-DDA.git
+    $ git remote add -f upstream https://github.com/theomgdev/Cataclysm-Signal.git
     ```
 
 For further details about commit message guidelines please visit:
@@ -353,11 +353,11 @@ You can also set the tracking information at the same time as creating the branc
 
     ```bash
     $ git push
-    error: The requested URL returned error: 403 while accessing https://github.com/CleverRaven/Cataclysm-DDA.git
+    error: The requested URL returned error: 403 while accessing https://github.com/theomgdev/Cataclysm-Signal.git
     fatal: HTTP request failed
     $ git push origin
     ....
-    To https://github.com/YOUR_USERNAME/Cataclysm-DDA.git
+    To https://github.com/YOUR_USERNAME/Cataclysm-Signal.git
     xxxx..xxxx  new_feature -> new_feature
     ```
 
@@ -434,7 +434,7 @@ If `git pull --ff-only` shows an error, it means that you've committed directly 
 
 ```bash
 $ git pull --ff-only upstream master
-From https://github.com/CleverRaven/Cataclysm-DDA
+From https://github.com/theomgdev/Cataclysm-Signal
  * branch            master     -> FETCH_HEAD
 fatal: Not possible to fast-forward, aborting.
 $ git branch new_branch master          # mark the current commit with a tmp branch
@@ -453,7 +453,7 @@ $ git checkout new_branch
 ```
 
 #### Oh no! I've made my changes to `master` branch and have pushed it to my repo! What should I do now?
-Assuming `upstream` is `CleverRaven/Cataclysm-DDA` and `origin` is your fork, do the commands:
+Assuming `upstream` is `theomgdev/Cataclysm-Signal` and `origin` is your fork, do the commands:
 ```bash
 git reset upstream/master
 git push --repo=origin --force

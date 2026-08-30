@@ -27,7 +27,7 @@ ret_val<T> try_parse_integer( std::string_view s, bool use_locale )
 #ifdef __APPLE__
     // On Apple platforms we always use the classic locale, because the other
     // locales seem to behave strangely.  See
-    // https://github.com/CleverRaven/Cataclysm-DDA/pull/48431 for more
+    // pull request #48431 for more
     // discussion.
     static_cast<void>( use_locale );
     buffer.imbue( std::locale::classic() );

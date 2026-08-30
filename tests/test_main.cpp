@@ -365,29 +365,29 @@ int main( int argc, const char *argv[] )
     Parser cli = session.cli()
                  | Opt( mods_string, "mod1,mod2,…" )
                  ["--mods"]
-                 ( "[CataclysmDDA] Loads the list of mods before executing tests." )
+                 ( "[Signal] Loads the list of mods before executing tests." )
                  | Opt( user_dir, "dirname" )
                  ["--user-dir"]
-                 ( "[CataclysmDDA] Set user dir (where test world will be created)" )
+                 ( "[Signal] Set user dir (where test world will be created)" )
                  | Opt( dont_save )
                  ["--drop-world"] // "-D" conflicts with Catch2 own "--min-duration"
-                 ( "[CataclysmDDA] Don't save the world on test failure." )
+                 ( "[Signal] Don't save the world on test failure." )
                  | Opt( option_overrides, "n:v[,…]" )
                  ["--option_overrides"]
-                 ( "[CataclysmDDA] Name-value pairs of game options for tests (overrides config/options.json values)." )
+                 ( "[Signal] Name-value pairs of game options for tests (overrides config/options.json values)." )
                  | Opt( error_fmt, "human-readable|github-action" )
                  ["--error-format"]
-                 ( "[CataclysmDDA] Format of error messages (default: human-readable)" )
+                 ( "[Signal] Format of error messages (default: human-readable)" )
                  | Opt( check_plural_str, "none|certain|possible" )
                  ["--check-plural"]
-                 ( "[CataclysmDDA] (TBW)" )
+                 ( "[Signal] (TBW)" )
                  | Opt( limit_debug_level, "number" )
                  ["--set-debug-level-mask"]
-                 ( "[CataclysmDDA] Set debug level bitmask - see `enum DebugLevel` in src/debug.h for individual bits definition" )
+                 ( "[Signal] Set debug level bitmask - see `enum DebugLevel` in src/debug.h for individual bits definition" )
                  | Opt( rng_seed_fuzz_iterations, "N" )
                  ["--rng-seed-fuzz"]
                  // NOLINTNEXTLINE(cata-text-style)
-                 ( "[CataclysmDDA] Run tests N times with varying RNG seeds, reusing loaded game data. With --rng-seed X: uses X, X+1, ... Without: random seeds." )
+                 ( "[Signal] Run tests N times with varying RNG seeds, reusing loaded game data. With --rng-seed X: uses X, X+1, ... Without: random seeds." )
                  ;
     session.cli( cli );
 

@@ -1,1 +1,1 @@
-start D:\GitRepositories\Cataclysm-DDA-1\Cataclysm-DDA\Cataclysm-test-vcpkg-static-Release-x64.exe "generate_swim_move_cost_and_distance_values" --wait-for-keypress exit --order lex
+start D:\GitRepositories\Cataclysm-Signal-1\Cataclysm-Signal\Cataclysm-test-vcpkg-static-Release-x64.exe "generate_swim_move_cost_and_distance_values" --wait-for-keypress exit --order lex

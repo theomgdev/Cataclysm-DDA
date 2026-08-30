@@ -28,7 +28,7 @@
 
 json_error_output_colors_t json_error_output_colors = json_error_output_colors_t::unset;
 
-// JSON parsing and serialization tools for Cataclysm-DDA.
+// JSON parsing and serialization tools for Cataclysm-Signal.
 // For documentation, see the included header, json.h.
 
 static bool is_whitespace( char ch )

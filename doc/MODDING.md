@@ -34,13 +34,13 @@ The majority of modding is done by editing JSON files. An in-depth review of all
 
 ## Other guides
 
-You might want to read the [Guide to adding new content to CDDA for first time
-contributors](https://github.com/CleverRaven/Cataclysm-DDA/wiki/Guide-to-adding-new-content-to-CDDA-for-first-time-contributors) on the CDDA wiki.
+You might want to read the [Guide to adding new content to Signal for first time
+contributors](https://github.com/theomgdev/Cataclysm-Signal/wiki/Guide-to-adding-new-content-to-Signal-for-first-time-contributors) on the Signal wiki.
 
 ## The basics
 
 ### Creating a barebones mod
-Mods are placed in different places depending on whether they are part of CDDA or are third party/private ones. Included ones are found in `data/mods`, while the placement third party/private ones depends on the installation environment: They are placed either in `./mods`, i.e. within the game installation, or in `USER_DIR/mods`.
+Mods are placed in different places depending on whether they are part of Signal or are third party/private ones. Included ones are found in `data/mods`, while the placement third party/private ones depends on the installation environment: They are placed either in `./mods`, i.e. within the game installation, or in `USER_DIR/mods`.
 A mod is created by creating a folder within the appropriate mod directory of Cataclysm. The mod's properties are set by the `modinfo.json` file that is present within that folder. In order for Cataclysm to recognize the folder as a mod, it **must** have a `modinfo.json` file present within it. <!--I know this isn't strictly true. A mod will function as long as there's a JSON file with a MOD_INFO structure in it. The file doesn't need to be called "modinfo.json"-->
 
 ### Modinfo.json
@@ -75,7 +75,7 @@ Here is a full list of supported values for MOD_INFO:
     "version": "1.3.bacon",                         // Optional. For informational purposes only. No versioning system is provided, so whatever you put here is up to you. Feel free to name your versions after ice cream.
     "core": false,                                  // Optional, default false. Core mods will be loaded before anything else. Used for DDA, third-party use will not be supported.
     "obsolete": false,                              // Optional, default false. Obsolete mods are loaded for legacy saves but cannot be used when starting new worlds
-    "path": "my_mod_files/"                         // Optional, this directory relative to modinfo.json's location will be considered the mod's actual directory. e.g. if modinfo.json is located at C:\CDDA\my_mod\modinfo.json, then the mod files would be considered to be at C:\CDDA\my_mod\my_mod_files\. A file such as C:\CDDA\my_mod\some_other_file.json would be ignored, it isn't located inside the specified directory.
+    "path": "my_mod_files/"                         // Optional, this directory relative to modinfo.json's location will be considered the mod's actual directory. e.g. if modinfo.json is located at C:\Signal\my_mod\modinfo.json, then the mod files would be considered to be at C:\Signal\my_mod\my_mod_files\. A file such as C:\Signal\my_mod\some_other_file.json would be ignored, it isn't located inside the specified directory.
   }
 ]
 ```

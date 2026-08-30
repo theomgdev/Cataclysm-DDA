@@ -22,7 +22,7 @@
 
 ## Background & Introduction
 
-As the CDDA project grows, it is becoming harder for the few volunteers in project management to keep constant tabs on what gets merged.  Over the years, we've found there are two possible ways this shakes out.  Whenever the lead devs are away for real-life reasons for a while, either we get a huge backlog of PRs, or we wind up with a few things getting merged that really shouldn't have been.  This leads to having to revert work by enthusiastic and well-meaning contributors, which we consider a very bad outcome.  This document aims to do two things to reduce this:
+As the Signal project grows, it is becoming harder for the few volunteers in project management to keep constant tabs on what gets merged.  Over the years, we've found there are two possible ways this shakes out.  Whenever the lead devs are away for real-life reasons for a while, either we get a huge backlog of PRs, or we wind up with a few things getting merged that really shouldn't have been.  This leads to having to revert work by enthusiastic and well-meaning contributors, which we consider a very bad outcome.  This document aims to do two things to reduce this:
 
 1. Develop a standardized PR review process and checklist that can be used for complex PRs, and
 2. Through the above, offer an easier way to assess if a PR is ready to be merged.
@@ -67,7 +67,7 @@ PRs that don't adhere to this are likely to take longer to merge because they're
 
 ## 3. Outside sourced material
 
-CDDA is licensed under CC-BY-SA 4.0.  Unless you're really, really certain you understand *exactly* how this works, then you should not approve any PR using **any** material from outside the project: not even things like names, obvious references, et cetera.  Don't accept someone else's explanation for how it works, don't assume something is too trivial to count, and don't assume the material is fair use.  Just flag it as not meeting this criterion.
+Signal is licensed under CC-BY-SA 4.0.  Unless you're really, really certain you understand *exactly* how this works, then you should not approve any PR using **any** material from outside the project: not even things like names, obvious references, et cetera.  Don't accept someone else's explanation for how it works, don't assume something is too trivial to count, and don't assume the material is fair use.  Just flag it as not meeting this criterion.
 
 Failing this guideline doesn't mean your PR is rejected, it just means we need to take a closer look.  The lead devs have been forced to become pretty expert at this and we'd like to ensure our rules are followed consistently, so if this is flagged, we'll come in and assess if it's okay.
 

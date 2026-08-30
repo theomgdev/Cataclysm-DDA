@@ -16,7 +16,7 @@
 
 # Martial arts and Techniques
 
-A Martial art (MA for short) just like in real life, is a set of physical practices, skills and stances for combat and sport.  In CDDA, these represent different combat styles of the survivor.
+A Martial art (MA for short) just like in real life, is a set of physical practices, skills and stances for combat and sport.  In Signal, these represent different combat styles of the survivor.
 
 These are defined in JSON as `martial_art`, which sets rules for usage and application, and importantly, the list of `techniques` that can be used.
 

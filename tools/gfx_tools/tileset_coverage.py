@@ -3,7 +3,7 @@
 Outer join game IDs with overlay IDs and tileset IDs
 
 
-cd Cataclysm-DDA
+cd Cataclysm-Signal
 
 python3 tools/json_tools/table.py -f csv --nonestring ""\
  --tileset type id name description color looks_like "copy-from" longest_side \

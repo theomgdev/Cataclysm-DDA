@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package dev.theomgdev.cataclysmsignal;
 
 import java.util.concurrent.Semaphore;
 
@@ -11,9 +11,9 @@ public class NativeUI {
         NO
     }
 
-    private CataclysmDDA activity;
+    private CataclysmSignal activity;
 
-    NativeUI(CataclysmDDA activity) {
+    NativeUI(CataclysmSignal activity) {
         this.activity = activity;
     }
 

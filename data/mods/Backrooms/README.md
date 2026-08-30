@@ -1,5 +1,5 @@
-# Backrooms CDDA
-A Backrooms-themed mod for Cataclysm: Dark Days Ahead.
+# Backrooms Signal
+A Backrooms-themed mod for Cataclysm: Signal.
 
 Where are you? How did you get here? Will you ever get out?
 Welcome to the Backrooms, an infinite sprawl of faded yellow carpeting, harshly buzzing fluorescents, and dismal scenery.

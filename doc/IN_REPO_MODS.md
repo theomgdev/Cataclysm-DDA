@@ -4,7 +4,7 @@
 
 - [Getting Mods Into The Repository](#getting-mods-into-the-repository)
   - [Why have in-repo mods?](#why-have-in-repo-mods)
-  - [What kind of mods can be in the CleverRaven repository?](#what-kind-of-mods-can-be-in-the-cleverraven-repository)
+  - [What kind of mods can be in the Signal repository?](#what-kind-of-mods-can-be-in-the-signal-repository)
   - [What is necessary for a mod to be included in the repository?](#what-is-necessary-for-a-mod-to-be-included-in-the-repository)
   - [What are the responsibilities of a mod curator?](#what-are-the-responsibilities-of-a-mod-curator)
   - [When do mods get removed?](#when-do-mods-get-removed)
@@ -15,15 +15,15 @@
 
 # Getting Mods Into The Repository
 
-Cataclysm: Dark Days Ahead is not only moddable, but ships with a number of mods available for users to select from even without having to obtain mods from a third party source.
+Cataclysm: Signal is not only moddable, but ships with a number of mods available for users to select from even without having to obtain mods from a third party source.
 
 ## Why have in-repo mods?
 
 The benefits of having mods in the repository include:
 
 *  Visibility to a large number of users and potential contributors
-*  The ability to use the CleverRaven issue tracker to report problems, as well as manage pull requests for adding to or fixing mods in the repository
-*  Mods in the CleverRaven repository that demonstrate usage of a game feature which exists only for mods (i.e. not used by the core DDA game itself) help ensure that feature stays present in the game.
+*  The ability to use the Signal issue tracker to report problems, as well as manage pull requests for adding to or fixing mods in the repository
+*  Mods in the Signal repository that demonstrate usage of a game feature which exists only for mods (i.e. not used by the core DDA game itself) help ensure that feature stays present in the game.
 
 There are however things that might be expected but are not guaranteed:
 
@@ -31,18 +31,18 @@ There are however things that might be expected but are not guaranteed:
 *  Guarantee of maintenance of used features -- over the course of development it may become impossible to keep a feature, due to performance needs or maintenance burden.
 *  Guarantee of sole authorship -- once in the repository, the mod is considered community content. While the developers might defer to an active curator of a mod, if they become inactive anyone else can step forward.
 
-## What kind of mods can be in the CleverRaven repository?
+## What kind of mods can be in the Signal repository?
 
 There are three primary categories of mods:
 
-*  Content mods, which provide some kind of distinct experience from the core Dark Days Ahead game. This could be a change to lore, a change to a specific part of gameplay.
+*  Content mods, which provide some kind of distinct experience from the core Signal game. This could be a change to lore, a change to a specific part of gameplay.
 *  User Experience (UX) mods, which alter the look and feel of the game interface itself. Accessibility mods, which make it possible for someone to play the game when they otherwise couldn't, fall under this category. Mods which simply adjust game elements for preferences and taste do not.
 *  Development mods, which aren't "mods" in the typical sense but are instead there to ease the transition between "incomplete feature" and "complete feature", when a feature in the core game is sufficiently incomplete that the developers believe it needs to be optional to minimize disruption to players.
 
 ## What is necessary for a mod to be included in the repository?
 
-The most crucial criteria for a mod to be in the CleverRaven repository is that it has someone acting as a curator. This ensures that there is someone who is keeping an eye out for possible problems with the mod, and helping steer its development so that it continues to develop in accordance with its design purpose.
-In some rare cases we might treat a mod as an important but optional extension of the game itself, such as for some accessibility or development mods. When that happens, the 'curator' is the developer and contributor team collectively, just as with Dark Days Ahead itself. We try to do this sparingly, due to the obvious difficulty of pushing volunteers towards tasks they aren't personally interested in.
+The most crucial criteria for a mod to be in the Signal repository is that it has someone acting as a curator. This ensures that there is someone who is keeping an eye out for possible problems with the mod, and helping steer its development so that it continues to develop in accordance with its design purpose.
+In some rare cases we might treat a mod as an important but optional extension of the game itself, such as for some accessibility or development mods. When that happens, the 'curator' is the developer and contributor team collectively, just as with Signal itself. We try to do this sparingly, due to the obvious difficulty of pushing volunteers towards tasks they aren't personally interested in.
 
 Furthermore, there are additional criteria:
 
@@ -73,7 +73,7 @@ Furthermore, mods which are shipped with the game but are not working correctly 
 
 If the mod otherwise meets inclusion criteria but lacks a curator (i.e. has been declared orphaned), it's as simple as having someone else step forward as the new curator.
 
-Otherwise, it needs to either be made to meet the criteria, or it simply isn't going to be staying in the CleverRaven repository.
+Otherwise, it needs to either be made to meet the criteria, or it simply isn't going to be staying in the Signal repository.
 
 ## Mods that Modify In-Repo Mods
 

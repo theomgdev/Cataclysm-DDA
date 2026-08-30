@@ -234,7 +234,7 @@ void memorial_logger::write_text_memorial( std::ostream &file,
                                    pronoun, locdesc );
 
     //Header
-    file << string_format( _( "Cataclysm - Dark Days Ahead version %s memorial file" ),
+    file << string_format( _( "Cataclysm - Signal version %s memorial file" ),
                            getVersionString() ) << eol;
     file << eol;
     file << string_format( _( "In memory of: %s" ), u.get_name() ) << eol;

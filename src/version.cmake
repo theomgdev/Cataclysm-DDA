@@ -45,6 +45,6 @@ file(WRITE ${CMAKE_SOURCE_DIR}/VERSION.txt "\
 build type: Release\n\
 build number: ${_timestamp}\n\
 commit sha: ${_sha1}\n\
-commit url: https://github.com/CleverRaven/Cataclysm-DDA/commit/${_sha1}"
+commit url: https://github.com/theomgdev/Cataclysm-Signal/commit/${_sha1}"
 )
 

@@ -667,7 +667,7 @@ static item_location put_in_container( item_location &container, const itype_id 
     return item_location( container, inserted.value() );
 }
 
-// Reproduce previous segfault from https://github.com/CleverRaven/Cataclysm-DDA/issues/74254
+// Reproduce previous segfault from issue #74254
 TEST_CASE( "refit_item_inside_spillable_container", "[item][repair][container]" )
 {
     clear_avatar();

@@ -1,6 +1,6 @@
 # MA
 
-Overmap overhaul mod for Cataclysm: DDA that uses some features of Massachusetts state when generating overmaps.
+Overmap overhaul mod for Cataclysm: Signal that uses some features of Massachusetts state when generating overmaps.
 
 # Implemented Features
 

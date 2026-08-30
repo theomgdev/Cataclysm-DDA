@@ -36,7 +36,7 @@ concurrency:
 # https://launchpad.net/%7Eubuntu-toolchain-r/+archive/ubuntu/test/+index
 # https://apt.llvm.org/
 # For github provided runners: https://github.com/actions/runner-images
-# See also our publicized docs about compiler support: https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/c++/COMPILER_SUPPORT.md
+# See also our publicized docs about compiler support: https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/c++/COMPILER_SUPPORT.md
 #
 # At the time of writing (June 2025), the feature matrix for the above criteria looks like this:
 # | name                                 | OS       | compiler | newest/ oldest | tiles | sound | localize | cmake | backtrace | lto | sanitize | mods |
@@ -86,9 +86,9 @@ jobs:
     steps:
       - id: matrix_vars
         run: |
-          echo "fail_fast=$([ "$GITHUB_REF_NAME" = "master" -o "$GITHUB_REPOSITORY_OWNER" != "CleverRaven" ] && echo false || echo true)" >> $GITHUB_OUTPUT
+          echo "fail_fast=$([ "$GITHUB_REF_NAME" = "master" -o "$GITHUB_REPOSITORY_OWNER" != "theomgdev" ] && echo false || echo true)" >> $GITHUB_OUTPUT
           echo "skip_tests=$([ "$GITHUB_REF_NAME" = "master" ] && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "max_parallel=$([ "$GITHUB_REF_NAME" = "master" -o "$GITHUB_REPOSITORY_OWNER" != "CleverRaven" ] && echo 20 || echo 1)" >> $GITHUB_OUTPUT
+          echo "max_parallel=$([ "$GITHUB_REF_NAME" = "master" -o "$GITHUB_REPOSITORY_OWNER" != "theomgdev" ] && echo 20 || echo 1)" >> $GITHUB_OUTPUT
   compile-shaders:
     name: Compile shaders
     needs: [ skip-duplicates-code, skip-duplicates-data ]

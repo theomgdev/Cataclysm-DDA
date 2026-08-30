@@ -4,11 +4,11 @@ These documents are for the lore basis and mechanical assumptions behind some of
 
 ## The Principle of Supernatural Exclusivity
 
-Xedra Evolved has more types of playable supernatural with their own magic than any other CDDA mod, and it's a general principle that these are all exclusive. You cannot have a werewolf chronomancer, or a changeling mad genius, or a gracken lilit. Most magickal powers require starting as having that power to develop it, and those who start with non-human power sources cannot learn human dream magick.
+Xedra Evolved has more types of playable supernatural with their own magic than any other Signal mod, and it's a general principle that these are all exclusive. You cannot have a werewolf chronomancer, or a changeling mad genius, or a gracken lilit. Most magickal powers require starting as having that power to develop it, and those who start with non-human power sources cannot learn human dream magick.
 
 The exception to this is vampirism. Since vampirism is an infection, anyone can theoretically develop it (barring lilin, dhampirs, grackens and paraclesians who are immune), but becoming a vampire locks out previous supernatural powers. The lower tiers merely cannot learn new powers, but making the choice to become a full vampire removes all previous supernatural powers as the blood overwhelms everything.
 
-## Timeline Differences from vanilla CDDA
+## Timeline Differences from vanilla Signal
 
 TBD
 

@@ -7,18 +7,18 @@ if [ -z "$1" ]
     exit 1
 fi
 
-if (pwd | grep "Cataclysm-DDA/tools")
+if (pwd | grep "Cataclysm-Signal/tools")
 then
 cd ..
 else
-if (ls Cataclysm-DDA)
+if (ls Cataclysm-Signal)
 then
-echo "Cataclysm-DDA already exists"
+echo "Cataclysm-Signal already exists"
 else
-echo "Cloning Cataclysm-DDA"
-git clone https://github.com/CleverRaven/Cataclysm-DDA
+echo "Cloning Cataclysm-Signal"
+git clone https://github.com/theomgdev/Cataclysm-Signal
 fi
-cd Cataclysm-DDA
+cd Cataclysm-Signal
 fi
 
 make
@@ -54,9 +54,9 @@ echo "Copying readme to $1"
 cp ./README.md $1
 
 # Copying game files
-cd ../Cataclysm-DDA
-mkdir -p $1/cdda
-cp ./cataclysm $1/cdda/
+cd ../Cataclysm-Signal
+mkdir -p $1/signal
+cp ./cataclysm $1/signal/
 mkdir -p $1/share/cataclysm-dda
 mkdir -p $1/share/save
 mkdir -p $1/share/memorial
@@ -70,21 +70,21 @@ ROOTPATH=$(echo "$1/" | sed -e 's/[\/&]/\\&/g')
 echo "Copying games.json"
 if (ls ./config/games.json)
 then
-cp ./config/examples/Cataclysm-DDA/games.json ./config/games.json.new
+cp ./config/examples/Cataclysm-Signal/games.json ./config/games.json.new
 sed -i "s/!rootpath/$ROOTPATH/g" ./config/games.json.new
 echo "New config has been copied to $1/config/games.json.new"
 else
-cp ./config/examples/Cataclysm-DDA/games.json ./config/
+cp ./config/examples/Cataclysm-Signal/games.json ./config/
 sed -i "s/!rootpath/$ROOTPATH/g" ./config/games.json
 fi
 
 # Making admin userdir
-mkdir -p $1/userdata/cdda/admin/
-mkdir -p $1/userdata/cdda/admin/ttyrec
+mkdir -p $1/userdata/signal/admin/
+mkdir -p $1/userdata/signal/admin/ttyrec
 
 # Creating the directories for ttrecs in progress
-mkdir -p $1/cdda-inprogress/
-mkdir -p $1/cdda-shared-inprogress/
+mkdir -p $1/signal-inprogress/
+mkdir -p $1/signal-shared-inprogress/
 
 echo "FINISHED! Hgamelaunch was installed into $1"
 echo "The admin login is:"

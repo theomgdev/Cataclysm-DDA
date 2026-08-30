@@ -29,7 +29,7 @@ set of matching items, for instance.
 Run either script with `-h` to see help on their command-line options.  Both scripts output JSON
 text by default, but you can pass the `--human` option for output in a more human-readable format.
 
-You can run these scripts from the root `Cataclysm-DDA` directory using a relative path:
+You can run these scripts from the root `Cataclysm-Signal` directory using a relative path:
 
 ```console
 $ tools/json_tools/keys.py -h

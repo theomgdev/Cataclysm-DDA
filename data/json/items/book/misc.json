@@ -1024,8 +1024,8 @@
       },
       {
         "id": "classic14",
-        "name": { "str": "Dark Days Ahead", "str_pl": "copies of Dark Days Ahead" },
-        "description": "This is a paperback copy of the well-known classic \"Dark Days Ahead\", by M. G. Ranade.  There are scrawled margin notes all over it, apparently the workings of a confused and feverish mind."
+        "name": { "str": "Signal", "str_pl": "copies of Signal" },
+        "description": "This is a paperback copy of the well-known classic \"Signal\", by M. G. Ranade.  There are scrawled margin notes all over it, apparently the workings of a confused and feverish mind."
       },
       {
         "id": "classic15",
@@ -1394,8 +1394,8 @@
       },
       {
         "id": "fancy14",
-        "name": { "str": "collector's edition of Dark Days Ahead", "str_pl": "copies of collector's edition of Dark Days Ahead" },
-        "description": "This is a high-quality leather bound copy of the well-known classic \"Dark Days Ahead\", by M. G. Ranade."
+        "name": { "str": "collector's edition of Signal", "str_pl": "copies of collector's edition of Signal" },
+        "description": "This is a high-quality leather bound copy of the well-known classic \"Signal\", by M. G. Ranade."
       },
       {
         "id": "fancy15",

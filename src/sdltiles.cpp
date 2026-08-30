@@ -213,7 +213,7 @@ static void InitSDL()
     // Requires SDL 2.0.18. String used multiple ways, one of them is the game
     // identifying itself when asking to inhibit screensaver via dbus under
     // Linux.
-    SDL_SetHint( SDL_HINT_APP_NAME, _( "Cataclysm: Dark Days Ahead" ) );
+    SDL_SetHint( SDL_HINT_APP_NAME, _( "Cataclysm: Signal" ) );
 #endif
 
     throwErrorIf( !SDL_Init( init_flags ), "SDL_Init failed" );
@@ -800,7 +800,7 @@ static android_visible_frame_inbox visible_frame_inbox;
 
 extern "C" {
 
-    JNIEXPORT void JNICALL Java_com_cleverraven_cataclysmdda_CataclysmDDA_onNativeImeInsetsChanged(
+    JNIEXPORT void JNICALL Java_dev_theomgdev_cataclysmsignal_CataclysmSignal_onNativeImeInsetsChanged(
         JNIEnv *env, jclass jcls, jint left, jint top, jint right, jint bottom, jboolean visible )
     {
         ( void )env; // unused

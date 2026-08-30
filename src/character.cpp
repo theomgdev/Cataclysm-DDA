@@ -614,7 +614,7 @@ void Character::swap_character( Character &other )
 void Character::randomize_height()
 {
     // Height distribution data is taken from CDC distributes statistics for the US population
-    // https://github.com/CleverRaven/Cataclysm-DDA/pull/49270#issuecomment-861339732
+    // pull request #49270
     const int x = std::round( normal_roll( 168.35, 15.50 ) );
     init_height = clamp( x, Character::min_height(), Character::max_height() );
 }

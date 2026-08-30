@@ -1,5 +1,5 @@
 # Sky Islands
-A raid-based gameplay overhaul mod for CDDA, inspired by games like Escape from Tarkov and Dark & Darker.
+A raid-based gameplay overhaul mod for Signal, inspired by games like Escape from Tarkov and Dark & Darker.
 ### Warning:
 - You MUST make a custom character for this.  "Play Now!" will not work.
 - The game uses code to search large areas of the map.  That means you may run into load times of up to a couple minutes at times.  You will generally be warned of these in-game, so please be patient.
@@ -9,7 +9,7 @@ A raid-based gameplay overhaul mod for CDDA, inspired by games like Escape from 
 Changelog has been moved to the bottom!  Scroll down!
 
 # Overview
-This mod attempts to completely change how you play CDDA.
+This mod attempts to completely change how you play Signal.
 
 You start off high in the sky on a floating island, and using a warp statue located there, will be teleported to a random location on the earth below to commence an "expedition".  There, you are on a limited timer of only 2 hours and must fight, loot, and journey your way to the nearby exit portal.  Use it, and you will bring all the items you were carrying back to the safety of your floating sanctuary, but you will not be able to return to the place you left behind.
 The better equipped you are, the more likely you will survive, but remember that bringing out too much gear will make it hard to carry much new loot home -- and dying with all that high quality gear means it's gone forever.  Balancing what gear you are willing to risk on any expedition is an important consideration.
@@ -42,7 +42,7 @@ To find these recipes just look under the "Warp" tab in your crafting menu.
 # Tips
 - Never forget your time limit!  A watch or clock can save your life, but if you have nothing else, keep an eye on your warp pulses!
 - Remember that anything carried or worn is brought home.  Since you can wield very bulky items, it might be worth grabbing the biggest thing you can find before coming home.  A corpse to butcher, a heavy piece of furniture to build with, an entire engine block.  You may not be able to stand up, but if you can hold it, it's coming with you!
-- You're expected to die.  More than usual.  Each expedition will see you dropped into potential danger, racing the clock to push through hostile and unfamiliar terrain, cut off from home base, impeded by unseen obstacles, and with only the gear on your back.  Many factors combine to make this experience harder than normal CDDA, so you will probably die more often.  Don't feel bad, just pick yourself up and try again!
+- You're expected to die.  More than usual.  Each expedition will see you dropped into potential danger, racing the clock to push through hostile and unfamiliar terrain, cut off from home base, impeded by unseen obstacles, and with only the gear on your back.  Many factors combine to make this experience harder than normal Signal, so you will probably die more often.  Don't feel bad, just pick yourself up and try again!
 - Stockpile multiples!  Many things you only needed one of before will need to be replaced if an expedition is lost.  Stash extra guns, backpacks, shoes, clothes, watches, pocket knives, lighters, and anything else you may risk losing!  Many tools and utensils can be kept safely at home, but for everything else, be mindful!
 - You can spend as long as you want in the safety of your home.  Sooner or later you'll need to restock on *something*, but if you need to take a few days off, no one will bother you.
 - The Heart of the Island can heal you to full for free, but will only until you have completed 10 successful expeditions.  After that, it costs warp shards to use.  Use this grace period to get a decent stockpile of basic supplies going.  Once you must way, heal yourself from small injuries while recuperating at base, and save the full heals for when you're really injured!
@@ -56,7 +56,7 @@ A mod I wanted to play so bad I just made it myself
 
 # Changelog
 **v0.3.0** MILESTONE 1 UPDATE!
-Almost too many changes to count.  Massive overhaul to progression and balance.  Tested on CDDA Experimental 60499ad .
+Almost too many changes to count.  Massive overhaul to progression and balance.  Tested on Signal Experimental 60499ad .
 - Rebalanced expeditions!  This is a huge one.  Raids are now 3x shorter, so a normal raid has warp pulses every 15 minutes and a time limit of only 2 hours before warpsickness sets in.  The upside is that exits and missions now spawn much, much closer to the start.  This means it's now feasible to make quick, simple raids where you simply pop down, grab a few things, and pop back out.  Surviving raids is much easier as a result, so the player should hopefully no longer feel pressured to cram every single pocket full to overflowing (though you're still welcome to do that!) lest they feel the expedition was a waste.  Very reasonable now to have a successive series of short raids for specific goals, to pick missions based on difficulty rather than proximity, and most importantly, to spend most of your time fighting, looting, and exploring, NOT just traveling for miles!
 - Longer raids can be unlocked, however, up to and including the old version's normal raid length.  So if you preferred those, they'll still be available too!
 - Secure Container Alpha!  Unlock this and craft it and it will forever be a part of you.  It's very small, but anything inside will not be left behind when you die!  More containers are in the game but there are intentionally no recipes for it yet, pending broader testing and balancing.
@@ -75,7 +75,7 @@ Almost too many changes to count.  Massive overhaul to progression and balance. 
 - A bunch more stuff I probably forgot!
 
 **v0.2.2** This version may not be compatible with old saves!  But old saves don't work on the new versions anyway, so use your own judgement.
-- Updated mod to be compatible with newer CDDA versions (as of 2023-06-01-1256).
+- Updated mod to be compatible with newer Signal versions (as of 2023-06-01-1256).
 - Missions to kill groups of enemies now require you to actually kill ALL the enemies.  Previously they would complete after killing ANY of the enemies.
 - Random Artifacts are now crafted directly, instead of crafting an "artifact box" and then unpacking it.
 - You should now properly lose your radiation sickness when dying or using the Salve of Forgiveness.

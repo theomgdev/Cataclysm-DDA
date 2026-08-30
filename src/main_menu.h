@@ -25,7 +25,7 @@ class main_menu
         static std::string queued_world_to_load;
         static std::string queued_save_id_to_load;
     private:
-        // ASCII art that says "Cataclysm Dark Days Ahead"
+        // ASCII art that says "Cataclysm Signal"
         std::vector<std::string> mmenu_title;
         std::string mmenu_motd;
         std::string mmenu_credits;

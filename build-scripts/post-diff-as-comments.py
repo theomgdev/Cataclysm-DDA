@@ -3,7 +3,7 @@
 # Posts review comments with suggestion blocks for each diff hunk.
 #
 # Requires environment variables (set by the workflow):
-#   GITHUB_REPOSITORY  - e.g. "CleverRaven/Cataclysm-DDA"
+#   GITHUB_REPOSITORY  - e.g. "theomgdev/Cataclysm-Signal"
 #   GH_TOKEN           - GitHub token for API access
 
 import base64

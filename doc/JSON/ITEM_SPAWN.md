@@ -356,4 +356,4 @@ You should not add items to the item group `EMPTY_GROUP`.  This group can be use
 
 When adding items to item groups, attempt to locate or create **SUS item groups.**  SUS item groups are collections that contain a reasonable realistic distribution of items that might spawn in a given piece of storage furniture.  SUS stands for "specific use storage."  One of the aims of organizing item groups into SUS groups is to promote reusable tables that can be maintained and extended.
 
-You can find existing SUS item groups at [/data/json/itemgroups/SUS](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/json/itemgroups/SUS/).
+You can find existing SUS item groups at [/data/json/itemgroups/SUS](https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/json/itemgroups/SUS/).

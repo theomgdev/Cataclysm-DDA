@@ -1,6 +1,6 @@
 # User Interface / Accessibility
 
-Cataclysm: Dark Days Ahead uses ncurses, or in the case of the tiles build, an
+Cataclysm: Signal uses ncurses, or in the case of the tiles build, an
 ncurses port, for user interface. Window management is achieved by `ui_adaptor`,
 which requires a resizing callback and a redrawing callback for each UI to handle
 resizing and redrawing. A migration effort is underway for user interface code
@@ -26,7 +26,7 @@ Examples of creating any ImGui widget can be found in `src/third-party/imgui_dem
 Good examples of implementing an ImGui-based UI in Cataclysm:
 
 - `demo_ui` a minimal example (about 80 lines) in `main_menu.cpp` added in
-[PR#72171](https://github.com/CleverRaven/Cataclysm-DDA/pull/72171)
+[PR#72171](pull request #72171)
 - `query_popup` and `static_popup` in `popup.h/cpp`, specifically `query_popup_impl`
  which is a private implementation class used by the aforementioned classes.
 - `keybindings_ui` in `input.cpp`, which is a private implementation class used

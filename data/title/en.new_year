@@ -1,4 +1,4 @@
-# The ASCII art must be 18 lines in height (6 lines per ascii art text line).
+# The ASCII art must be a multiple of 6 lines in height (6 lines per text line).
 # Max length of a line is 80 characters; the following line is for reference.
 ################################################################################
 <color_white>   _________            __                   .__                                
@@ -13,10 +13,10 @@
 <color_green>      /\<color_green>     |     \   |  ||  | \/   |    |   |  | \/\  ___/\  ___/             
 <color_green>     /\<color_red>*<color_green>\<color_brown>    \___  /   |__||__|      |____|   |__|    \___  >\___  >            
 <color_green>    /\<color_yellow>O<color_green>\<color_blue>*<color_green>\<color_brown>       \/                                       \/     \/             
-<color_green>   /<color_red>*<color_green>/\/\/\<color_white>            _____   .__                         .___                 
-<color_green>  /\<color_white>O<color_green><color_green>\/\<color_pink>*<color_green>\/\<color_white>          /  _  \  |  |__    ____  _____     __| _/                 
-<color_green> /\<color_blue>*<color_green>\/\<color_light_green>*<color_green>\/\/\<color_red>        /  /_\  \ |  |  \ _/ __ \ \__  \   / __ |                  
-<color_green>/\<color_light_cyan>O<color_green><color_green>\/\/<color_red>*<color_green>/\/<color_yellow>O<color_green>/\<color_red>      /    |    \|   Y  \\  ___/  / __ \_/ /_/ |                  
-<color_brown>      ||<color_red>            \____|__  /|___|  / \___  >(____  /\____ |                  
-<color_brown>      ||<color_red>                    \/      \/      \/      \/      \/                  
+<color_green>   /<color_red>*<color_green>/\/\/\<color_white>            _________.__                         .__                 
+<color_green>  /\<color_white>O<color_green><color_green>\/\<color_pink>*<color_green>\/\<color_white>          /   _____/|__|  ____    ____  _____   |  |                
+<color_green> /\<color_blue>*<color_green>\/\<color_light_green>*<color_green>\/\/\<color_red>         \_____  \ |  | / ___\  /    \ \__  \  |  |                
+<color_green>/\<color_light_cyan>O<color_green><color_green>\/\/<color_red>*<color_green>/\/<color_yellow>O<color_green>/\<color_red>        /        \|  |/ /_/  >|   |  \ / __ \_|  |__              
+<color_brown>      ||<color_red>             /_______  /|__|\___  / |___|  /(____  /|____/              
+<color_brown>      ||<color_red>                     \/    /_____/       \/      \/                     
 <color_brown>      ||                                                                        

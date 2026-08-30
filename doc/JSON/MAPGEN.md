@@ -1517,7 +1517,7 @@ Example: `"predecessor_mapgen": "field"`
 # Palettes
 
 A **palette** provides a way to use the same symbol definitions for different
-pieces of mapgen.  For example, most of the houses defined in CDDA us the
+pieces of mapgen.  For example, most of the houses defined in Signal us the
 `standard_domestic_palette`.  That palette, for example, defines `h` as meaning
 `f_chair`, so all the house mapgen can use `h` in its `"rows"` array without
 needing to repeat this definition everywhere.  It simply requires a reference

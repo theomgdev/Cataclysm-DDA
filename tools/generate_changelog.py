@@ -193,7 +193,7 @@ class CDDAPullRequest(PullRequest):
         # Fix weird cases where a PR have multiple SUMMARY
         # coming mostly from template lines that weren't removed by the pull
         # requester.  For example:
-        # https://api.github.com/repos/CleverRaven/Cataclysm-DDA/pulls/25604
+        # https://api.github.com/repos/theomgdev/Cataclysm-Signal/pulls/25604
 
         def summary_filter(x):
             return ((x.group('pr_type'), x.group('pr_desc')) not in
@@ -565,7 +565,7 @@ class CommitApi:
             return None
         commit_sha = commit_data['sha']
         # some commits have null in author.login :S like:
-        # https://api.github.com/repos/CleverRaven/Cataclysm-DDA/commits/569bef1891a843ec71654530a64d51939aabb3e2
+        # https://api.github.com/repos/theomgdev/Cataclysm-Signal/commits/569bef1891a843ec71654530a64d51939aabb3e2
         # I try to use author.login when possible or fallback to
         # "commit.author" which doesn't match with usernames in pull requests
         # API (I guess it comes from the distinction between "name" and
@@ -617,7 +617,7 @@ class PullRequestApi:
         requests per minute.
         """
         params = {
-            'q': 'is:pr is:merged repo:CleverRaven/Cataclysm-DDA '
+            'q': 'is:pr is:merged repo:theomgdev/Cataclysm-Signal '
                  f'{commit_hash}'
         }
         request_builder = GitHubApiRequestBuilder(self.api_token)
@@ -632,7 +632,7 @@ class PullRequestApi:
         # that actually has the commit hash as "Merge Commit SHA".
         # Output example:
         # https://api.github.com/search/issues
-        # ?q=is%3Apr+is%3Amerged+repo%3ACleverRaven%2FCataclysm-DDA+f0c6908d154cd0fb190c2116de2bf2d3131458c3
+        # ?q=is%3Apr+is%3Amerged+repo%3Atheomgdev%2FCataclysm-Signal+f0c6908d154cd0fb190c2116de2bf2d3131458c3
 
         # If the API don't return a score of 100 or more for the highest score
         # item (the first item), then the commit is probably not part of any
@@ -729,7 +729,7 @@ class PullRequestApi:
         else:
             pr_update_dttm = None
         # PR description can be empty :S example:
-        # https://github.com/CleverRaven/Cataclysm-DDA/pull/24213
+        # pull request #24213
         pr_body = pr_data['body'] if pr_data['body'] else ''
 
         return self.pr_factory.create(
@@ -811,7 +811,7 @@ class CommitApiGenerator(GitHubApiRequestBuilder):
     get data until a condition is met."""
 
     GITHUB_API_LIST_COMMITS = \
-        r'https://api.github.com/repos/CleverRaven/Cataclysm-DDA/commits'
+        r'https://api.github.com/repos/theomgdev/Cataclysm-Signal/commits'
 
     def __init__(self, api_token, since_dttm=None, until_dttm=None,
                  sha='master', initial_page=1, step=1, timezone='Etc/UTC'):
@@ -871,7 +871,7 @@ class PullRequestApiGenerator(GitHubApiRequestBuilder):
     to get data until a condition is met."""
 
     GITHUB_API_LIST_PR = \
-        r'https://api.github.com/repos/CleverRaven/Cataclysm-DDA/pulls'
+        r'https://api.github.com/repos/theomgdev/Cataclysm-Signal/pulls'
 
     def __init__(self, api_token, state='all', initial_page=1, step=1,
                  timezone='Etc/UTC'):

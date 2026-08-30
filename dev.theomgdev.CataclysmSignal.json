@@ -1,5 +1,5 @@
 {
-  "id": "org.cataclysmdda.CataclysmDDA",
+  "id": "dev.theomgdev.CataclysmSignal",
   "default-branch": "experimental",
   "runtime": "org.freedesktop.Platform",
   "runtime-version": "22.08",
@@ -33,7 +33,7 @@
         "make $MAKE_ARGS install"
       ],
       "sources": [
-        { "type": "git", "url": "https://github.com/CleverRaven/Cataclysm-DDA", "branch": "master" },
+        { "type": "git", "url": "https://github.com/theomgdev/Cataclysm-Signal", "branch": "master" },
         {
           "type": "git",
           "url": "https://github.com/Fris0uman/CDDA-Soundpacks",

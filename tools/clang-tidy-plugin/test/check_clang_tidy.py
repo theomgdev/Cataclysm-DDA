@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Modified by the Cataclysm: Dark Days Ahead project.
+# Modified by the Cataclysm: Signal project.
 #
 #===- check_clang_tidy.py - ClangTidy Test Helper ------------*- python -*--===#
 #
@@ -37,7 +37,7 @@ Notes:
     Passed to clang-tidy. Use another `--` to separate clang-tidy and clang
     arguments. Although optional clang-tidy arguments before the first `--`
     is supported, care should be taken as it may cause unexpected behavior for
-    specific argument types and orders (https://github.com/CleverRaven/Cataclysm-DDA/pull/66315/files#r1247288210)
+    specific argument types and orders (pull request #66315/files#r1247288210)
 """
 
 import argparse

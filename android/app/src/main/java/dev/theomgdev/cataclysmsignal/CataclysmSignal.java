@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package dev.theomgdev.cataclysmsignal;
 
 import org.libsdl.app.SDLActivity;
 
@@ -19,7 +19,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-public class CataclysmDDA extends SDLActivity {
+public class CataclysmSignal extends SDLActivity {
     private static final String TAG = "CDDA";
     public static final String PREF_SYSTEM_UI_MODE = "Android system UI mode";
     public static final String PREF_FORCE_FULLSCREEN = "Force fullscreen";
@@ -27,7 +27,7 @@ public class CataclysmDDA extends SDLActivity {
     public static final String SYSTEM_UI_MODE_FULLSCREEN = "fullscreen";
     public static final String SYSTEM_UI_MODE_EDGE_TO_EDGE = "edge_to_edge";
 
-    private NativeUI nativeUI = new NativeUI(CataclysmDDA.this);
+    private NativeUI nativeUI = new NativeUI(CataclysmSignal.this);
     private int lastImeLeft = -1;
     private int lastImeTop = -1;
     private int lastImeRight = -1;

@@ -21,9 +21,9 @@ Some examples:
 2. Features "In-game Armor sprite change"
 3. Interface "Show crafting failure chances in the crafting interface"
 For more on the meaning of each category, see:
-https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/CHANGELOG_GUIDELINES.md
+https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/CHANGELOG_GUIDELINES.md
 If merged, your summary will be added to the project changelog:
-https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/changelog.txt -->
+https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/changelog.txt -->
 
 #### Purpose of change
 
@@ -50,7 +50,7 @@ If there is no related issue, explain here what issue, feature, or other concern
 <!-- Add any other context (such as mock-ups, proof of concepts or screenshots) about the feature or bugfix here. -->
 
 
-<!--README: Cataclysm: Dark Days Ahead is released under the Creative Commons Attribution ShareAlike 3.0 license.
+<!--README: Cataclysm: Signal is released under the Creative Commons Attribution ShareAlike 3.0 license.
 The code and content of the game are free to use, modify, and redistribute for any purpose whatsoever.
 By contributing to the project you agree to the terms of the license and that any contribution you make will also be covered by the same license.
 See http://creativecommons.org/licenses/by-sa/3.0/ for details. -->

@@ -67,7 +67,7 @@ jobs:
           git diff -U1 > suggestions/diff.txt
           echo ${{ github.event.pull_request.number }} > suggestions/pr_number
           echo ${{ github.event.pull_request.head.sha }} > suggestions/commit_sha
-          echo '[JSON & C++ formatters](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/c++/DEVELOPER_TOOLING.md)' > suggestions/comment.txt
+          echo '[JSON & C++ formatters](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/c++/DEVELOPER_TOOLING.md)' > suggestions/comment.txt
         fi
     - name: Upload pr comment artifacts
       if: ${{ failure() }}

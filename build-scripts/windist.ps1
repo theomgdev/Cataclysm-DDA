@@ -59,4 +59,4 @@ $extras = "data", "doc", "gfx", "LICENSE.txt", "LICENSE-OFL-Terminus-Font.txt", 
 ForEach ($extra in $extras) {
 	cp -r $extra bindist
 }
-Compress-Archive -Force -Path bindist/* -DestinationPath "cataclysmdda-0.J.zip"
+Compress-Archive -Force -Path bindist/* -DestinationPath "cataclysm-signal-0.J.zip"

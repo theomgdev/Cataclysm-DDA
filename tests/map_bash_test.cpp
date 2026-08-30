@@ -470,7 +470,7 @@ TEST_CASE( "shooting_at_terrain", "[rng][map][bash][ranged]" )
         shoot_at_terrain( setup, shooter, "t_brick_wall",
                           shooter.pos_bub() + point::east, false );
     }
-    // Broken. See https://github.com/CleverRaven/Cataclysm-DDA/issues/79770
+    // Broken. See issue #79770
     //SECTION( "birdshot vs adobe wall point blank" ) {
     //    shoot_at_terrain( shooter, itype_mossberg_590, itype_shot_bird,
     //                      "t_adobe_brick_wall", shooter.pos_bub() + point::east, false );

@@ -26,7 +26,7 @@
 # Lore - Setting
 
 #### Seriously, spoiler alert.
-CDDA tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please!
+Signal tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please!
 
 ## Table of Contents
 * [Style and Structure](#style-and-structure)
@@ -38,7 +38,7 @@ CDDA tells stories using unreliable narrators and a found footage style.  Knowin
 * [Background/Timeline](./lore-background.md)
 * [Factions](./lore-factions.md)
 
-Cataclysm: Dark Days Ahead is a turn-based survival game set in a post-apocalyptic world.  Struggle to survive in a harsh, persistent, procedurally generated world.  Scavenge the remnants of a dead civilization for food, equipment, or, if you are lucky, a vehicle with a full tank of gas to get you the hell out of Dodge.  Fight to defeat or escape from a wide variety of powerful monstrosities, from zombies to giant insects to killer robots and things far stranger and deadlier, and against the others like yourself, that want what you have…
+Cataclysm: Signal is a turn-based survival game set in a post-apocalyptic world.  Struggle to survive in a harsh, persistent, procedurally generated world.  Scavenge the remnants of a dead civilization for food, equipment, or, if you are lucky, a vehicle with a full tank of gas to get you the hell out of Dodge.  Fight to defeat or escape from a wide variety of powerful monstrosities, from zombies to giant insects to killer robots and things far stranger and deadlier, and against the others like yourself, that want what you have…
 
 
 # Story
@@ -53,7 +53,7 @@ For more details on individual features of the story, see:
 
 ## Style and Structure
 
-Storytelling in CDDA should be fragmented and emergent, to simulate the idea that nobody really knows what happened.  What people know is what they experienced, which was random and chaotic.  There were no news broadcasts informing survivors that a hostile interdimensional force had decided to conquer Earth; one day, the dead started walking, and that was sure weird; while we were all getting used to that, the world broke open and creatures from nightmares moved among us eating people and smashing stuff.  It wasn't much fun, and nobody's quite sure how it happened.
+Storytelling in Signal should be fragmented and emergent, to simulate the idea that nobody really knows what happened.  What people know is what they experienced, which was random and chaotic.  There were no news broadcasts informing survivors that a hostile interdimensional force had decided to conquer Earth; one day, the dead started walking, and that was sure weird; while we were all getting used to that, the world broke open and creatures from nightmares moved among us eating people and smashing stuff.  It wasn't much fun, and nobody's quite sure how it happened.
 
 Those with the best knowledge of what happened are dead.  Some of them left notes.  Those notes should be hard to get.
 
@@ -87,7 +87,7 @@ That said, XEDRA was not around long enough for word to leak fully.  The world e
 
 ### Pre-Cataclysm Tech Changes
 
-As a general rule, the CDDA world should feel like ours.  We have worked hard to remove pre-Cataclysm bionics and robots that would have had to mean the world was too dramatically different.  The only exception to this is where technology interacts with the benefits of gradual development of portal tech.  For example. radioactive isotopes are far more easily available and have been for decades, with XEDRA taking them from other dimensions and reselling them to fund their projects.  However, any such change that would result in the pre-Cataclysm Earth being unrecognizably different from our own would not mean that we need to add that new tech to the game.  Rather, it means we need to rewrite the lore to keep that change from making it in.  We want it to feel like these changes occurred in a recognizable version of our world.
+As a general rule, the Signal world should feel like ours.  We have worked hard to remove pre-Cataclysm bionics and robots that would have had to mean the world was too dramatically different.  The only exception to this is where technology interacts with the benefits of gradual development of portal tech.  For example. radioactive isotopes are far more easily available and have been for decades, with XEDRA taking them from other dimensions and reselling them to fund their projects.  However, any such change that would result in the pre-Cataclysm Earth being unrecognizably different from our own would not mean that we need to add that new tech to the game.  Rather, it means we need to rewrite the lore to keep that change from making it in.  We want it to feel like these changes occurred in a recognizable version of our world.
 
 See [the Technology document](./technology.md) for deeper details.
 

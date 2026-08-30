@@ -10,7 +10,7 @@ if (TILES AND NOT USE_SDL3)
              SDL3 is the only tiles backend. Drop the option, or build without \
              -DTILES=ON for a text-only compilation.")
 endif()
-project(CataclysmDDA)
+project(CataclysmSignal)
 
 list(APPEND CMAKE_MODULE_PATH
         ${CMAKE_SOURCE_DIR}/CMakeModules)
@@ -177,7 +177,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     message(STATUS "Build ${PROJECT_NAME} in development mode --")
     message(STATUS "Binaries will be located in: " ${CMAKE_SOURCE_DIR})
     set(CMAKE_VERBOSE_MAKEFILE ON)
-    # Since CataclysmDDA does not respect PREFIX for development builds
+    # Since CataclysmSignal does not respect PREFIX for development builds
     # and has funny path handlers, we should create resulting Binaries
     # in the source directory
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR} CACHE PATH

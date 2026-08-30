@@ -30,7 +30,7 @@ The game is three-dimensional, with the axes oriented as follows:
 
 ## Coordinate systems
 
-CDDA uses a variety of coordinate systems for different purposes.  These differ
+Signal uses a variety of coordinate systems for different purposes.  These differ
 by scale and origin.
 
 The most precise coordinates are **map square** (ms) coordinates.  These refer to

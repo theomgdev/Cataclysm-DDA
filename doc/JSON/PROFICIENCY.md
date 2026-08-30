@@ -26,7 +26,7 @@ Proficiencies are entirely distinct from skills, and are not directly associated
 a separate system of tracking more specific subsets of knowledge.  Most proficiencies will have an
 obvious general affiliation with one or more skills, but this is loose.
 
-Most skills in CDDA (particularly the non-combat ones) represent broad sets of transferable
+Most skills in Signal (particularly the non-combat ones) represent broad sets of transferable
 knowledge, while proficiencies are narrower and more focused.  By keeping them mechanically separate
 from skills we are able to represent, for example, that being proficient in construction may have a
 role in fabricating things out of wood, or constructing survival shelters along similar principles,
@@ -86,7 +86,7 @@ of it has been learned.  When it reaches 100%, they become fully "proficient" at
 will do activities and crafting with that proficiency at maximum speed with minimal failures.
 
 Before reaching 100%, there are some penalties to time and success.  The extra time and chance to
-fail are computed using [separate formulas](https://github.com/CleverRaven/Cataclysm-DDA/pull/49198)
+fail are computed using [separate formulas](pull request #49198)
 and their multipliers may be given separately in the proficiency JSON and any recipes using them.
 
 

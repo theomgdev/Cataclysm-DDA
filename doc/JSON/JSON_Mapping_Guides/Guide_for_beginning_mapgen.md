@@ -22,13 +22,13 @@
 
 ## Guide for basic mapgen
 
-This guide will cover the basics of mapgen, which files you need to edit, the tags in each file and the differences in creating specials or regular city buildings.  For full technical information about mapgen entries refer to: [doc/JSON/MAPGEN.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/MAPGEN.md).
+This guide will cover the basics of mapgen, which files you need to edit, the tags in each file and the differences in creating specials or regular city buildings.  For full technical information about mapgen entries refer to: [doc/JSON/MAPGEN.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/MAPGEN.md).
 
 First, lets cover some basic concepts and the files you'll add or edit.
 
 #### General comments:
 
-CDDA mapgen is surprisingly powerful once you get used to working with it.  You can use lots of tricks to add variability and interest to your maps.  Most advanced mapgen techniques will go into a different tutorial.  This one covers basic concepts and how to create a basic single OMT (overmap terrain tile) sized building.  We will touch on palette usage and how to add a roof as well.
+Signal mapgen is surprisingly powerful once you get used to working with it.  You can use lots of tricks to add variability and interest to your maps.  Most advanced mapgen techniques will go into a different tutorial.  This one covers basic concepts and how to create a basic single OMT (overmap terrain tile) sized building.  We will touch on palette usage and how to add a roof as well.
 
 #### Specials vs. city buildings:
 
@@ -40,10 +40,10 @@ Important policy: since the roof project, all buildings are now multi-tile acros
 
 #### The Files & their purpose:
 
-1. You will add a new mapgen file in: [data/json/mapgen](https://github.com/CleverRaven/Cataclysm-DDA/tree/master/data/json/mapgen) or one of its sub-folders.  If you are using an existing foundation shape for the building, you may append it to that building's file.
+1. You will add a new mapgen file in: [data/json/mapgen](https://github.com/theomgdev/Cataclysm-Signal/tree/master/data/json/mapgen) or one of its sub-folders.  If you are using an existing foundation shape for the building, you may append it to that building's file.
     * This is the blueprint for the building.  It can also hold all the building’s data for adding furniture and loot (see palette for an alternative).
 
-2. You will add entries for each z level you create in the appropriate overmap_terrain file ([data/json/overmap/overmap_terrain](https://github.com/CleverRaven/Cataclysm-DDA/tree/master/data/json/overmap/overmap_terrain)).
+2. You will add entries for each z level you create in the appropriate overmap_terrain file ([data/json/overmap/overmap_terrain](https://github.com/theomgdev/Cataclysm-Signal/tree/master/data/json/overmap/overmap_terrain)).
     * These entries will define what your building looks like in the overmap, its symbol, color, and spawn requirements like adding sidewalks, it will also control flags for some mapgen functions.
 
 3. You will add an entry into either specials.json or multitile_city_buildings.json depending on if it is a special or a city building.
@@ -74,7 +74,7 @@ Before beginning you’ll want to make some decisions:
 
 #### The mapgen map:
 
-This covers the mapgen file map flags and what they do in layman’s terms.  You can get more extensive information from [doc/JSON/MAPGEN.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/MAPGEN.md).
+This covers the mapgen file map flags and what they do in layman’s terms.  You can get more extensive information from [doc/JSON/MAPGEN.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/MAPGEN.md).
 
 the mapgen file has some meta data tags and the `"object"` data which defines everything to make the map.
 
@@ -234,7 +234,7 @@ Sample:
 
 The other most common one is: `"vendingmachines": { "D": { "item_group": "vending_drink" }, "V": { "item_group": "vending_food" } }` this assigns two symbols for vending machines and makes one for food & one for drinks. *note: you can put any item_group into the machines, like those bullet ones*.
 
-6. Item spawns:  There are many ways to place items.  This tutorial will only cover explicit symbol placement which is the easiest.  There is documentation all about loot spawns you can read for further information.  See: [doc/JSON/ITEM_SPAWN.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/ITEM_SPAWN.md).
+6. Item spawns:  There are many ways to place items.  This tutorial will only cover explicit symbol placement which is the easiest.  There is documentation all about loot spawns you can read for further information.  See: [doc/JSON/ITEM_SPAWN.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/ITEM_SPAWN.md).
 
 our sample uses "items": for its tag.  others include: "place_item", "place_items", "place_loot".  Some of these allow for individual item placement and others groups, or both.  This will be covered in another tutorial.
 
@@ -344,7 +344,7 @@ finally for flowers (which are furniture):
 
 #### Adding the roof!
 
-Almost all CDDA buildings are now roof-capable and we'd love to keep it that way.  Make sure to submit a roof map with your building.  This can go into the same file as your ground floor and any other floors that share the same building shape/foundation.
+Almost all Signal buildings are now roof-capable and we'd love to keep it that way.  Make sure to submit a roof map with your building.  This can go into the same file as your ground floor and any other floors that share the same building shape/foundation.
 
 So, this is super easy compared to the building we just went over.  It has all the same basic components.  I recommend you start by using the rows from your ground floor map and converting it to the `"roof_palette"` symbol set.  Basically your just going to trace the outline in gutters, add a t_gutter_drop next to your t_gutter_downspout below and toss some infrastructure up there.  I used nests extensively in commercial building roofs and we'll cover that in advanced mapgen.
 
@@ -396,7 +396,7 @@ I have a separate roof document at: [JSON_ROOF_MAPGEN.md](JSON_ROOF_MAPGEN.md).
 
 #### Linking various mapgen maps using multitile_city_buildings.json
 
-  This file is found at: [data/json/overmap/multitile_city_buildings.json](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/json/overmap/multitile_city_buildings.json).
+  This file is found at: [data/json/overmap/multitile_city_buildings.json](https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/json/overmap/multitile_city_buildings.json).
 
   *Remember this file is for city buildings only, not specials*
 
@@ -434,7 +434,7 @@ I have a separate roof document at: [JSON_ROOF_MAPGEN.md](JSON_ROOF_MAPGEN.md).
 
 #### Linking and spawning specials:
 
-Put the entry in: [data/json/overmap/overmap_special/specials.json](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/json/overmap/overmap_special/specials.json).
+Put the entry in: [data/json/overmap/overmap_special/specials.json](https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/json/overmap/overmap_special/specials.json).
 
 This entry does the job of both the regional_map_settings and multitile_city_buildings plus other fun overmap stuff.
 
@@ -474,13 +474,13 @@ Example:
   6. `"city_distance"`, `"city_sizes"` both are parameters for where this spawns in relation to cities.
   7. `"occurrences": [ 0, 1 ],`:  Ok so occurrences can mean two things depending on if it uses the "UNIQUE" flag or not.   When the flag is absent, this simply translates to how many times this special can spawn PER overmap.  So 0 to 1 in this case.
         If you use the UNIQUE flag, this becomes a percentage so [ 1, 10 ] wouldn't be 1 to 10 times per overmap but a 1 in 10% chance to spawn on the overmap.  So 10% chance to spawn once per overmap.
-  8. `"flags"`: These are flags you can use to further define the special.  For a list of flags see: [JSON_FLAGS.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/JSON_FLAGS.md).
+  8. `"flags"`: These are flags you can use to further define the special.  For a list of flags see: [JSON_FLAGS.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/JSON_FLAGS.md).
 
-Read: [OVERMAP.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/OVERMAP.md) for more details.
+Read: [OVERMAP.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/OVERMAP.md) for more details.
 
 #### Overmap_terrain entries:
 
-Choose a file for your building type at: [data/json/overmap/overmap_terrain](https://github.com/CleverRaven/Cataclysm-DDA/tree/master/data/json/overmap/overmap_terrain).
+Choose a file for your building type at: [data/json/overmap/overmap_terrain](https://github.com/theomgdev/Cataclysm-Signal/tree/master/data/json/overmap/overmap_terrain).
 
 This set of entries defines how your building will look on the overmap.  It supports copy-from.
 Example:
@@ -515,7 +515,7 @@ You need one entry per mapgen ID:
 7. `"mondensity"` sets the default monster density for this overmap tile.  You'll use this for general zombie spawns and reserve the mapgen monster entries for special spawns for that location (e.g. a pet store's pets).
 8. `"extend"` many of these flags will be used by NPCs in the future for their AI, try to add flags appropriate for your location.  Others further define the mapgen, like having sidewalks generate.
 
-For further information see: [Overmap Terrain section of doc/JSON/OVERMAP.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/OVERMAP.md#overmap-terrain).
+For further information see: [Overmap Terrain section of doc/JSON/OVERMAP.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/OVERMAP.md#overmap-terrain).
 
 #### Palettes:
 
@@ -597,9 +597,9 @@ Everything else will look like a series of object entries, for example the roof_
   }
   ```
 
-If you want to look at more complex palettes, the standard_domestic_palette in [data/json/mapgen_palettes/house_general_palette.json](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/json/mapgen_palettes/house_general_palette.json) is a good look at a palette designed to work across all CDDA houses.  It includes the loot spawns and accounts for most furniture that will be used in a house.  I also left a list of symbols open to be used in the mapgen file for specific location needs.
+If you want to look at more complex palettes, the standard_domestic_palette in [data/json/mapgen_palettes/house_general_palette.json](https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/json/mapgen_palettes/house_general_palette.json) is a good look at a palette designed to work across all Signal houses.  It includes the loot spawns and accounts for most furniture that will be used in a house.  I also left a list of symbols open to be used in the mapgen file for specific location needs.
 
-Finally, the series of house_w palettes at [data/json/mapgen_palettes/house_w_palette.json](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/json/mapgen_palettes/house_w_palette.json) are designed to work together for houses using nested mapgen.  There is a palette devoted to the foundation, another for the nests, and finally another one I've designed for domestic outdoor nested chunks.
+Finally, the series of house_w palettes at [data/json/mapgen_palettes/house_w_palette.json](https://github.com/theomgdev/Cataclysm-Signal/blob/master/data/json/mapgen_palettes/house_w_palette.json) are designed to work together for houses using nested mapgen.  There is a palette devoted to the foundation, another for the nests, and finally another one I've designed for domestic outdoor nested chunks.
 
 #### Final comments:
 

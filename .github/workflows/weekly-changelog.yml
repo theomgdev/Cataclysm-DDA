@@ -11,7 +11,7 @@ on:
 
 jobs:
   weekly-changelog:
-    if: github.repository == 'CleverRaven/Cataclysm-DDA'
+    if: github.repository == 'theomgdev/Cataclysm-Signal'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"

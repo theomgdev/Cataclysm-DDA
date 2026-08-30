@@ -1969,7 +1969,7 @@ int item::price_no_contents( bool practical, std::optional<int> price_override )
     if( is_filthy() ) {
         // Filthy items receieve a fixed price malus. This means common clothing ends up
         // with no value (it's *everywhere*), but valuable items retain most of their value.
-        // https://github.com/CleverRaven/Cataclysm-DDA/issues/49469
+        // issue #49469
         price = std::max( price - PRICE_FILTHY_MALUS, 0 );
     }
 

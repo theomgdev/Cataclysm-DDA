@@ -39,8 +39,8 @@ jobs:
       - name: Generate environmental variables
         id: generate_env_vars
         run: |
-          echo "tag_name=cdda-experimental-${STEPS_GET_TIMESTAMP_OUTPUTS_TIME}" >> $GITHUB_OUTPUT
-          echo "release_name=Cataclysm-DDA experimental build ${STEPS_GET_TIMESTAMP_OUTPUTS_TIME}" >> $GITHUB_OUTPUT
+          echo "tag_name=signal-experimental-${STEPS_GET_TIMESTAMP_OUTPUTS_TIME}" >> $GITHUB_OUTPUT
+          echo "release_name=Cataclysm-Signal experimental build ${STEPS_GET_TIMESTAMP_OUTPUTS_TIME}" >> $GITHUB_OUTPUT
         env:
           STEPS_GET_TIMESTAMP_OUTPUTS_TIME: ${{ steps.get-timestamp.outputs.time }}
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -205,7 +205,7 @@ jobs:
         if: matrix.tiles == 1
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: cdda-shaders
+          name: signal-shaders
           path: data/shaders
       - name: Mark shader artifacts fresh
         if: matrix.tiles == 1
@@ -448,7 +448,7 @@ jobs:
           make -j$((`nproc`+0))
           cp LICENSE ${{ github.workspace }}/LICENSE-libbacktrace.txt
           sudo make install
-      - name: Build CDDA (linux)
+      - name: Build Signal (linux)
         if: runner.os == 'Linux' && matrix.android == 'none' && !matrix.wasm
         run: |
           if [ "${{ matrix.tiles }}" = "1" ]; then
@@ -456,14 +456,14 @@ jobs:
             export LD_LIBRARY_PATH="$RUNNER_WORKSPACE/sdl3_prefix/lib:$RUNNER_WORKSPACE/sdl3_prefix/lib/x86_64-linux-gnu"
           fi
           make COMPILER=clang++-18 -j$((`nproc`+0)) TILES=${{ matrix.tiles }} SOUND=${{ matrix.sound }} RELEASE=1 LOCALIZE=1 LANGUAGES=all BACKTRACE=1 LIBBACKTRACE=${{ matrix.libbacktrace }} WARN_STALE_DATA=1 PCH=0 bindist
-          mv cataclysmdda-0.J.tar.gz cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.tar.gz
-      - name: Build CDDA (WebAssembly)
+          mv cataclysm-signal-0.J.tar.gz signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.tar.gz
+      - name: Build Signal (WebAssembly)
         if: matrix.wasm && success()
         run: |
           ./build-scripts/build-emscripten.sh
           ./build-scripts/prepare-web.sh
-          (cd build && zip ../cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.${{ matrix.ext }} *)
-      - name: Build CDDA (windows msvc)
+          (cd build && zip ../signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.${{ matrix.ext }} *)
+      - name: Build Signal (windows msvc)
         if: runner.os == 'Windows' && matrix.tiles == 1
         env:
           BACKTRACE: 1
@@ -472,13 +472,13 @@ jobs:
         run: |
           msbuild -m -p:Configuration=Release -p:Platform=${{ matrix.arch }} "-target:Cataclysm-vcpkg-static;JsonFormatter-vcpkg-static;zzip" msvc-full-features\Cataclysm-vcpkg-static.sln
           .\build-scripts\windist.ps1
-          mv cataclysmdda-0.J.zip cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.zip
-      - name: Build CDDA (osx, curses)
+          mv cataclysm-signal-0.J.zip signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.zip
+      - name: Build Signal (osx, curses)
         if: runner.os == 'macOS' && matrix.tiles != 1
         run: |
           make -j3 TILES=${{ matrix.tiles }} SOUND=${{ matrix.sound }} RELEASE=1 LOCALIZE=1 LANGUAGES=all BACKTRACE=0 PCH=0 USE_HOME_DIR=1 UNIVERSAL_BINARY=1 WARN_STALE_DATA=1 dmgdist
-          mv Cataclysm.dmg cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.dmg
-      - name: Build CDDA (osx, tiles)
+          mv Cataclysm.dmg signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.dmg
+      - name: Build Signal (osx, tiles)
         if: runner.os == 'macOS' && matrix.tiles == 1
         env:
           PKG_CONFIG_PATH: ${{ runner.workspace }}/sdl3_prefix/lib/pkgconfig:/opt/local/lib/pkgconfig
@@ -494,7 +494,7 @@ jobs:
               echo "ERROR: libmpg123 dylib missing from app bundle Resources" >&2
               exit 1
           fi
-          mv Cataclysm.dmg cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.dmg
+          mv Cataclysm.dmg signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.dmg
       - name: Set up JDK (android)
         if: runner.os == 'Linux' && matrix.android != 'none'
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
@@ -506,7 +506,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install gettext          
-      - name: Build CDDA (android)
+      - name: Build Signal (android)
         if: runner.os == 'Linux' && matrix.android != 'none'
         working-directory: ./android
         run: |
@@ -519,11 +519,11 @@ jobs:
           if [ ${{ matrix.android }} = arm64 ]
           then
                ./gradlew -Pj=$((`nproc`+0)) -Pabi_arm_32=false assembleExperimentalRelease
-               mv ./app/build/outputs/apk/experimental/release/*.apk ../cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.apk
+               mv ./app/build/outputs/apk/experimental/release/*.apk ../signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.apk
           elif [ ${{ matrix.android }} = arm32 ]
           then
                ./gradlew -Pj=$((`nproc`+0)) -Pabi_arm_64=false assembleExperimentalRelease
-               mv ./app/build/outputs/apk/experimental/release/*.apk ../cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.apk 
+               mv ./app/build/outputs/apk/experimental/release/*.apk ../signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.apk 
           fi
       - run: |
-          gh release upload cdda-experimental-${{ needs.release.outputs.timestamp }} cdda-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.${{ matrix.ext }}
+          gh release upload signal-experimental-${{ needs.release.outputs.timestamp }} signal-${{ matrix.artifact }}-${{ needs.release.outputs.timestamp }}.${{ matrix.ext }}

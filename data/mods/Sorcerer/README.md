@@ -14,7 +14,7 @@ Inspired by Pathfinder and Dungeons and Dragons.
 Please note that the code inside the folder generated_code is auto generated and should not be edited manually. Instead, use the python script in tools. You might have to adjust the paths used before you run them.<br>
 generated_code/spell_data_dump.txt contains data for all spells found and generated. You can copy that data into tools/spell_data.txt to edit properties of spells, disable spells, register sorcerer-specific spells, or manually alter the spell level of the spell.<br>
 I have not yet figured out a way to auto format the generated code, so you will have to deal with that yourself.<br>
-Note that while tools/spell_data.txt contains json data, it is a .txt file. This is to make sure CDDA doesn't confuse it for something it should be reading. The json is read by tools/generate_spell_levels.py.<br>
+Note that while tools/spell_data.txt contains json data, it is a .txt file. This is to make sure Signal doesn't confuse it for something it should be reading. The json is read by tools/generate_spell_levels.py.<br>
 Bloodline-specific stuff should if practical go into the bloodlines folders, either in an .json named after the bloodline, or in a folder with the same name. The exception is code for when you first pick the bloodline, which is currently located in pick_bloodline.json.
 
 ## Balancing

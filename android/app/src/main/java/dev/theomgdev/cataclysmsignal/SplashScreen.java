@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package dev.theomgdev.cataclysmsignal;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,7 +36,7 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.cleverraven.cataclysmdda.CataclysmDDA_Helpers;
+import dev.theomgdev.cataclysmsignal.CataclysmSignal_Helpers;
 
 public class SplashScreen extends Activity {
     private static final String TAG = "Splash";
@@ -121,7 +121,7 @@ public class SplashScreen extends Activity {
         super.onResume();
 
         Context context = getApplicationContext();
-        String service_names = CataclysmDDA_Helpers.getEnabledAccessibilityServiceNames(context);
+        String service_names = CataclysmSignal_Helpers.getEnabledAccessibilityServiceNames(context);
         accessibilityServicesAlert.setMessage( String.format( getString(R.string.accessibilityServicesMessage), service_names ) );
         if (!service_names.isEmpty()) {
             accessibilityServicesAlert.show();
@@ -173,7 +173,7 @@ public class SplashScreen extends Activity {
             })
             .setNegativeButton(getString(R.string.ignoreFalsePostives), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        CataclysmDDA_Helpers.saveAccessibilityServiceInfoFalsePositives(getApplicationContext());
+                        CataclysmSignal_Helpers.saveAccessibilityServiceInfoFalsePositives(getApplicationContext());
                         SplashScreen.this.installOrRun();
                         return;
                     }
@@ -216,7 +216,7 @@ public class SplashScreen extends Activity {
     private final class StartGameRunnable implements Runnable {
         @Override
         public void run() {
-            Intent intent = new Intent(SplashScreen.this, CataclysmDDA.class);
+            Intent intent = new Intent(SplashScreen.this, CataclysmSignal.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             startActivity(intent);
             finish();
@@ -278,7 +278,7 @@ public class SplashScreen extends Activity {
                 .setPositiveButton(getString(R.string.startGame), new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("Software rendering", SplashScreen.this.mSettingsValues[0]).commit();
-                        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(CataclysmDDA.PREF_SYSTEM_UI_MODE, getSelectedSystemUiMode()).commit();
+                        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString(CataclysmSignal.PREF_SYSTEM_UI_MODE, getSelectedSystemUiMode()).commit();
                         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("Trap Back button", SplashScreen.this.mSettingsValues[1]).commit();
                         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean("Native Android UI", SplashScreen.this.mSettingsValues[2]).commit();
                         SplashScreen.this.startGameActivity(false);
@@ -300,14 +300,14 @@ public class SplashScreen extends Activity {
             SplashScreen.this.mSettingsValues[2] = preferences.getBoolean("Native Android UI", true);
 
             String mode;
-            if (preferences.contains(CataclysmDDA.PREF_SYSTEM_UI_MODE)) {
+            if (preferences.contains(CataclysmSignal.PREF_SYSTEM_UI_MODE)) {
                 mode = preferences.getString(
-                    CataclysmDDA.PREF_SYSTEM_UI_MODE,
-                    CataclysmDDA.SYSTEM_UI_MODE_SYSTEM_BARS);
+                    CataclysmSignal.PREF_SYSTEM_UI_MODE,
+                    CataclysmSignal.SYSTEM_UI_MODE_SYSTEM_BARS);
             } else {
-                mode = preferences.getBoolean(CataclysmDDA.PREF_FORCE_FULLSCREEN, false)
-                    ? CataclysmDDA.SYSTEM_UI_MODE_EDGE_TO_EDGE
-                    : CataclysmDDA.SYSTEM_UI_MODE_SYSTEM_BARS;
+                mode = preferences.getBoolean(CataclysmSignal.PREF_FORCE_FULLSCREEN, false)
+                    ? CataclysmSignal.SYSTEM_UI_MODE_EDGE_TO_EDGE
+                    : CataclysmSignal.SYSTEM_UI_MODE_SYSTEM_BARS;
             }
             SplashScreen.this.mSystemUiModeIndex = systemUiModeIndex(mode);
         }
@@ -376,18 +376,18 @@ public class SplashScreen extends Activity {
         private String getSelectedSystemUiMode() {
             switch (mSystemUiModeIndex) {
                 case 1:
-                    return CataclysmDDA.SYSTEM_UI_MODE_FULLSCREEN;
+                    return CataclysmSignal.SYSTEM_UI_MODE_FULLSCREEN;
                 case 2:
-                    return CataclysmDDA.SYSTEM_UI_MODE_EDGE_TO_EDGE;
+                    return CataclysmSignal.SYSTEM_UI_MODE_EDGE_TO_EDGE;
                 default:
-                    return CataclysmDDA.SYSTEM_UI_MODE_SYSTEM_BARS;
+                    return CataclysmSignal.SYSTEM_UI_MODE_SYSTEM_BARS;
             }
         }
 
         private int systemUiModeIndex(String mode) {
-            if (CataclysmDDA.SYSTEM_UI_MODE_FULLSCREEN.equals(mode)) {
+            if (CataclysmSignal.SYSTEM_UI_MODE_FULLSCREEN.equals(mode)) {
                 return 1;
-            } else if (CataclysmDDA.SYSTEM_UI_MODE_EDGE_TO_EDGE.equals(mode)) {
+            } else if (CataclysmSignal.SYSTEM_UI_MODE_EDGE_TO_EDGE.equals(mode)) {
                 return 2;
             }
             return 0;

@@ -3,7 +3,7 @@
 The purpose of this document is to explain the JSON interface that is used by the game, and how to interact with it.
 It covers what it is used for, how to use it, and best practices in using it.
 
-Unlike many other programs Cataclysm: DDA uses a large amount (~half a million lines) of hand-written and read JSON.
+Unlike many other programs Cataclysm: Signal uses a large amount (~half a million lines) of hand-written and read JSON.
 While there is JSON that is only generated and read by the game itself, the amount of hand-written JSON means that care must be given to how the JSON is structured to facilitate development.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->

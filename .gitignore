@@ -74,7 +74,7 @@ cata_test-tiles
 cataclysm
 *cataclysm-tiles
 cataclysm-vcpkg
-cataclysmdda-*
+cataclysm-signal-*
 chkjson*
 debug.log
 logg.txt
@@ -84,7 +84,7 @@ zzip
 
 # Visual Studio files
 *.code-workspace
-!Cataclysm-DDA.code-workspace
+!Cataclysm-Signal.code-workspace
 *.exp
 *.ilk
 *.opensdf

@@ -46,7 +46,7 @@ following C++17 features are not supported widely enough for us to use:
 * Parallel algorithms and execution policies.
 * Hardware interference size.
 * File system library (note, we already have a backported version of the
-  filesystem library bundled with CDDA, so that can be used instead).
+  filesystem library bundled with Signal, so that can be used instead).
 * Polymorphic memory resources.
 * Mathematical special functions.
 * Elementary string conversions for floating point.

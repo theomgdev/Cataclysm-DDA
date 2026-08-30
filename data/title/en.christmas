@@ -1,4 +1,4 @@
-# The ASCII art must be 18 lines in height (6 lines per ascii art text line).
+# The ASCII art must be a multiple of 6 lines in height (6 lines per text line).
 # Max length of a line is 80 characters; the following line is for reference.
 ################################################################################
 <color_light_cyan>   _________            __                   .__                                
@@ -13,9 +13,9 @@
 <color_red>    /        \/ __ \|   |  \  |  / __ \_ \     \___|  |__/ __ \|  |  /\___ \    
 <color_red>   /_______  (____  /___|  /__| (____  /  \______  /____(____  /____//____  >   
 <color_red>           \/     \/     \/          \/          \/          \/           \/    
-<color_light_blue>                     _____   .__                         .___                   
-<color_light_blue>                    /  _  \  |  |__    ____  _____     __| _/                   
-<color_light_blue>                   /  /_\  \ |  |  \ _/ __ \ \__  \   / __ |                    
-<color_light_blue>                  /    |    \|   Y  \\  ___/  / __ \_/ /_/ |                    
-<color_light_blue>                  \____|__  /|___|  / \___  >(____  /\____ |                    
-<color_light_blue>                          \/      \/      \/      \/      \/                    
+<color_light_blue>                     _________.__                         .__                   
+<color_light_blue>                    /   _____/|__|  ____    ____  _____   |  |                  
+<color_light_blue>                    \_____  \ |  | / ___\  /    \ \__  \  |  |                  
+<color_light_blue>                    /        \|  |/ /_/  >|   |  \ / __ \_|  |__                
+<color_light_blue>                   /_______  /|__|\___  / |___|  /(____  /|____/                
+<color_light_blue>                           \/    /_____/       \/      \/                       

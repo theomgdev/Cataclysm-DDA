@@ -51,7 +51,7 @@
 
 # Sidebar Modification
 
-Most of the main CDDA sidebar is now moddable, meaning it is data-driven and can be customized
+Most of the main Signal sidebar is now moddable, meaning it is data-driven and can be customized
 simply by editing JSON files, without recompiling the game.
 
 From the in-game Sidebar Options menu `}`, select the "custom" layout to switch to a basic moddable

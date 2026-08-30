@@ -231,7 +231,7 @@ void printVersionMessage()
     const bool hasSound = false;
 #endif
 
-    printf( "Cataclysm Dark Days Ahead: %s\n\n"
+    printf( "Cataclysm Signal: %s\n\n"
             "%ctiles, %csound\n\n"
             "data dir: %s\nuser dir: %s\n",
             getVersionString(),
@@ -304,7 +304,7 @@ cli_opts parse_commandline( int argc, const char **argv )
             },
             {
                 "--jsonverify", {},
-                "Checks the CDDA json files and exits",
+                "Checks the game json files and exits",
                 section_default,
                 0,
                 [&result]( int, const char ** ) -> int {
@@ -314,7 +314,7 @@ cli_opts parse_commandline( int argc, const char **argv )
             },
             {
                 "--check-mods", "[mod…]",
-                "Checks the json files belonging to given CDDA mod and exits",
+                "Checks the json files belonging to given game mod and exits",
                 section_default,
                 1,
                 [&result]( int n, const char **params ) -> int {

@@ -233,7 +233,7 @@ Use the `Home` key to return to the top.
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Introduction
-This document describes the contents of the json files used in Cataclysm: Dark Days Ahead. You are probably reading this if you want to add or change content of Cataclysm: Dark Days Ahead and need to learn more about what to find where and what each file and property does.
+This document describes the contents of the json files used in Cataclysm: Signal. You are probably reading this if you want to add or change content of Cataclysm: Signal and need to learn more about what to find where and what each file and property does.
 
 ## Overall structure
 The game data is distributed amongst many JSON files in `data`.  Most of the
@@ -357,7 +357,7 @@ to specify the id multiple times.
 # Navigating the JSON
 A lot of the JSON involves cross-references to other JSON entities.  To make it easier to navigate, we provide a script `tools/json_tools/cddatags.py` that can build a `tags` file for you.  This enables you to jump to the definition of an object given its id.
 
-To run the script you'll need Python 3.  On Windows you'll probably need to install that, and associate `.py` files with Python.  Then open a command prompt, navigate to your CDDA folder, and run `tools\json_tools\cddatags.py`.
+To run the script you'll need Python 3.  On Windows you'll probably need to install that, and associate `.py` files with Python.  Then open a command prompt, navigate to your Signal folder, and run `tools\json_tools\cddatags.py`.
 
 To use this feature your editor will need [ctags support](http://ctags.sourceforge.net/).  When that's working you should be able to easily jump to the definition of any entity.  For example, by positioning your cursor over an id and hitting the appropriate key combination.
 
@@ -365,7 +365,7 @@ To use this feature your editor will need [ctags support](http://ctags.sourcefor
 * In Notepad++ go to "Plugins" -> "Plugins Admin" and enable the "TagLEET" plugin.  Then select any id and press Alt+Space to open the references window.
 
 # Common field types
-This section describes some common features of formatting values in CDDA JSON files.
+This section describes some common features of formatting values in Signal JSON files.
 
 ## Units
 
@@ -462,7 +462,7 @@ Some objects may be non-translatable by default. For example, mutations, if `pla
 
 ## Comments
 
-JSON has no intrinsic support for comments.  However, by convention in CDDA
+JSON has no intrinsic support for comments.  However, by convention in Signal
 JSON, any field starting with `//` is a comment.
 
 ```jsonc

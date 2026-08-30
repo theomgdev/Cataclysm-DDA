@@ -1,4 +1,4 @@
-# The ASCII art must be 18 lines in height (6 lines per ascii art text line).
+# The ASCII art must be a multiple of 6 lines in height (6 lines per text line).
 # Max length of a line is 80 characters; the following line is for reference.
 ################################################################################
 <color_light_green>   _________            __                   .__                                
@@ -16,9 +16,9 @@
 <color_white>   | <color_yellow>(_<color_red>{;}<color_yellow>_)<color_white> || <color_green>(_ <color_yellow>(_)<color_green> _)<color_white>|  <color_light_blue>(_,_)<color_white>\  ||  <color_magenta>(_,_)<color_white>\  | |   |  \  `-'    /\    `-'  | 
 <color_white>   |  <color_yellow>(_,_)<color_white>  / \ <color_green>/  . \<color_white> /|  |    |  ||  |    |  | |   |   \       /  \       /  
 <color_white>   /_______.'   `<color_green>`-'`-'<color_white>' '--'    '--''--'    '--' '---'    `'-..-'    `-...-'   
-<color_green>                     _____   .__                         .___                   
-<color_green>                    /  _  \  |  |__    ____  _____     __| _/                   
-<color_green>                   /  /_\  \ |  |  \ _/ __ \ \__  \   / __ |                    
-<color_green>                  /    |    \|   Y  \\  ___/  / __ \_/ /_/ |                    
-<color_green>                  \____|__  /|___|  / \___  >(____  /\____ |                    
-<color_green>                          \/      \/      \/      \/      \/                    
+<color_green>                     _________.__                         .__                   
+<color_green>                    /   _____/|__|  ____    ____  _____   |  |                  
+<color_green>                    \_____  \ |  | / ___\  /    \ \__  \  |  |                  
+<color_green>                    /        \|  |/ /_/  >|   |  \ / __ \_|  |__                
+<color_green>                   /_______  /|__|\___  / |___|  /(____  /|____/                
+<color_green>                           \/    /_____/       \/      \/                       

@@ -16,7 +16,7 @@
 
 ## About this Page
 
-This is the Cataclysm: DDA design document.  It is meant for designer-end planning and goal unity for an open ended project.  It is not meant to be a user facing document!  In other words, **spoiler alert**.  Do not read this document if you have no intention of contributing to the project and do not want your play experience spoiled.
+This is the Cataclysm: Signal design document.  It is meant for designer-end planning and goal unity for an open ended project.  It is not meant to be a user facing document!  In other words, **spoiler alert**.  Do not read this document if you have no intention of contributing to the project and do not want your play experience spoiled.
 
 ### How to Understand the Design Docs
 
@@ -26,9 +26,9 @@ Pages flagged with "lore" in the title are a different beast.  These pages descr
 
 ## Design Overview
 
-Cataclysm: Dark Days Ahead DDA is a turn-based survival RPG set in an expansive post-apocalyptic game world based on our own. Explore, fight and survive against a broad variety of challenges, from zombies and otherworldly menaces to bad weather and wound infection.
+Cataclysm: Signal DDA is a turn-based survival RPG set in an expansive post-apocalyptic game world based on our own. Explore, fight and survive against a broad variety of challenges, from zombies and otherworldly menaces to bad weather and wound infection.
 
-The core tenet of Dark Days Ahead game design and balance is that if it works in reality, it should work in the game.  Scavenge and craft makeshift weapons, improvise shelter, outmaneuver enemies, find, repair and drive vehicles.  Deal with monsters using your brains, melee weapons, firearms, traps, explosives, other monsters, fire, and if all else fails, a truck or two.  This grounding results in sometimes unexpected inversions of gaming tropes, where storage capacity of clothing is more important than armor, or weight of highly effective gear outweighs its effectiveness.
+The core tenet of Signal game design and balance is that if it works in reality, it should work in the game.  Scavenge and craft makeshift weapons, improvise shelter, outmaneuver enemies, find, repair and drive vehicles.  Deal with monsters using your brains, melee weapons, firearms, traps, explosives, other monsters, fire, and if all else fails, a truck or two.  This grounding results in sometimes unexpected inversions of gaming tropes, where storage capacity of clothing is more important than armor, or weight of highly effective gear outweighs its effectiveness.
 
 Gameplay should focus on an open, unguided sandbox where the challenges presented to the player are believable within the game world and do not feel as if they were built just to be challenges.  The player should feel like an observer and influencer in a world that would continue to live and exist without their impact.  There are several modes of gameplay, from wandering the wastes and exploring ruins as a lone survivor or part of a small team, to vehicle design and base construction, to maintaining and growing a faction of fellow survivors.
 

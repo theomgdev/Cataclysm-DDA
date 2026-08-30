@@ -15,7 +15,7 @@
 
 # Compilation guide for 64-bit Windows (using MSYS2)
 
-This guide contains instructions for compiling Cataclysm-DDA on Windows under MSYS2. **PLEASE NOTE:** These instructions *are not intended* to produce a redistributable copy of CDDA. Please download the official builds from the website or [cross-compile from Linux](COMPILING.md#cross-compile-to-windows-from-linux) if that is your intention.
+This guide contains instructions for compiling Cataclysm-Signal on Windows under MSYS2. **PLEASE NOTE:** These instructions *are not intended* to produce a redistributable copy of Signal. Please download the official builds from the website or [cross-compile from Linux](COMPILING.md#cross-compile-to-windows-from-linux) if that is your intention.
 
 
 ## Prerequisites:
@@ -77,21 +77,21 @@ UCRT64 packages support is required.
 
 ## Cloning and compilation:
 
-1. Open MSYS2 and clone the Cataclysm-DDA repository:
+1. Open MSYS2 and clone the Cataclysm-Signal repository:
 
 ```bash
 cd /c/dev/
-git clone https://github.com/CleverRaven/Cataclysm-DDA.git ./Cataclysm-DDA
+git clone https://github.com/theomgdev/Cataclysm-Signal.git ./Cataclysm-Signal
 ```
 
-**Note:** This will download the entire CDDA repository and all of its history (3GB). If you're just testing, you should probably add `--depth=1` (~350MB).
+**Note:** This will download the entire Signal repository and all of its history (3GB). If you're just testing, you should probably add `--depth=1` (~350MB).
 
-**Note:** If you want to contribute to CDDA, see [example git workflow](../../CONTRIBUTING.md#example-workflow).
+**Note:** If you want to contribute to Signal, see [example git workflow](../../CONTRIBUTING.md#example-workflow).
 
 2. Compile with following command line:
 
 ```bash
-cd Cataclysm-DDA
+cd Cataclysm-Signal
 make -j$((`nproc`+0)) CCACHE=1 RELEASE=1 MSYS2=1 DYNAMIC_LINKING=1 TILES=1 SOUND=1 LOCALIZE=1 LANGUAGES=all LINTJSON=0 ASTYLE=0 TESTS=0
 ```
 

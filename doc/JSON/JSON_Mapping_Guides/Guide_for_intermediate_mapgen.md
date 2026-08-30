@@ -113,7 +113,7 @@ Note the ID is now `nested_mapgen_id` and the object uses a new entry `mapgensiz
 
 * `mapgensize`:  Nested mapgen can be any size from 1x1 to 24x24 but it must be square.  You don't have to use every row or column of the `rows` entry.  Any unused portions will fall back to the main mapgen.
 
-* `flags`:  More information about mapgen flags can be found in [doc/JSON/MAPGEN.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/MAPGEN.md#clearing-flags-for-layered-mapgens)
+* `flags`:  More information about mapgen flags can be found in [doc/JSON/MAPGEN.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/MAPGEN.md#clearing-flags-for-layered-mapgens)
 
 * `terrain` & `furniture`: If you don't want to overwrite existing terrain and furniture from the main mapgen you can use a combination of `t_null` and `f_null`. ` ` is `t_null` and `f_null` by default. For example in the above example, there's a green carpet in 1/2 the map and the rest picks up the floor of the mapgen (indoor concrete). `f_clear` can also be used to remove existing furniture without replacing it.
 
@@ -460,7 +460,7 @@ The main mapgen and spawning your trap:
 
 **Merged maps**
 
-A merged map is json that has grouped several OMTs together within one mapgen entry.  There is no size limit but you should do your best to keep the json readable, so break it up into manageable segments.  3 OMTs together left to right is 72 tiles, and fits easily inside CDDA's preference for no more than 100 columns per line, but some people do as many as 5 OMTs together.  More than 5 OMTs together left to right can be hard to read on smaller screens and should be avoided.  The same logic applies for vertical grouping: 2-3 OMTs fit easily on most screens, but more than that can be hard to read.
+A merged map is json that has grouped several OMTs together within one mapgen entry.  There is no size limit but you should do your best to keep the json readable, so break it up into manageable segments.  3 OMTs together left to right is 72 tiles, and fits easily inside Signal's preference for no more than 100 columns per line, but some people do as many as 5 OMTs together.  More than 5 OMTs together left to right can be hard to read on smaller screens and should be avoided.  The same logic applies for vertical grouping: 2-3 OMTs fit easily on most screens, but more than that can be hard to read.
 
 You can insert existing OMT's into your merged map including forest, field, swamp and water tiles.  Generic tiles like forests don't need to be added in your mapgen file, they will be called in the specials.json or multitile_city_buildings entry.
 
@@ -599,7 +599,7 @@ An example:  each x coordinate encompasses one OMT from a segment of the mall.
 
 * Nested maps of all sorts can be used in a merged map, but they can't cross boundary lines (the nested map will be cut off at the boundary).
 
-* More information about monster spawning can be found in [doc/JSON/MAPGEN.md](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/doc/JSON/MAPGEN.md#spawn-item-or-monster-groups-with-place_groups)
+* More information about monster spawning can be found in [doc/JSON/MAPGEN.md](https://github.com/theomgdev/Cataclysm-Signal/blob/master/doc/JSON/MAPGEN.md#spawn-item-or-monster-groups-with-place_groups)
 
 Note: set point type entries (see the example below) don't work well with merged maps and the issue has been reported.  If you use this entry, the points will be repeated in every OMT in your merged map.
 

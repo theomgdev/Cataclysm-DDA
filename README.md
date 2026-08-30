@@ -2,129 +2,57 @@
 
 [![follows Keel](https://img.shields.io/badge/follows-Keel-1f6feb)](https://github.com/theomgdev/keel)
 
-A survival roguelike built on Cataclysm: Dark Days Ahead, where LLM-assisted
-contributions are welcome under one rule that gives the project its name: signal
-over noise. Add up everything you write for a change — commit message, pull
-request, comments, markdown — and it has to come out shorter than the code it
-describes. Two lines of code do not get twenty lines of explanation.
-[`AGENTS.md`](AGENTS.md) is the whole of it, and it is short.
+<sub>A fork of Cataclysm: Dark Days Ahead, under the same CC BY-SA 3.0 license.</sub>
 
-Signal tracks the original game closely and builds its own things on top —
-performance work so far, content and mechanics of its own as it goes. Nothing
-from here goes back the other way as a pull request; that project does not
-accept LLM-assisted work, and it is their call to make.
-
-Everything below is the original Cataclysm: Dark Days Ahead README, unchanged.
-
----
-
-# Cataclysm: Dark Days Ahead
-
-Cataclysm: Dark Days Ahead is a turn-based survival game set in a post-apocalyptic world. While some have described it as a "zombie game", there is far more to Cataclysm than that. Struggle to survive in a harsh, persistent, procedurally generated world. Scavenge the remnants of a dead civilization for food, equipment, or, if you are lucky, a vehicle with a full tank of gas to get you the hell out of Dodge. Fight to defeat or escape from a wide variety of powerful monstrosities, from zombies to giant insects to killer robots and things far stranger and deadlier, and against the others like yourself, who want what you have...
+Cataclysm: Signal is a turn-based survival game set in a post-apocalyptic world.
+While some have described it as a "zombie game", there is far more to it than
+that. Struggle to survive in a harsh, persistent, procedurally generated world.
+Scavenge the remnants of a dead civilization for food, equipment, or, if you are
+lucky, a vehicle with a full tank of gas to get you the hell out of Dodge. Fight
+to defeat or escape from a wide variety of powerful monstrosities, from zombies
+to giant insects to killer robots and things far stranger and deadlier, and
+against the others like yourself, who want what you have.
 
 <p align="center">
     <img src="./data/screenshots/ultica-showcase-sep-2021.png" alt="Tileset: Ultica">
 </p>
 
-## Downloads
+## What makes this one different
 
-**Releases** - [Stable](https://cataclysmdda.org/releases/) | [Experimental](https://cataclysmdda.org/experimental/)
+LLM-assisted contributions are welcome here, under one rule that gives the
+project its name: signal over noise. Add up everything you write for a change —
+commit message, pull request, comments, markdown — and it has to come out
+shorter than the code it describes. Two lines of code do not get twenty lines of
+explanation. Read the same ratio along the time axis and it becomes value over
+time, so an hour spent re-deriving something already known is noise as well.
 
-**Source** - The source can be downloaded as a [.zip archive](https://github.com/CleverRaven/Cataclysm-DDA/archive/master.zip), or cloned from our [GitHub repo](https://github.com/CleverRaven/Cataclysm-DDA/).
+[`AGENTS.md`](AGENTS.md) is the whole working agreement, and it is short. Read it
+before you open a pull request, whether you are a person or a model.
 
-[![General build matrix](https://github.com/CleverRaven/Cataclysm-DDA/actions/workflows/matrix.yml/badge.svg)](https://github.com/CleverRaven/Cataclysm-DDA/actions/workflows/matrix.yml)
-[![Coverage Status](https://coveralls.io/repos/github/CleverRaven/Cataclysm-DDA/badge.svg?branch=master)](https://coveralls.io/github/CleverRaven/Cataclysm-DDA?branch=master)
-[![Open Source Helpers](https://www.codetriage.com/cleverraven/cataclysm-dda/badges/users.svg)](https://www.codetriage.com/cleverraven/cataclysm-dda)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/CleverRaven/Cataclysm-DDA)](https://github.com/CleverRaven/Cataclysm-DDA/graphs/contributors)
-[![Lines of Code](https://tokei.rs/b1/github/CleverRaven/Cataclysm-DDA?category=code)](https://github.com/XAMPPRocky/tokei)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/CleverRaven/Cataclysm-DDA)](https://www.tickgit.com/browse?repo=github.com/CleverRaven/Cataclysm-DDA)
+Work so far has gone into performance — the crafting menu and zone auto-sort near
+large item piles — with content and mechanics of its own to follow. The game is
+single-threaded by design and runs on everything from a phone to a desktop, so
+speed here means removing wasted work, never adding parallelism.
 
-### Packaging status
+## Building
 
-#### Arch Linux
+[COMPILING.md](doc/c++/COMPILING.md) covers general information and recipes for
+Linux, OS X, Windows and BSD, and [COMPILER_SUPPORT.md](doc/c++/COMPILER_SUPPORT.md)
+lists which compilers are supported. There are also focused guides for
+[MSYS2](doc/c++/COMPILING-MSYS.md), [vcpkg](doc/c++/COMPILING-VS-VCPKG.md) and
+[cmake](doc/c++/COMPILING-CMAKE.md), and more in [doc/](doc/).
 
-Ncurses and tiles versions are available in the [community repos](https://www.archlinux.org/packages/?q=cataclysm-dda).
+## Contributing
 
-```sh
-sudo pacman -S cataclysm-dda
-sudo pacman -S cataclysm-dda-tiles
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get a change in, and
+[AGENTS.md](AGENTS.md) for what a good change looks like. Bugs and suggestions
+go to [the issue tracker](https://github.com/theomgdev/Cataclysm-Signal/issues).
 
-#### Fedora
+## License
 
-Ncurses and tiles versions are available in the [official repos](https://src.fedoraproject.org/rpms/cataclysm-dda).
-
-```sh
-sudo dnf install cataclysm-dda
-```
-
-#### Debian / Ubuntu
-
-Ncurses and tiles versions are available in the [official repos](https://tracker.debian.org/pkg/cataclysm-dda).
-
-```sh
-sudo apt install cataclysm-dda-curses cataclysm-dda-sdl
-```
-
-#### Flatpak
-
-Download from [Flathub](https://flathub.org/apps/org.cataclysmdda.CataclysmDDA).
-
-## Compile
-
-Please read [COMPILING.md](doc/c++/COMPILING.md) - it covers general information and more specific recipes for Linux, OS X, Windows and BSD. See [COMPILER_SUPPORT.md](doc/c++/COMPILER_SUPPORT.md) for details on which compilers we support. And you can always dig for more information in [doc/](https://github.com/CleverRaven/Cataclysm-DDA/tree/master/doc).
-
-We also have the following build guides:
-* Building on Windows with `MSYS2` at [COMPILING-MSYS.md](doc/c++/COMPILING-MSYS.md)
-* Building on Windows with `vcpkg` at [COMPILING-VS-VCPKG.md](doc/c++/COMPILING-VS-VCPKG.md)
-* Building with `cmake` at [COMPILING-CMAKE.md](doc/c++/COMPILING-CMAKE.md)  (*unofficial guide*)
-
-## Contribute
-
-Cataclysm: Dark Days Ahead is the result of contributions from over 1000 volunteers under the Creative Commons Attribution ShareAlike 3.0 license. The code and content of the game is free to use, modify, and redistribute for any purpose whatsoever. See https://creativecommons.org/licenses/by-sa/3.0/ for details.
-Some code distributed with the project is not part of the project and is released under different software licenses; the files covered by different software licenses have their own license notices.
-
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
-Special thanks to the contributors, including but not limited to, people below:
-<a href="https://github.com/cleverraven/cataclysm-dda/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cleverraven/cataclysm-dda" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
-## Community
-
-Forums:
-https://discourse.cataclysmdda.org
-
-GitHub repo:
-https://github.com/CleverRaven/Cataclysm-DDA
-
-IRC:
-`#CataclysmDDA` on [Libera Chat](https://libera.chat), https://web.libera.chat/#CataclysmDDA
-
-Official Discord:
-https://discord.gg/jFEc7Yp
-
-## Frequently Asked Questions
-
-#### Is there a tutorial?
-
-Yes, you can find the tutorial in the **Special** menu at the main menu (be aware that due to many code changes the tutorial may not function). You can also access documentation in-game via the `?` key.
-
-#### How can I change the key bindings?
-
-Press the `?` key, followed by the `1` key to see the full list of key commands. Press the `+` key to add a key binding, select which action with the corresponding letter key `a-w`, and then the key you wish to assign to that action.
-
-#### How can I start a new world?
-
-**World** on the main menu will generate a fresh world for you. Select **Create World**.
-
-#### I've found a bug. What should I do?
-
-Please submit an issue on [our GitHub page](https://github.com/CleverRaven/Cataclysm-DDA/issues/) using [bug report template](https://github.com/CleverRaven/Cataclysm-DDA/issues/new?template=bug_report.yaml). If you're not able to, send an email to `kevin.granade@gmail.com`.
-
-#### I would like to make a suggestion. What should I do?
-
-Please submit an issue on [our GitHub page](https://github.com/CleverRaven/Cataclysm-DDA/issues/) using [feature request template](https://github.com/CleverRaven/Cataclysm-DDA/issues/new?template=feature_request.yaml).
+The code and content are released under the Creative Commons Attribution
+ShareAlike 3.0 license, free to use, modify and redistribute for any purpose;
+see https://creativecommons.org/licenses/by-sa/3.0/ for details. Some code
+distributed with the project is not part of it and carries its own license
+notice. The game this one is built on is the work of over a thousand volunteers,
+and that work is here under the same terms.

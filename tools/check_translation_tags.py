@@ -257,9 +257,9 @@ def check_po_file(input_path):
 def main(locale_list):
     """Main function."""
 
-    if not pathlib.Path(".").cwd().match("Cataclysm-DDA/"):
+    if not pathlib.Path(".").cwd().match("Cataclysm-Signal/"):
         print("You must run the script from"
-              " the root directory 'Cataclysm-DDA/'")
+              " the root directory 'Cataclysm-Signal/'")
         return
 
     if locale_list:

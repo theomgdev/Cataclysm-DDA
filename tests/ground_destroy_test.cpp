@@ -16,7 +16,7 @@
 
 // Destroying pavement with a pickaxe should not leave t_flat_roof.
 // See issue #24707:
-// https://github.com/CleverRaven/Cataclysm-DDA/issues/24707
+// issue #24707
 TEST_CASE( "pavement_destroy", "[.]" )
 {
     const ter_id flat_roof_id = ter_id( "t_flat_roof" );
@@ -39,7 +39,7 @@ TEST_CASE( "pavement_destroy", "[.]" )
 
 // Ground-destroying explosions on dirt or grass shouldn't leave t_flat_roof.
 // See issue #23250:
-// https://github.com/CleverRaven/Cataclysm-DDA/issues/23250
+// issue #23250
 TEST_CASE( "explosion_on_ground", "[.]" )
 {
     ter_id flat_roof_id = ter_id( "t_flat_roof" );

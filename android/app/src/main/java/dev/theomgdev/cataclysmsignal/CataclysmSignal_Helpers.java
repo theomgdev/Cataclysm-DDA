@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package dev.theomgdev.cataclysmsignal;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +13,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
-public class CataclysmDDA_Helpers {
+public class CataclysmSignal_Helpers {
     public static List<AccessibilityServiceInfo> getEnabledAccessibilityServiceInfo(Context context) {
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         List<AccessibilityServiceInfo> enabledServicesInfo = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);

@@ -28,17 +28,13 @@ Debate sidesteps all the nasty problems around deciding who gets to vote and enf
 
 A good **reason** to make a change has more impact than any number of votes. A lot of the issues in this thread are good examples of this
 
-The project is run by Kevin Granade (“owns” the project, final say on features), a small group of core developers who review and merge changes, and a much larger group of contributors who make pull requests on GitHub. There are also translators who are effectively independent and a handful of people with moderation rights on the forums and Discord. Mod authors who host their own mods are also independent.
+The project is run by Cahit Karahan, who has the final say on features, with contributors making pull requests on GitHub. Mod authors who host their own mods are independent.
 
 While we (the core contributors) ask for feedback and discuss issues on the forums pretty regularly, we aren’t asking for a vote or community consensus, just feedback and discussion.
 
 Places where votes and popular support are important are which parts of the game are in most need of bugfixes or new features, sometimes a dev (Kevin included) finds themselves between projects and is just looking for something to improve, that’s when making it clear what needs improvement the most can make things happen.
 
 **Steam, other app stores: not opposed, but we aren’t doing it or endorsing it either.**
-
-Regarding Steam, this [Steam Store page](https://store.steampowered.com/app/2330750/Cataclysm_Dark_Days_Ahead/) respects the project license.
-
-The game is also available from the [Play Store](https://play.google.com/store/apps/details?id=com.cleverraven.cataclysmdda) for Android.
 
 In general, it’s just a ton of work for not that much benefit from the project’s point of view. If someone wants to integrate with some packaging system, they can feel free to PR it, but we're not generally going to be pursuing app store inclusion as a project priority.
 
@@ -68,7 +64,7 @@ Which brings me to the "soft" problems with multithreading. Say we do get good m
 
 Keeping DDA single threaded helps keep me (and the other developers) honest, because it narrows the gap between the best and worst systems available. It also narrows the gap within the userbase, including extreme cases where people are still on single or dual core CPUs.
 
-Finally there's the opportunity cost issue. For the effort of multithreading key parts of the game, we can put a hell of a lot of investment into more generally applicable optimization.  There's a hell of a lot of cache coherency and algorithmic optimization we have planned that we haven't gotten around to yet. Optimizing the code would result in some sophisticated and finely tuned code we have to maintain, but we don't have to worry about the rest of the code being hard to maintain. One very large optimization performed since this entry was added was [creature reachability zones](https://github.com/CleverRaven/Cataclysm-DDA/pull/69574). This is one sort of always-applicable optimization that does not require specific software or hardware support for multithreading.
+Finally there's the opportunity cost issue. For the effort of multithreading key parts of the game, we can put a hell of a lot of investment into more generally applicable optimization.  There's a hell of a lot of cache coherency and algorithmic optimization we have planned that we haven't gotten around to yet. Optimizing the code would result in some sophisticated and finely tuned code we have to maintain, but we don't have to worry about the rest of the code being hard to maintain. One very large optimization performed since this entry was added was [creature reachability zones](pull request #69574). This is one sort of always-applicable optimization that does not require specific software or hardware support for multithreading.
 
 That's the worst thing about multithreading IMO, as soon as you have multiple threads, you have to start worrying about thread safety throughout your code.
 
@@ -126,7 +122,7 @@ The presence of those major issues precludes removing the option, and the fact i
 
 
 ### Multiplayer
-This has come up [many times](https://discourse.cataclysmdda.org/search?q=multiplayer), and it simply can not be added to DDA.
+This has come up [many times](https://github.com/theomgdev/Cataclysm-Signal/search?q=multiplayer), and it simply can not be added to DDA.
 
 The game loop of DDA includes a large number of activities that pass a large amount of time with no or minimal player input.
 
@@ -193,7 +189,7 @@ But not now. Skill rust was changed over the years to be a **purely positive mec
 - Skills were divided into theoretical and practical levels, and a lot of functions were revisited to use the theoretical level, and increasing the practical level while having theory brings additional xp. Rust, meanwhile, is limited by only 1 ***practical*** level and grants even more free xp when restored;
 - Skills overall were made floats, which means the difference between skill level 3 and skill level 2.99 is only 0.01, not an entire 1 level;
 - The UI was changed to ensure the reptilian brain of ours will not associate skill rust with red numbers (because red = bad)
-and skill rust impact (and benefit) would be even stronger once [#67580](https://github.com/CleverRaven/Cataclysm-DDA/issues/67580) is implemented fully.
+and skill rust impact (and benefit) would be even stronger once [#67580](issue #67580) is implemented fully.
 This combined, the only way I can see someone wanting to remove skill rust is purely because of rumors from people not familiar with the changes, that are based themselves either on their outdated experience or from incorrect rumors they were told.
 - To further clarify, if someone uses a mod to remove skill rust their character will level skills slower than a character experiencing skill rust.
 
@@ -215,13 +211,13 @@ The absolute closest thing to an automatic weapon I’ve been able to come up wi
 
 At some point in the future we might build up tooling to the point where automatic weapons manufacture becomes feasible, at that point we can revisit this.
 
-For further discussion on the subject, see https://github.com/CleverRaven/Cataclysm-DDA/issues/10787
+For further discussion on the subject, see issue #10787
 
-Addendum, the Luty-pattern SMG, which should be craftable in DDA: https://github.com/CleverRaven/Cataclysm-DDA/issues/22688
+Addendum, the Luty-pattern SMG, which should be craftable in DDA: issue #22688
 
 #### Crafting Smokeless powder and primers: yes but needs work
 
-Crafting basic smokeless powder is mostly a long, finicky, and tedious process with a mild risk of the powder prematurely detonating.  Having the avatar craft is tricky, because it's something like 2 weeks of tedious tasks that take about an hour/day but can't be done faster, followed by a few hours of grinding nitroglycerin-soaked cotton into powder without exploding.  The current CDDA crafting system can neither handle the repeated soaking/washing cycle, nor the risk of catastrophic failure when grinding.  Upgrading the crafting system to handle those things would be possible, but no one is currently volunteering to do the work.
+Crafting basic smokeless powder is mostly a long, finicky, and tedious process with a mild risk of the powder prematurely detonating.  Having the avatar craft is tricky, because it's something like 2 weeks of tedious tasks that take about an hour/day but can't be done faster, followed by a few hours of grinding nitroglycerin-soaked cotton into powder without exploding.  The current Signal crafting system can neither handle the repeated soaking/washing cycle, nor the risk of catastrophic failure when grinding.  Upgrading the crafting system to handle those things would be possible, but no one is currently volunteering to do the work.
 
 As at alternate solution, faction camps have a mechanism to send an NPC off on a long and risky task, and have them either die or come back after the task is completed.  NPCs don't get bored doing tedious crafting tasks, and crafting recipes can be marked as NPC only.  Someone could write a gunpowder mill faction camp expansion and the associated recipes, and there's a good chance that it would be accepted into the game.
 
@@ -269,7 +265,7 @@ Spilled liquids are recoverable only if they are spilled on terrain with specifi
 
 #### Dual-wielding weapons: Not practical
 
-"Dual wielding" as in holding a pistol in each hand and firing both simultaneously is NOT going to be effective.  It will hopefully be added, but when it does it will be ludicrously ineffective because of penalties. The rationale for why this is so have been well-outlined already [here](https://discourse.cataclysmdda.org/t/dual-wield/1268) and there's no need or desire for further discussion. This will probably be represented in a very high rate of accumulation of recoil if you try to do this, most likely paired with an accuracy penalty.
+"Dual wielding" as in holding a pistol in each hand and firing both simultaneously is NOT going to be effective.  It will hopefully be added, but when it does it will be ludicrously ineffective because of penalties. The rationale for why this is so have been well-outlined already [here](https://github.com/theomgdev/Cataclysm-Signal/t/dual-wield/1268) and there's no need or desire for further discussion. This will probably be represented in a very high rate of accumulation of recoil if you try to do this, most likely paired with an accuracy penalty.
 
 Likewise, wielding and attacking with two melee weapons isn’t going to have any benefit over wielding a single melee weapon in both hands, either you’re going to be able to attack faster and deal more damage with the same weapon, or you’d be able to use a larger, more damaging weapon at the same speed and much more damage per strike. Attacking with one weapon and defending with another has a completely different set of trade-offs, and might be overall beneficial, especially if one of the items is very good at defending, like a shield.
 
@@ -416,7 +412,7 @@ Nota Bene, having a version of survivor mode with restrictions, a-la "you can't 
 
 #### The ability to select MP3s to play while listening to music: Too complicated
 
-CDDA runs across a wide variety of platforms, each of which has their own special code for finding files on the local filesystem.  They also each have their own way to play an MP3, and generally they have multiple ways to play an MP3.  Adding support for selecting MP3s to play from inside the game requires that CDDA present a way to browse the local filesystem to find the MP3 files and a way to play them.  This code would be different for each platform and for each MP3 player; supporting it would be a maintenance nightmare full of weird and obscure bugs.
+Signal runs across a wide variety of platforms, each of which has their own special code for finding files on the local filesystem.  They also each have their own way to play an MP3, and generally they have multiple ways to play an MP3.  Adding support for selecting MP3s to play from inside the game requires that Signal present a way to browse the local filesystem to find the MP3 files and a way to play them.  This code would be different for each platform and for each MP3 player; supporting it would be a maintenance nightmare full of weird and obscure bugs.
 
 It might be possible for a really talented developer to come up some way to specify MP3s and an MP3 player in a platform independent way that didn't involve dragging in a huge amount of strange libraries, but all of the attempts so far have been platform specific and required a huge amount of extra library code.
 
@@ -430,7 +426,7 @@ The suggestion is usually along the lines of, “add limbs to monsters so they c
 
 A similar suggestion is to allow the player to target specific monster body parts in order to achieve specific effects such as stunning with headshots or slowing by hitting the legs. A much simpler system is to have the player declare the effect they want rather than something indirect like targeting a limb, then we can be more flexible about how the attack plays out based on the combination of player abilities, weapon used, and monster type.
 
-For a better outline on what we DO want to do, see https://github.com/CleverRaven/Cataclysm-DDA/issues/1565
+For a better outline on what we DO want to do, see issue #1565
 
 #### Using zombie parts: mod only, mostly no
 
@@ -572,4 +568,4 @@ Just because there’s a contradiction i.e. “cordless drills and gunsmithing t
 
 This argument generally has a tenuous or non-existent relationship between the items in question. Frequently it’s an assertion that X is “complicated” and Y is either “simple” or “also complicated”, this is not sufficient for craftability of X to imply craftability of Y.
 
-Hoisted from a [topic where it came up again](https://discourse.cataclysmdda.org/t/i-cant-see-the-difference-between-firearm-and-gunsmith-repair-kits).
+Hoisted from a [topic where it came up again](https://github.com/theomgdev/Cataclysm-Signal/t/i-cant-see-the-difference-between-firearm-and-gunsmith-repair-kits).

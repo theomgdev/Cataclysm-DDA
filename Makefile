@@ -573,9 +573,9 @@ TOOL_CXXFLAGS = -DCATA_IN_TOOL
 DEFINES += -DZSTD_STATIC_LINKING_ONLY -DZSTD_DISABLE_ASM -DFMT_USE_LOCALE=0
 
 BINDIST_EXTRAS += README.md data doc LICENSE.txt LICENSE-OFL-Terminus-Font.txt VERSION.txt $(JSON_FORMATTER_BIN)
-BINDIST    = $(BUILD_PREFIX)cataclysmdda-$(VERSION).tar.gz
-W32BINDIST = $(BUILD_PREFIX)cataclysmdda-$(VERSION).zip
-BINDIST_CMD    = tar --transform=s@^$(BINDIST_DIR)@cataclysmdda-$(VERSION)@ -czvf $(BINDIST) $(BINDIST_DIR)
+BINDIST    = $(BUILD_PREFIX)cataclysm-signal-$(VERSION).tar.gz
+W32BINDIST = $(BUILD_PREFIX)cataclysm-signal-$(VERSION).zip
+BINDIST_CMD    = tar --transform=s@^$(BINDIST_DIR)@cataclysm-signal-$(VERSION)@ -czvf $(BINDIST) $(BINDIST_DIR)
 W32BINDIST_CMD = cd $(BINDIST_DIR) && zip -r ../$(W32BINDIST) * && cd $(BUILD_DIR)
 
 
@@ -663,7 +663,7 @@ ifeq ($(NATIVE), osx)
       endif
     endif
   endif
-  BINDIST_CMD = tar -s"@^$(BINDIST_DIR)@cataclysmdda-$(VERSION)@" -czvf $(BINDIST) $(BINDIST_DIR)
+  BINDIST_CMD = tar -s"@^$(BINDIST_DIR)@cataclysm-signal-$(VERSION)@" -czvf $(BINDIST) $(BINDIST_DIR)
 endif
 
 # Win32 (MinGW32 or MinGW-w64(32bit)?)
@@ -1290,7 +1290,7 @@ clean: clean-tests clean-lang
 	rm -rf *$(TARGET_NAME) *$(TILES_TARGET_NAME)
 	rm -rf *$(TILES_TARGET_NAME).exe *$(TARGET_NAME).exe *$(TARGET_NAME).a
 	rm -rf *obj *objwin
-	rm -rf *$(BINDIST_DIR) *cataclysmdda-*.tar.gz *cataclysmdda-*.zip
+	rm -rf *$(BINDIST_DIR) *cataclysm-signal-*.tar.gz *cataclysm-signal-*.zip
 	rm -f $(SRC_DIR)/version.h $(SRC_DIR)/prefix.h
 	rm -f $(CHKJSON_BIN)
 	rm -f $(TEST_MO)
@@ -1330,9 +1330,9 @@ install: version $(TARGET) $(ZZIP_BIN)
 	cp -R --no-preserve=ownership data/title $(DATA_PREFIX)
 ifeq ($(TILES), 1)
 	cp -R --no-preserve=ownership gfx $(DATA_PREFIX)
-	install -Dm755 -t $(SHARE_DIR)/applications/ data/xdg/org.cataclysmdda.CataclysmDDA.desktop
-	install -Dm644 -t $(SHARE_DIR)/metainfo/ data/xdg/org.cataclysmdda.CataclysmDDA.appdata.xml
-	install -Dm644 -t $(SHARE_DIR)/icons/hicolor/scalable/apps/ data/xdg/org.cataclysmdda.CataclysmDDA.svg
+	install -Dm755 -t $(SHARE_DIR)/applications/ data/xdg/dev.theomgdev.CataclysmSignal.desktop
+	install -Dm644 -t $(SHARE_DIR)/metainfo/ data/xdg/dev.theomgdev.CataclysmSignal.appdata.xml
+	install -Dm644 -t $(SHARE_DIR)/icons/hicolor/scalable/apps/ data/xdg/dev.theomgdev.CataclysmSignal.svg
 endif
 ifeq ($(SOUND), 1)
 	cp -R --no-preserve=ownership data/sound $(DATA_PREFIX)
@@ -1367,9 +1367,9 @@ install: version $(TARGET)
 	cp -R --no-preserve=ownership data/title $(DATA_PREFIX)
 ifeq ($(TILES), 1)
 	cp -R --no-preserve=ownership gfx $(DATA_PREFIX)
-	install -Dm755 -t $(SHARE_DIR)/applications/ data/xdg/org.cataclysmdda.CataclysmDDA.desktop
-	install -Dm644 -t $(SHARE_DIR)/metainfo/ data/xdg/org.cataclysmdda.CataclysmDDA.appdata.xml
-	install -Dm644 -t $(SHARE_DIR)/icons/hicolor/scalable/apps/ data/xdg/org.cataclysmdda.CataclysmDDA.svg
+	install -Dm755 -t $(SHARE_DIR)/applications/ data/xdg/dev.theomgdev.CataclysmSignal.desktop
+	install -Dm644 -t $(SHARE_DIR)/metainfo/ data/xdg/dev.theomgdev.CataclysmSignal.appdata.xml
+	install -Dm644 -t $(SHARE_DIR)/icons/hicolor/scalable/apps/ data/xdg/dev.theomgdev.CataclysmSignal.svg
 endif
 ifeq ($(SOUND), 1)
 	cp -R --no-preserve=ownership data/sound $(DATA_PREFIX)

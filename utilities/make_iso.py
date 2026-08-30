@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=C0103
 # pylint: disable=C0301
-"""Convert a Cataclysm-DDA tileset to isometric view.
+"""Convert a Cataclysm-Signal tileset to isometric view.
 Run this script with -h for full usage information.
 
 Examples:

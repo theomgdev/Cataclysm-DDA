@@ -1,7 +1,7 @@
 [
   {
     "type": "temperature_removal_blacklist",
-    "//": "Allows removal of active flag from items that had temperature tracking https://github.com/CleverRaven/Cataclysm-DDA/pull/63945",
+    "//": "Allows removal of active flag from items that had temperature tracking pull request #63945",
     "list": [
       "napkin",
       "cardboard",

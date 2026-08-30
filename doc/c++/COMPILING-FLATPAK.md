@@ -1,9 +1,6 @@
 # Compiling Flatpak
-The supplied flatpak manifest org.cataclysmdda.CataclysmDDA.json will
-download and build the latest release of Cataclysm-DDA.  An app built in
-this way should be available on flathub:
-
-  https://flathub.org/en/apps/org.cataclysmdda.CataclysmDDA
+The supplied flatpak manifest dev.theomgdev.CataclysmSignal.json will
+download and build the latest release of Cataclysm-Signal.
 
 Check the flatpak documentation at http://docs.flatpak.org for
 information on how to customize the manifest, build your own copies of

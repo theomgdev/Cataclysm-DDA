@@ -38,23 +38,23 @@
 # Lore - Technology in the Cataclysm
 
 #### Seriously, spoiler alert.
-CDDA tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please! All contents subject to change with project development.
+Signal tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please! All contents subject to change with project development.
 
 ## Summary
 Technology native to Cataclysm Earth should, except in specific situations, be *at a modern real life level*.  The design rationale for this is simple: it allows straightforward answers to questions about things like "is this idea reasonable", "how much ____ should this do", and more.  If it is possible in real life (and you can prove it), it's probably appropriate for Cataclysm.  Likewise, if it's not possible in real life, it is probably not possible in Cataclysm... the exceptions will be enumerated in this document.
 
 See [the timeline](./lore-background.md) for lore explanations of the divergent technology in this world.
 
-*Note: this section has recently changed**. Previously, CBMs were a CDDA-Earth technology, but we're changing that lore.
+*Note: this section has recently changed**. Previously, CBMs were a Signal-Earth technology, but we're changing that lore.
 
 ## Civilian Tech
 In terms of civilian technology there are a handful of things that differ from our world.  All of these are very rare and expensive.
 
 ### Cybernetics
-Cybernetics were not available on CDDA-Earth prior to the portal storms.  The technology level of the CBMs available from the Exodii faction should be roughly comparable to things that we can make in the modern day, with exceptions being considered special and rare.  The main difference isn't what the tech itself can do, but the fact that it can do it from an arm interface that draws from your central power supply and is connected to your brain.
+Cybernetics were not available on Signal-Earth prior to the portal storms.  The technology level of the CBMs available from the Exodii faction should be roughly comparable to things that we can make in the modern day, with exceptions being considered special and rare.  The main difference isn't what the tech itself can do, but the fact that it can do it from an arm interface that draws from your central power supply and is connected to your brain.
 
 Note that this is a change to the lore implemented around 2021 or so. There are a few gameplay reasons for this change, and examining them can be helpful to understanding how the design philosophy works.
-- Prior to the change, cybernetics were required to make sense as something developed on an Earth with a similar technology level to ours, or we had to make CDDA Earth so different from ours that it loses a lot of the "real life zombie apocalypse" feel.  Making them interdimensional removes a lot of restrictions on the design space of what "makes sense" for a cybernetic.  For example, things like shotgun arms and knives for hands don't make a ton of sense in the "real world" we're trying to go for in DDA, but they're totally something someone may have cooked up *somewhere*. This allows them to stay in.
+- Prior to the change, cybernetics were required to make sense as something developed on an Earth with a similar technology level to ours, or we had to make Signal Earth so different from ours that it loses a lot of the "real life zombie apocalypse" feel.  Making them interdimensional removes a lot of restrictions on the design space of what "makes sense" for a cybernetic.  For example, things like shotgun arms and knives for hands don't make a ton of sense in the "real world" we're trying to go for in DDA, but they're totally something someone may have cooked up *somewhere*. This allows them to stay in.
 - Labs used to be a very one-stop-shop for loot (and still are, at the time of this writing).  The lore change to CBMs should allow us to move them to their own type of dungeon at some point, giving a wider variety of exploration goals with different feels.
 - Linking NPCs to the process of cybernetic installation makes it more possible to ensure players can reliably obtain critical important CBMs instead of being completely reliant on random loot generation and dissecting dozens of zombie corpses to try to get enough power to run them. However, random loot should still remain part of the process of getting CBMs.
 
@@ -72,7 +72,7 @@ Energy storage among civilians is basically the same as real life earth, with a 
 ### Powered Suits
 Due to the availability of fuel cells, powered exoskeletons for industrial work are extremely rare but do exist.  These suits are bulky but allow a degree of finesse that a crane or forklift can't match.  Their primary market is wealthy nerds.
 
-Just as in real life, powered exoskeletons are used to assist rehabilitation of people with neurological damage. These are slightly more common in CDDA-Earth, as the technology was developed earlier due to earlier availability of appropriate power cells, but aside from being more common they're not much different.
+Just as in real life, powered exoskeletons are used to assist rehabilitation of people with neurological damage. These are slightly more common in Signal-Earth, as the technology was developed earlier due to earlier availability of appropriate power cells, but aside from being more common they're not much different.
 
 ## Widespread Military Technology
 The military at large has access to technology that far exceeds civilian capacity, but whose existence doesn't potentially compromise the secrets of interdimensional travel and research.
@@ -96,12 +96,12 @@ At the very end of the Cataclysm, dimensional heuristic AI was used to create hu
 ### Weaponry
 Like power armor, the major divergence point for weaponry is the existence of high density fictionalized power cells.  All other technology should be as realistic as possible.  Due to the extreme rarity and "one and done" nature of plutonium cells, military lasers and things are rare.  Technology that hasn't even been prototyped, or at the very least modeled theoretically, in our world is probably not appropriate for Cataclysm.
 
-When designing a high-tech weapon for the game, first ask yourself "why". Why would this weapon have been in production?  If it is a prototype, it should be unreliable and impractical for day to day use.  It is possible that high tech special use weapons exist, but they should definitely not be in major circulation.  CDDA-Earth only started majorly branching from our own timeline quite recently.
+When designing a high-tech weapon for the game, first ask yourself "why". Why would this weapon have been in production?  If it is a prototype, it should be unreliable and impractical for day to day use.  It is possible that high tech special use weapons exist, but they should definitely not be in major circulation.  Signal-Earth only started majorly branching from our own timeline quite recently.
 
 ## Top Secret Technology
 
 ### Dimensional Manipulation
-At the heart of most of the differences in technology is the ability to examine and manipulate dimensions in the CDDA universe. Portable versions of this technology are possible but should be limited, extremely rare, and extremely costly in energy terms.  That said, the events causing the Cataclysm made the energy costs at least an order of magnitude lower, which in turn means that things that may have been barely functional proof-of-concept prototypes before may now be able to work fairly well.
+At the heart of most of the differences in technology is the ability to examine and manipulate dimensions in the Signal universe. Portable versions of this technology are possible but should be limited, extremely rare, and extremely costly in energy terms.  That said, the events causing the Cataclysm made the energy costs at least an order of magnitude lower, which in turn means that things that may have been barely functional proof-of-concept prototypes before may now be able to work fairly well.
 
 ### Dimensional Heuristics
 "Smart" AI in Cataclysm relies on the ability to scan adjacent dimensions to learn the results of an upcoming action.  Before the Cataclysm this could only look a few moments into the future in response to very specific questions, and was very power costly.  After the Cataclysm, dimensional barriers are much lower, and this technology is far less costly energy-wise.  This allows a computer to simulate human deduction abilities.  It does not provide clairvoyance nor omniscience, nor real intelligence; it does not make AIs great planners of the long term future.
@@ -119,7 +119,7 @@ A quick analogy to explain this: DNA serves like a blueprint for the architectur
 
 
 ## Alien Technology
-The biggest branch point in CDDA tech is the availability of sci-fi technology from other dimensions.  We're still fine tuning the rules about this, so this section is under construction.
+The biggest branch point in Signal tech is the availability of sci-fi technology from other dimensions.  We're still fine tuning the rules about this, so this section is under construction.
 
 The basic rule of thumb is that the more advanced or unbelievable the technology, the less player modifiable it should be.  An alien chemical propellant weapon might be modified to accept earth bullets because the principles are quite similar, but no player is going to be dismantling a mi-go slaver rifle and salvaging recognizable components. 
 
@@ -152,7 +152,7 @@ Cybernetic technology includes the **auto-doc**, an operating table assisted by 
 The Exodii use human and animal brains as computing assistants all the time.  Their major source of human brains are "feral" humans, who have had significant brain damage from the Blob.  They excise damaged tissue creating a lobotomized brain, which then gets hooked up to Exodii machinery to function as a handy computer able to make fairly complex decisions.
 
 #### Computers and software
-Exodii computers and software are somewhat less advanced (at least superficially) on average than our or CDDA Earth.  This is largely the result of them being kludged together from completely incompatible sources over decades to millennia.  They do as much computing as possible using wetware.  The Exodii neural uplink is able to function as a compatibility bus for a lot of software, but it is very slow: literally, a human brain can take input from one piece of software and figure out how to output it to another.  Over time it can be trained to do this quickly, and over more time, train a machine to do it automatically, but it's not fast and it's not reliable.
+Exodii computers and software are somewhat less advanced (at least superficially) on average than our or Signal Earth.  This is largely the result of them being kludged together from completely incompatible sources over decades to millennia.  They do as much computing as possible using wetware.  The Exodii neural uplink is able to function as a compatibility bus for a lot of software, but it is very slow: literally, a human brain can take input from one piece of software and figure out how to output it to another.  Over time it can be trained to do this quickly, and over more time, train a machine to do it automatically, but it's not fast and it's not reliable.
 
 The Exodii do not have the capacity to develop novel microprocessors and things like that, but they can print existing designs according to spec, mostly as needed for CBMs.
 

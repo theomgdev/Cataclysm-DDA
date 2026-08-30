@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
   Usage:
-    `cd path/to/Cataclysm-DDA/`
+    `cd path/to/Cataclysm-Signal/`
     `python3 tools/json_tools/update-translate-dialogue-mod.py`
     then lint via `json_formatter.cgi`, check `doc/JSON/JSON_STYLE.md`
 

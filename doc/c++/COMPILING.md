@@ -284,7 +284,7 @@ Installation
 sudo apt install astyle autoconf automake autopoint bash bison bzip2 cmake flex gettext git g++ gperf intltool libffi-dev libgdk-pixbuf2.0-dev libtool libltdl-dev libssl-dev libxml-parser-perl lzip make mingw-w64 openssl p7zip-full patch perl pkg-config python3 ruby scons sed unzip wget xz-utils g++-multilib libc6-dev-i386 libtool-bin
 mkdir -p ~/src/libbacktrace
 cd ~/src
-git clone https://github.com/CleverRaven/Cataclysm-DDA.git
+git clone https://github.com/theomgdev/Cataclysm-Signal.git
 git clone https://github.com/mxe/mxe.git
 cd mxe
 make -j$((`nproc`+0)) MXE_TARGETS='x86_64-w64-mingw32.static i686-w64-mingw32.static' MXE_PLUGIN_DIRS=plugins/gcc11 gettext
@@ -311,7 +311,7 @@ This is to ensure that the variables for the `make` command will not get reset a
 ### Building (SDL)
 
 Untested. MXE packages sdl3, sdl3_image and sdl3_ttf, so the pieces for a
-no-sound tiles cross-build exist, but nobody has built CDDA against them. There
+no-sound tiles cross-build exist, but nobody has built Signal against them. There
 is no sdl3_mixer package, so `SOUND=1` needs one added upstream in MXE first.
 
 
@@ -322,7 +322,7 @@ is no sdl3_mixer package, so `SOUND=1` needs one added upstream in MXE first.
 This procedure is very much similar to cross-compilation to Windows from Linux.
 It has ben tested on Ubuntu 14.04 LTS but it should work on other distros as well.
 
-Please note that due to historical difficulties with cross-compilation errors, run-time optimizations are disabled for cross-compilation to Mac OS X targets. (`-O0` is specified as a compilation flag.) See [Pull Request #26564](https://github.com/CleverRaven/Cataclysm-DDA/pull/26564) for details.
+Please note that due to historical difficulties with cross-compilation errors, run-time optimizations are disabled for cross-compilation to Mac OS X targets. (`-O0` is specified as a compilation flag.) See [Pull Request #26564](pull request #26564) for details.
 ### Dependencies
 
   * OSX cross-compiling toolchain [osxcross](https://github.com/tpoechtrager/osxcross)
@@ -449,7 +449,7 @@ To deploy directly to a connected device:
 ./gradlew installExperimentalDebug
 ```
 
-For an in-place update over an existing on-device install (preserves saves under `/sdcard/Android/data/com.cleverraven.cataclysmdda/files`), use the matching `installStableRelease`/`installExperimentalRelease` task whose keystore signature matches the on-device build.
+For an in-place update over an existing on-device install (preserves saves under `/sdcard/Android/data/dev.theomgdev.cataclysmsignal/files`), use the matching `installStableRelease`/`installExperimentalRelease` task whose keystore signature matches the on-device build.
 
 To produce a Play Store-style AAB:
 
@@ -461,7 +461,7 @@ Sign-off with `bundletool build-apks --bundle .../app.aab --output app.apks --co
 
 ### Additional notes
 
-The app stores data files on the device in `/sdcard/Android/data/com.cleverraven.cataclysmdda/files`. Saves are backwards compatible with the desktop version.
+The app stores data files on the device in `/sdcard/Android/data/dev.theomgdev.cataclysmsignal/files`. Saves are backwards compatible with the desktop version.
 
 To override Gradle defaults locally without editing `gradle.properties`, drop a `local.properties` file in `android/`:
 
@@ -486,7 +486,7 @@ For a stable tiles build:
 
     brew install cataclysm
 
-For an experimental tiles build built from the current HEAD of [master](https://github.com/CleverRaven/Cataclysm-DDA/tree/master/):
+For an experimental tiles build built from the current HEAD of [master](https://github.com/theomgdev/Cataclysm-Signal/tree/master/):
 
     brew install cataclysm --HEAD
 
@@ -686,7 +686,7 @@ Follow the instructions in the [Building with Visual Studio](#building-with-visu
 
 ### Running a build
 
-1. Open the repository using the `Cataclysm-DDA.code-workspace` file in VS Code. Opening the bare folder is not sufficient, as the workspace file configures the build tasks and settings.
+1. Open the repository using the `Cataclysm-Signal.code-workspace` file in VS Code. Opening the bare folder is not sufficient, as the workspace file configures the build tasks and settings.
 2. Press **Ctrl+Shift+B** (or go to **Terminal → Run Build Task**) to open the build task picker.
 3. Select the desired configuration.
 
@@ -710,7 +710,7 @@ Clang by default uses MSVC on Windows, but also supports the MinGW64 library. Si
 
 # BSDs
 
-There are reports of CDDA building fine on recent OpenBSD and FreeBSD machines (with appropriately recent compilers), and there is some work being done on making the [`Makefile`](../../Makefile) "just work", however we're far from that and BSDs support is mostly based on user contributions. Your mileage may vary. So far essentially all testing has been on amd64, but there is no (known) reason that other architectures shouldn't work, in principle.
+There are reports of Signal building fine on recent OpenBSD and FreeBSD machines (with appropriately recent compilers), and there is some work being done on making the [`Makefile`](../../Makefile) "just work", however we're far from that and BSDs support is mostly based on user contributions. Your mileage may vary. So far essentially all testing has been on amd64, but there is no (known) reason that other architectures shouldn't work, in principle.
 
 ### Building on FreeBSD/amd64 13.0 with the system compiler
 

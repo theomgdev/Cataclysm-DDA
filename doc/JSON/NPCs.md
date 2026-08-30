@@ -288,7 +288,7 @@ Case use example:
 }
 ```
 
-For further information on snippets, see [New Contributor Guide: Dialogue](https://github.com/CleverRaven/Cataclysm-DDA/wiki/New-Contributor-Guide-Dialogue)
+For further information on snippets, see [New Contributor Guide: Dialogue](https://github.com/theomgdev/Cataclysm-Signal/wiki/New-Contributor-Guide-Dialogue)
 
 ### Custom Entries
 

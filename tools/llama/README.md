@@ -2,8 +2,8 @@
 
 [llama](https://github.com/nelhage/llama) is a CLI for outsourcing computation to AWS Lambda.
 
-You can use llama to accelerate your CDDA builds.  To help you set that up,
-this directory contains a suitable image for compiling CDDA on.
+You can use llama to accelerate your Signal builds.  To help you set that up,
+this directory contains a suitable image for compiling Signal on.
 
 After bootstrapping llama, you can use for example
 

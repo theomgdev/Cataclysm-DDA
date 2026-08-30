@@ -23,7 +23,7 @@
 #include "memory_fast.h"
 #include "string_id.h"
 
-/* Cataclysm-DDA homegrown JSON tools
+/* Cataclysm-Signal homegrown JSON tools
  * copyright CC-BY-SA-3.0 2013 CleverRaven
  *
  * Consists of four JSON manipulation tools:

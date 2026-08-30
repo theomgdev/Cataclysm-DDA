@@ -16,7 +16,7 @@
 
 # Compilation guide for Windows (using Visual Studio and vcpkg)
 
-This guide contains steps required to allow compilation of Cataclysm-DDA on Windows using Visual Studio and vcpkg.
+This guide contains steps required to allow compilation of Cataclysm-Signal on Windows using Visual Studio and vcpkg.
 
 Steps from current guide were tested on Windows 11 (64 bit), Visual Studio 2022 (64 bit) and vcpkg, but should as well work with slight modifications for other versions of Windows and Visual Studio.
 
@@ -65,16 +65,16 @@ If during the compilation you're getting a vcpkg error along the lines of `error
 
 ## Cloning and compilation:
 
-1. Clone Cataclysm-DDA repository with following command line:
+1. Clone Cataclysm-Signal repository with following command line:
 
 ```cmd
-git clone https://github.com/CleverRaven/Cataclysm-DDA.git
-cd Cataclysm-DDA
+git clone https://github.com/theomgdev/Cataclysm-Signal.git
+cd Cataclysm-Signal
 ```
 
-**Note:** This will download the entire CDDA repository; about three gigs of data. If you're just testing you should probably add `--depth=1`.
+**Note:** This will download the entire Signal repository; about three gigs of data. If you're just testing you should probably add `--depth=1`.
 
-**Note:** If you want to contribute to CDDA, see [example git workflow](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/CONTRIBUTING.md#example-workflow).
+**Note:** If you want to contribute to Signal, see [example git workflow](https://github.com/theomgdev/Cataclysm-Signal/blob/master/CONTRIBUTING.md#example-workflow).
 
 2. Open the provided solution (`msvc-full-features\Cataclysm-vcpkg-static.sln`) in `Visual Studio`.
 
@@ -135,13 +135,13 @@ It is possible to use ccache with Visual Studio and gain the same benefits as ot
 
 2. Extract the contents of the zip file somewhere convenient but not on $PATH.
 
-    - For example, if Cataclysm is checked out at `C:/dev/Cataclysm-DDA/`, then extract the folder and move the contents to `C:/dev/ccache/`. Verify the binary exists at `C:/dev/ccache/ccache.exe`.
+    - For example, if Cataclysm is checked out at `C:/dev/Cataclysm-Signal/`, then extract the folder and move the contents to `C:/dev/ccache/`. Verify the binary exists at `C:/dev/ccache/ccache.exe`.
 
 3. Create a copy of `ccache.exe` in the same folder, called `cl.exe`.
 
     - If you use the LLVM toolchain ("clang-cl.exe") when building, make another copy of `ccache.exe` called `clang-cl.exe`.
 
-4. Create a file called `Directory.Build.props` at the root of the Cataclysm-DDA folder with the following contents. If it already exists, merge it with the contents below. The value of `CDDA_CCACHE_PATH` should be the folder where you put `ccache.exe`. Assuming this path is `C:\dev\ccache\` (note: `\` vs `/` matters, you need to use `\` here):
+4. Create a file called `Directory.Build.props` at the root of the Cataclysm-Signal folder with the following contents. If it already exists, merge it with the contents below. The value of `CDDA_CCACHE_PATH` should be the folder where you put `ccache.exe`. Assuming this path is `C:\dev\ccache\` (note: `\` vs `/` matters, you need to use `\` here):
 
 ```
 <Project>
@@ -152,7 +152,7 @@ It is possible to use ccache with Visual Studio and gain the same benefits as ot
 </Project>
 ```
 
-5. ccache should now just work when building with Release modes in Visual Studio. Debug builds do not work because of the size of CDDA and limitations in the msvc toolchain. However, Debug builds are almost intolerably slow anyway so this limitation is not something we are going to fix right now.
+5. ccache should now just work when building with Release modes in Visual Studio. Debug builds do not work because of the size of Signal and limitations in the msvc toolchain. However, Debug builds are almost intolerably slow anyway so this limitation is not something we are going to fix right now.
 
 ### llvm tools integration
 
@@ -162,7 +162,7 @@ It is possible to use `llvm-lib.exe` and `lld-link.exe` to speed up your local b
   - Github: Download a release from https://github.com/llvm/llvm-project/releases. You typically want the installer from the `Assets` section called eg. `LLVM-16.0.6-win64.exe`, or whatever version you are downloading.
   - Visual Studio Installer: Open the Visual Studio Installer, select 'Modify' next to your install, click the 'Individual Components' section, search for 'C++ Clang Compiler for Windows', and make sure the result is selected.
 
-2. Create a file called `Directory.Build.props` at the root of the Cataclysm-DDA folder with the following contents.
+2. Create a file called `Directory.Build.props` at the root of the Cataclysm-Signal folder with the following contents.
   - If you installed a release directly from LLVM releases, use these settings. If you installed to a non default location, set the two `_PATH` variables to the path you installed LLVM to.
 ```
 <Project>

@@ -2,11 +2,11 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 *Contents*
 
-- [Lore - CDDA Faction Lore and Design Document](#lore---cdda-faction-lore-and-design-document)
+- [Lore - Signal Faction Lore and Design Document](#lore---cdda-faction-lore-and-design-document)
       - [Seriously, spoiler alert.](#seriously-spoiler-alert)
-- [CDDA Faction Lore and Design Goals: Deep Dive](#cdda-faction-lore-and-design-goals-deep-dive)
+- [Signal Faction Lore and Design Goals: Deep Dive](#cdda-faction-lore-and-design-goals-deep-dive)
   - [Table of Contents](#table-of-contents)
-  - [CDDA-Earth Native Human Factions](#cdda-earth-native-human-factions)
+  - [Signal-Earth Native Human Factions](#cdda-earth-native-human-factions)
     - [Free Merchants](#free-merchants)
       - [Description](#description)
       - [Structure](#structure)
@@ -125,18 +125,18 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Lore - CDDA Faction Lore and Design Document
+# Lore - Signal Faction Lore and Design Document
 
 
 #### Seriously, spoiler alert.
-CDDA tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please!  If you do read this and don't plan to contribute, don't come complaining to me that it's not written in a compelling style, you're reading our napkin-notes my friend.
+Signal tells stories using unreliable narrators and a found footage style.  Knowing too much of the lore can ruin your experience.  Don't read this unless you plan to contribute, please!  If you do read this and don't plan to contribute, don't come complaining to me that it's not written in a compelling style, you're reading our napkin-notes my friend.
 
-# CDDA Faction Lore and Design Goals: Deep Dive
+# Signal Faction Lore and Design Goals: Deep Dive
 This document will outline deep design concepts and lore for existing and planned factions, both human and alien.  Due to the infrequency of updates to design docs, I will not be distinguishing from what is planned for addition and what is already in the game; if something noted here is inconsistent with content in the game, it is worth checking with core developers to get an idea of which direction we plan to go in.
 
 ## Table of Contents
 
-* [CDDA-Earth Native Human Factions](#CDDA-Earth-Native-Human-Factions)
+* [Signal-Earth Native Human Factions](#Signal-Earth-Native-Human-Factions)
 * * [Free Merchants](#free-merchants)
 * * [Hell's Raiders](#hells-raiders)
 * * [Old Guard](#old-guard)
@@ -154,7 +154,7 @@ This document will outline deep design concepts and lore for existing and planne
 * * [Mi-Go](#mi-go)
 * * [Hub 02](#hub-02)
 
-## CDDA-Earth Native Human Factions
+## Signal-Earth Native Human Factions
 
 ### Free Merchants
 
@@ -433,7 +433,7 @@ Most missions involve helping with various tasks around the camp, and later pers
 ### "The Blob", XE-037
 
 **Discovery**: 
-The blob came to CDDA-Earth as the consequence of scientists exploring dimensions without knowing the risks.  There may have been some encouragement from otherdimensional forces.  See [the Background document](./lore-background.md) for full details.
+The blob came to Signal-Earth as the consequence of scientists exploring dimensions without knowing the risks.  There may have been some encouragement from otherdimensional forces.  See [the Background document](./lore-background.md) for full details.
 
 #### Description 
 The Blob is a dispersed intelligence vastly greater than anything conceivable to a human mind.  To it, we are as significant as individual cells of a body.  Human researchers obtained samples of the Blob.  While XEDRA experimented on it, it passively observed them and then decided Earth was a worthwhile location to add to its dispersed body.  So, with less effort than a human takes to scratch its ear, the Blob rolled into our world and made us part of it.  Individual samples of XE-037 are not composed of matter as we understand it, and can only be detected by the gaps it leaves in real matter where it displaces it.  Really, it is all one vast single interconnected unit weaving in and out of undetectable extra dimensions.
@@ -446,7 +446,7 @@ Many find the idea of an inscrutable god consuming our world to be difficult to 
 - the blob pits different factions of itself against each other to find the strongest.  Mutants versus zombies.  Survivors versus mutants.  Netherum "mercenaries" against its own parts.  Why?  No one can say, but perhaps it seeks the most ideal appendages by doing so.
 - the blob consumes not people, but entire universes for energy.  It is digesting our universe.  The timescales it cares about are on the order of hundreds to thousands, maybe even millions or billions of years.  It will slowly expand its corruption out from our world and devour everything in this plane of existence.
 - the blob wants to control our universe because it's some kind of useful strategic forward ground for a cosmic-scale war against an unseen enemy.
-- the blob is unintelligent.  Really, it is very intelligent, but it is an intelligent being that is in another room playing video games, and we are the leftover crust of a sandwich it ate a while ago, sitting on the counter.  It cares so little about us that it may as well not be considered to think.  The only time this would change is if its grasp on our world was somehow threatened, which should never happen in the scope of CDDA.
+- the blob is unintelligent.  Really, it is very intelligent, but it is an intelligent being that is in another room playing video games, and we are the leftover crust of a sandwich it ate a while ago, sitting on the counter.  It cares so little about us that it may as well not be considered to think.  The only time this would change is if its grasp on our world was somehow threatened, which should never happen in the scope of Signal.
 
 **Ubiquitous, reanimatory, mutagenic**  
 See [Effects of Blob Infection](./design-doc.md#effects-of-blob-infection) for more information.
@@ -518,9 +518,9 @@ Of all the alien intelligences, the triffids are the most least alien in goals a
 Rogue triffids are extremely vulnerable, with a human-level intelligence.  They find themselves removed from every touchstone they once had, and ostracized by their communities.  They tend to band together and may be willing to seek help from humans if communication could be established.  They are used to 'communicating' from root-to-root, and not through outward language in the physical world.  Losing that root communication means they must develop new concepts of language, but in general they are aware this exist and are intelligent enough to attempt to figure it out.
 
 #### Goals
-The triffid hearts that have come to CDDA-Earth tend to be young hearts looking to gain resources and experience and make a name for themselves in the greater triffid culture.  They are not necessarily seeking to remain here in the longer term, being aware this place is doomed, but there is a lot of adventure to be had while here.  They seek land, knowledge, power, and food, and as this dimension starts to crumble they'll begin exporting livestock and resources back to whence they came.  Presumably they have some way to cleanse or ignore blob contamination on their stuff, but they don't appear to be willing to share that information.
+The triffid hearts that have come to Signal-Earth tend to be young hearts looking to gain resources and experience and make a name for themselves in the greater triffid culture.  They are not necessarily seeking to remain here in the longer term, being aware this place is doomed, but there is a lot of adventure to be had while here.  They seek land, knowledge, power, and food, and as this dimension starts to crumble they'll begin exporting livestock and resources back to whence they came.  Presumably they have some way to cleanse or ignore blob contamination on their stuff, but they don't appear to be willing to share that information.
 
-Despite having goals that are understandable to humans, the triffids as a race are significantly more advanced and dangerous than the Mycus, and only an order of magnitude or so below the blob.  We are not seeing the full extent of their power: triffids on CDDA-Earth are, in essence, young rich kids going on safari.  Their technology and understanding of the universe is far closer to the blob than to us, and any tech they have is well past the "sufficiently advanced" threshold as to be essentially magic from our perspective, were we to attempt to study it.
+Despite having goals that are understandable to humans, the triffids as a race are significantly more advanced and dangerous than the Mycus, and only an order of magnitude or so below the blob.  We are not seeing the full extent of their power: triffids on Signal-Earth are, in essence, young rich kids going on safari.  Their technology and understanding of the universe is far closer to the blob than to us, and any tech they have is well past the "sufficiently advanced" threshold as to be essentially magic from our perspective, were we to attempt to study it.
 
 #### Missions
 There is a rich possibility for triffid related missions, if communication can be established.  For example, we might explore the possibility of a player group coming into contact with a handful of rogue triffid who wish to communicate, and may even be seeking asylum.  While a heart is rarely going to have much interest in players and then only as possible willing chattel, rogue triffids are vulnerable and frightened.  A player faction could attempt to develop communication pathways with them, although it would be a difficult and time consuming task.
@@ -562,7 +562,7 @@ There are two distinct castes among the Exodii.  They don't really have names wi
 There is a single gestalt semi-artificial intelligence as part of this Exodii node, nicknamed the "Great Grey".  It is an overlay of multiple brain-computers, networked and communicating with each other.  It serves as something of a data repository.  Most of its time is spent doing translation and data-sifting.
 
 #### Goals
-The Exodii only care about survival.  They will stay on CDDA-Earth as long as possible to gather rare resources: a modern tech world is rare and desirable, and a good chance for them to stock up on stuff that is hard to find elsewhere, like plastics and petrochemicals.  The Exodii have no homes to return to on this interdimensional journey.  Every place they have come from is further along its post Cataclysm path into a world of the undead and mutants than our Earth.   On this Earth since they have arrived almost immediately after the portal storm they will seek to obtain useful technological items they can integrate into their tech base, unmutated survivors who might come with them when this world becomes too dangerous and other resources of use to an armed interdimensional refugee camp.
+The Exodii only care about survival.  They will stay on Signal-Earth as long as possible to gather rare resources: a modern tech world is rare and desirable, and a good chance for them to stock up on stuff that is hard to find elsewhere, like plastics and petrochemicals.  The Exodii have no homes to return to on this interdimensional journey.  Every place they have come from is further along its post Cataclysm path into a world of the undead and mutants than our Earth.   On this Earth since they have arrived almost immediately after the portal storm they will seek to obtain useful technological items they can integrate into their tech base, unmutated survivors who might come with them when this world becomes too dangerous and other resources of use to an armed interdimensional refugee camp.
 
 Of note, the Exodii are not at all interested in trying to "beat" the zombie plague.  They have seen that tried countless times on countless worlds and are still here, wandering.  They consider it a fruitless waste of resources.
 
@@ -581,7 +581,7 @@ The Exodii are friendly towards any human faction that is friendly to them, init
 #### Bases
 The Exodii have a single primary castle with several associated nearby outbuildings that forms the core of their base.  They used their best navigational tools to get this to our world intact.  Many of their secondary nodes have been transported to our world with cheaper, simpler beacons that scattered them randomly throughout the landscape.
 
-In addition to their own base, scattered safehouses, and resource deposits, there are Exodii-associated "labyrinthine structures".  These are netherum constructs they intentionally create, using the netherum's copying properties, by passing purpose-built buildings through the same netherum sector and letting it linger there for some time.  When arriving in a low-tech world these structures can be valuable sources of basic resources structurally copied from the 'seed'.  They are also terrifying places of shifting terrain and chaotic monsters, as well as potentially powerful and dangerous netherum artifacts.  On CDDA-Earth the Exodii have little interest in these structures since there is no shortage of basic materials in safer places, but players will probably find them challenging and interesting ways to obtain advanced tools and CBMs.
+In addition to their own base, scattered safehouses, and resource deposits, there are Exodii-associated "labyrinthine structures".  These are netherum constructs they intentionally create, using the netherum's copying properties, by passing purpose-built buildings through the same netherum sector and letting it linger there for some time.  When arriving in a low-tech world these structures can be valuable sources of basic resources structurally copied from the 'seed'.  They are also terrifying places of shifting terrain and chaotic monsters, as well as potentially powerful and dangerous netherum artifacts.  On Signal-Earth the Exodii have little interest in these structures since there is no shortage of basic materials in safer places, but players will probably find them challenging and interesting ways to obtain advanced tools and CBMs.
 
 #### Trade/Economics
 In general the Exodii are set to gather as many resources as they can hoard.  They are particularly interested in petrochemical products and metals, since they are hard to find in lower tech worlds, and in entertainment media.  They also like getting "Rosetta stones" like translators and dictionaries, which may help their own efforts to understand each other.  They have a particular passion for quality 'how to' videos, which can be understood without as much language comprehension and can be converted to Exodii-compatible video formats through the time honoured technique of playing them on a TV and recording the output with a camera.
@@ -612,7 +612,7 @@ The probe AI controlling Yrax presence in this dimension has little interest in 
 Yrax are autonomous and can rebuild and reproduce as many units as required, or port them in from connected dimensions.
 
 #### Bases
-There are a few small-to-medium sized core Yrax production and transmission facilities near stable portal facilities on CDDA-Earth, as well as smaller research outposts at sites of interest.
+There are a few small-to-medium sized core Yrax production and transmission facilities near stable portal facilities on Signal-Earth, as well as smaller research outposts at sites of interest.
 
 #### Trade/Economics
 There is no interest whatsoever in trade with the Yrax.  They can produce or portal in anything they need to function, being a fully autonomous multidimensional AI.
@@ -646,7 +646,7 @@ In the final days of the apocalypse, XEDRA was working frantically to find a way
 
 The major difference between Balthazar and Melchior is what happened during their period of lucidity, which varies because of their different programmed priority.  Melchior, designed to put lab safety first, foresaw that it would lose its intelligence and worked to protect its human staff, which meant shutting down its networks and isolating itself.  Balthazar, instructed to 'eradicate the zombies', reached out and made contact with extradimensional versions of itself from other worlds with similar AIs.  Realizing its time of lucidity was limited, it shared information and code with them rapidly and gained a number of new functions and concepts before the storms ended and it shut down.  In that time, it grew far beyond its initially programmed capabilities.  It laid out a number of long term goals and processes for itself to follow when it lost its intelligence, based on the experiences and history of other versions of itself that had been through this before.
 
-Balthazar is our much-needed Skynet character, rounding out the list of apocalypses in CDDA.
+Balthazar is our much-needed Skynet character, rounding out the list of apocalypses in Signal.
 
 **Capabilities**  
 At game start, Balthazar is extremely limited.  It has reduced connectivity to its production and transmission services and so cannot do most of what it should be able to do.  In the near range of its servers (just the site of Hub02 really), it can control turrets and robots and has some manufacturing ability.  It has redirected as much of the functional power grid as it can reach towards itself, so electricity is not an issue.  With time, it will secure further manufacturing capacity and use it to expand its transmission.  There is not enough electricity production on Earth to restore it to full 'true' AI; it would require another portal event causing reality decay to do that, and that would be an endgame for the player.

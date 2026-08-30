@@ -31,7 +31,7 @@ bool localized_comparator::operator()( const std::string &l, const std::string &
     // using a UTF-8 locale (whereas our strings are always UTF-8) and so we
     // must convert to wstring for comparison there.  Linux seems to work as
     // expected on regular strings; no workarounds needed.
-    // See https://github.com/CleverRaven/Cataclysm-DDA/pull/40041 for further
+    // See pull request #40041 for further
     // discussion.
 #if defined(__APPLE__) // macOS and iOS
     CFStringRef lr = CFStringCreateWithCStringNoCopy( kCFAllocatorDefault, l.c_str(),

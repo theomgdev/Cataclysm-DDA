@@ -65,7 +65,7 @@ jobs:
     - name: checkout own repository
       uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
-        path: Cataclysm-DDA
+        path: Cataclysm-Signal
         persist-credentials: false
     - name: cache IWYU build
       id: iwyu-cache
@@ -100,9 +100,9 @@ jobs:
           for (const path of files) {
             console.log(path);
           }
-          fs.writeFileSync("Cataclysm-DDA/files_changed", files.join('\n') + '\n');
+          fs.writeFileSync("Cataclysm-Signal/files_changed", files.join('\n') + '\n');
     - name: create CDDA compilation database
-      working-directory: Cataclysm-DDA
+      working-directory: Cataclysm-Signal
       run: |
         set -x
         echo ::group::Building compilation database
@@ -121,7 +121,7 @@ jobs:
     - uses: ammaraskar/gcc-problem-matcher@0f9c86f9e693db67dacf53986e1674de5f2e5f28 # master
     - name: run IWYU
       id: run_iwyu
-      working-directory: Cataclysm-DDA
+      working-directory: Cataclysm-Signal
       env:
         IWYU_SRC_DIR: ${{ steps.build-iwyu.outputs.IWYU_SRC_DIR }}
         IWYU_BIN_DIR: ${{ steps.build-iwyu.outputs.IWYU_BIN_DIR }}
@@ -134,7 +134,7 @@ jobs:
         exit $exit_code
     - name: Create pr comment artifacts
       if: ${{ failure() && github.event_name == 'pull_request' && steps.run_iwyu.outputs.has_errors != 0 }}
-      working-directory: Cataclysm-DDA
+      working-directory: Cataclysm-Signal
       run: |
         set +e
         cat files_changed | while read f; do
@@ -148,7 +148,7 @@ jobs:
           git diff -U1 > ../suggestions/diff.txt
           echo ${{ github.event.pull_request.number }} > ../suggestions/pr_number
           echo ${{ github.event.pull_request.head.sha }} > ../suggestions/commit_sha
-          echo '[Include What You Use](https://github.com/CleverRaven/Cataclysm-DDA/blob/main/doc/c%2B%2B/DEVELOPER_TOOLING.md#include-what-you-use)' > ../suggestions/comment.txt
+          echo '[Include What You Use](https://github.com/theomgdev/Cataclysm-Signal/blob/main/doc/c%2B%2B/DEVELOPER_TOOLING.md#include-what-you-use)' > ../suggestions/comment.txt
         fi
         exit 0 # Always 'succeed' this step to reduce job noise.
     - name: Upload pr comment artifacts

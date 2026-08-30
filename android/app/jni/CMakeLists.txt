@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Output libmain.so; SDL3 dlsym's SDL_main from it
-# (CataclysmDDA.java::getMainSharedObject).
+# (CataclysmSignal.java::getMainSharedObject).
 project(cataclysm-android LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 17)

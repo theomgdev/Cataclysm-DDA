@@ -51,7 +51,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="CataclysmDDA"
+        <activity android:name="CataclysmSignal"
                   android:label="@string/app_name"
                   android:launchMode="singleInstance"
                   android:keepScreenOn="true"
@@ -61,8 +61,8 @@
         </activity>
         <!-- Expose app's private data directory for backup without root -->
         <provider
-            android:name=".CDDADocumentsProvider"
-            android:authorities="com.cleverraven.cataclysmdda.documents"
+            android:name=".SignalDocumentsProvider"
+            android:authorities="dev.theomgdev.cataclysmsignal.documents"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">

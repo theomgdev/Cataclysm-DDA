@@ -11,9 +11,9 @@
 
 # Compilation guide for devcontainers in Visual Studio Code
 
-This guide contains instructions for compiling Cataclysm-DDA in Visual Studio Code using a [Devcontainer](https://code.visualstudio.com/learn/develop-cloud/containers)
+This guide contains instructions for compiling Cataclysm-Signal in Visual Studio Code using a [Devcontainer](https://code.visualstudio.com/learn/develop-cloud/containers)
 
-The devcontainer was introduced in [#65748](https://github.com/CleverRaven/Cataclysm-DDA/pull/65748). These instructions were written using Visual Studio Code version 1.80.1 on Debian 11
+The devcontainer was introduced in [#65748](pull request #65748). These instructions were written using Visual Studio Code version 1.80.1 on Debian 11
 
 ## Prerequisites:
 
@@ -24,8 +24,8 @@ The devcontainer was introduced in [#65748](https://github.com/CleverRaven/Catac
 ## Installation:
 
 1. Install all prerequisites.
-2. Clone your fork of the CleverRaven/Cataclysm-DDA repo and create a branch
-3. Add CleverRaven as the remote upstream with git remote add upstream git@github.com:CleverRaven/Cataclysm-DDA.git
+2. Clone your fork of the theomgdev/Cataclysm-Signal repo and create a branch
+3. Add Signal as the remote upstream with git remote add upstream git@github.com:theomgdev/Cataclysm-Signal.git
 4. Open the folder where you cloned your repository in Visual Studio Code via the UI or by navigating to the directory in a terminal and typing Code
 5. Visual Studio Code will show a pup-up in the bottom right with recommended extensions. Install those.
 6. If you don't plan to cross-compile the game, scroll down to find this section:
@@ -69,11 +69,11 @@ Next, scroll down to find this section:
 
 
   
-The build result should be located in the folder where you cloned your fork to (e.g. /Documents/git/Cataclysm-DDA)
+The build result should be located in the folder where you cloned your fork to (e.g. /Documents/git/Cataclysm-Signal)
 
 To run cataclysm-tiles locally, install the SDL3 runtime libraries on your linux machine. You need SDL3, SDL3_image, SDL3_ttf, and SDL3_mixer for sound, all at version 3.4.0 or newer. Use your package manager if it carries them. Otherwise build them from the upstream SDL release branches, as described in the SDL3 section of [COMPILING.md](COMPILING.md).
 
-You can then test your build on your linux machine by opening a terminal in the `/Documents/git/Cataclysm-DDA` folder and using this command:
+You can then test your build on your linux machine by opening a terminal in the `/Documents/git/Cataclysm-Signal` folder and using this command:
 ```bash
 ./cataclysm-tiles
 ```
@@ -99,6 +99,6 @@ You can then test your build on your linux machine by opening a terminal in the 
 
   ![Image showing the makefile settings for cross compilation](../img/Devcontainer-Makefile-Settings-Crosscompile-Windows.png)
   
-  Next, press the play button to build the game. After it is build, you should see the cataclysm-tiles.exe file in the folder where you cloned your fork to (e.g. /workspaces/Cataclysm-DDA)
+  Next, press the play button to build the game. After it is build, you should see the cataclysm-tiles.exe file in the folder where you cloned your fork to (e.g. /workspaces/Cataclysm-Signal)
 
 

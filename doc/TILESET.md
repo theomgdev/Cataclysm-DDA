@@ -60,9 +60,9 @@
 
 >[!NOTE]
 >If you are looking for specific tileset information or style guides, try the tileset repository:
-> - [Main page](https://github.com/I-am-Erk/CDDA-Tilesets)
-> - [Tilesets documentation](https://github.com/I-am-Erk/CDDA-Tilesets/tree/master/doc)
-> - [Rendered documentation](https://i-am-erk.github.io/CDDA-Tilesets/)
+> - [Main page](https://github.com/I-am-Erk/Signal-Tilesets)
+> - [Tilesets documentation](https://github.com/I-am-Erk/Signal-Tilesets/tree/master/doc)
+> - [Rendered documentation](https://i-am-erk.github.io/Signal-Tilesets/)
 
 ## Terminology
 
@@ -198,7 +198,7 @@ You can add `"rotates": true` to allow sprites to be rotated by the game automat
 
 #### Multitile
 
-`"multitile": true` signifies that there is an `additional_tiles` object (redundant? [probably](https://github.com/CleverRaven/Cataclysm-DDA/issues/46253)) with one or more objects that define sprites for game entities associated with this tile, such as broken versions of an item, or wall connections.  Each object in the array has an `id` field, as above, and an `fg` field, which can be a single [root name](#root-name), an array of root names, or an array of objects as above. `"rotates": true` is implied with it and can be omitted.
+`"multitile": true` signifies that there is an `additional_tiles` object (redundant? [probably](issue #46253)) with one or more objects that define sprites for game entities associated with this tile, such as broken versions of an item, or wall connections.  Each object in the array has an `id` field, as above, and an `fg` field, which can be a single [root name](#root-name), an array of root names, or an array of objects as above. `"rotates": true` is implied with it and can be omitted.
 
 #### Connecting terrain and furniture - `connect_groups` and `connects_to`
 
@@ -484,11 +484,11 @@ So, e.g. all these texts would result in lookup for `graffiti_NO_FUTURE`: "no fu
       "sprite_offset_x": -16,
       "sprite_offset_y": -48,
       "pixelscale": 2,      // Optional. Sets a multiplier for resizing tiles. Multiplied/on top of by tileset pixelscale. Defaults to 1.
-      "sprites_across": 4   // Change the sheet width, default is 16. Reducing empty space in the end helps a bit with CDDA memory consumption
+      "sprites_across": 4   // Change the sheet width, default is 16. Reducing empty space in the end helps a bit with Signal memory consumption
     }
   }, {
     "fillerhoder.png": {    // Unknown keys like `source` will be ignored by `compose.py` and can be used as comments.
-      "source": "https://github.com/CleverRaven/Cataclysm-DDA/tree/b2d1f9f6cf6fae9c5076d29f9779e0ca6c03c222/gfx/HoderTileset",
+      "source": "https://github.com/theomgdev/Cataclysm-Signal/tree/b2d1f9f6cf6fae9c5076d29f9779e0ca6c03c222/gfx/HoderTileset",
       "filler": true,
       "exclude": [          // all subdirectories of this sheet directory mentioned here will not be visited
         "dir_that_will_be_ignored",
@@ -646,7 +646,7 @@ py -m pip install --user pyvips
 #### Launching scripts
 Navigate on Console to a directory with the script you want to launch.
 Prefix the script filename with `py `, like this: `py compose.py --use-all --obsolete-fillers pathToYourTileset pathToYourOutputFolder`
-Alternatively you can copy `updtset.cmd` from `CDDA-Tilesets\tools` to your Desktop, right click on it, select `Edit`, change four variables on the top part. Then you can just doubleclick on it and get Tileset updated.
+Alternatively you can copy `updtset.cmd` from `Signal-Tilesets\tools` to your Desktop, right click on it, select `Edit`, change four variables on the top part. Then you can just doubleclick on it and get Tileset updated.
 
 It is recommended to bind a key to the `update tileset` action, so you do not need to restart the game after composing the tileset. E.g. `F12` is usually unused.
 

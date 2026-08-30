@@ -659,8 +659,8 @@ any overlap.
 Note: this is different from [recipe steps](#recipe-steps), which split a single recipe into named phases with per-step tools and proficiencies but do not create intermediate items.
 
 For more details, see [this pull
-request](https://github.com/CleverRaven/Cataclysm-DDA/pull/36657) and the
-[related issue](https://github.com/CleverRaven/Cataclysm-DDA/issues/32311).
+request](pull request #36657) and the
+[related issue](issue #32311).
 
 
 # Item disassembly

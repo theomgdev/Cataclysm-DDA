@@ -57,14 +57,14 @@ TEST_CASE( "fold-string" )
 
     SECTION( "Case 3 - test wrapping of mixed language" ) {
         const auto folded = foldstring(
-                                "Cataclysm-DDA是Github上的一个开源游戏项目，目前已有超过16000个PR.",
+                                "Cataclysm-Signal是Github上的一个开源游戏项目，目前已有超过16000个PR.",
                                 13
                             );
         const auto expected = {
             /*
              0123456789abc
             */
-            "Cataclysm-DDA",
+            "Cataclysm-Signal",
             "是Github上的",
             "一个开源游戏",
             "项目，目前已",
