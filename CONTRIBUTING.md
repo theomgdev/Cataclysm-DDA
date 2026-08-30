@@ -46,9 +46,8 @@ This means any contribution you make to the project will also be covered by the 
 ## Licensing and Authorship
 
 All contributions must be authored by the submitter, with a few exceptions such as porting changes from another fork while maintaining attributions.
-This fork accepts LLM-assisted contributions, and the working agreement covering them is `AGENTS.md` in the repository root.
+Cataclysm: Signal accepts LLM-assisted contributions, and the working agreement covering them is `AGENTS.md` in the repository root.
 Authorship still rests with the submitter: you are responsible for the change and must understand it well enough to defend it in review, because an assistant is a tool and not an author.
-Upstream CleverRaven bans LLM-sourced content outright, so nothing produced here is sent to them as a pull request.
 If you are porting content from another fork, you must arrange your commits such that the original authorship is preserved, i.e. the commits should appear in your branch the same as they do in the fork you pulled them from with the Author field indicating the original author.
 
 ## Using a good text editor

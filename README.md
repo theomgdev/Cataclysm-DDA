@@ -2,19 +2,19 @@
 
 [![follows Keel](https://img.shields.io/badge/follows-Keel-1f6feb)](https://github.com/theomgdev/keel)
 
-A fork of Cataclysm: Dark Days Ahead where LLM-assisted contributions are
-welcome, under one rule that gives the fork its name: signal over noise. Add up
-everything you write for a change — commit message, pull request, comments,
-markdown — and it has to come out shorter than the code it describes. Two lines
-of code do not get twenty lines of explanation. [`AGENTS.md`](AGENTS.md) is the
-whole of it, and it is short.
+A survival roguelike built on Cataclysm: Dark Days Ahead, where LLM-assisted
+contributions are welcome under one rule that gives the project its name: signal
+over noise. Add up everything you write for a change — commit message, pull
+request, comments, markdown — and it has to come out shorter than the code it
+describes. Two lines of code do not get twenty lines of explanation.
+[`AGENTS.md`](AGENTS.md) is the whole of it, and it is short.
 
-Upstream does not accept LLM-sourced work at all, and that is their call to
-make; nothing from here is pushed to them. This fork follows upstream closely
-and builds its own things on top — performance work so far, and content and
-mechanics of its own as it goes.
+Signal tracks the original game closely and builds its own things on top —
+performance work so far, content and mechanics of its own as it goes. Nothing
+from here goes back the other way as a pull request; that project does not
+accept LLM-assisted work, and it is their call to make.
 
-Everything below is upstream's README, unchanged.
+Everything below is the original Cataclysm: Dark Days Ahead README, unchanged.
 
 ---
 

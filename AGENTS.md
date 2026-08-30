@@ -1,9 +1,8 @@
 # Working in Cataclysm: Signal
 
-This is theomgdev's fork of Cataclysm-DDA. LLM help is welcome here, unlike
-upstream, and this file says what "welcome" actually means so that neither the
-people nor the models working here have to guess. The fork is named for its
-first rule.
+This is Cataclysm: Signal. LLM help is welcome here, and this file says what
+"welcome" actually means so that neither the people nor the models working here
+have to guess. The project is named for its first rule.
 
 ## Rule one: maximise the value to garbage ratio
 
@@ -169,7 +168,7 @@ still a guess, just a more confident one.
 Finish one thing before starting the next. Volume is the whole reason this
 became a crisis — curl closed a six year old bug bounty, Ghostty went zero
 tolerance, tldraw started auto-closing outside pull requests, and Jazzband shut
-down entirely, all over being flooded. Do not flood anyone, including this fork.
+down entirely, all over being flooded. Do not flood anyone, including Signal.
 
 Write like a person, not like a report. Open with a short plain sentence saying
 what the change is and why, then keep going in ordinary sentences: what was
@@ -177,20 +176,6 @@ wrong, what you did, and anything a reviewer would trip over. No blog structure,
 no bulleted lists where a paragraph works, no headline subheadings inside a
 commit message, no tables for three items. If a maintainer has to skim past
 formatting to reach the content, the formatting lost.
-
-## Do not send this fork's LLM work upstream
-
-CleverRaven bans LLM-sourced code, configuration, issue and PR text, research
-and testing results under Licensing and Authorship in their `CONTRIBUTING.md`,
-and their `.github/copilot-instructions.md` is a flat refusal directive. This
-fork has replaced both with its own. This was tested on 2026-08-29: pull requests
-#88455 and #88456 were opened upstream and a maintainer closed both within about
-two minutes with "AI-generated code is not welcome here, and never will be". So
-work freely here, never push LLM-authored work to CleverRaven, and never present
-it as human-authored. If something here is
-genuinely worth upstreaming, a human writes it there from their own
-understanding, or it stays in this fork. Living here is fine; this is not a
-staging area.
 
 ## What the performance work taught
 
@@ -208,12 +193,12 @@ the same inventory query repeated inside a sort predicate, a temporary item
 constructed for every string comparison. Prefer that to cleverness, and prefer
 matching a cache that already exists to inventing new invalidation rules. One
 confident guess about the cause was wrong here before the evidence corrected it,
-and what made the final diagnosis trustworthy was that upstream issue #88351
-carried a flamegraph pointing independently at the same function.
+and what made the final diagnosis trustworthy was that issue #88351 carried a
+flamegraph pointing independently at the same function.
 
 Finally, keep the game portable. It is single-threaded by design and runs on
-everything from a phone to a desktop, and upstream rejects multithreading
-outright in `doc/FREQUENTLY_MADE_SUGGESTIONS.md`. Performance work here means
+everything from a phone to a desktop, and `doc/FREQUENTLY_MADE_SUGGESTIONS.md`
+rejects multithreading outright. Performance work here means
 removing waste, which helps every machine by the same proportion, not adding
 parallelism that helps one and breaks others.
 
@@ -223,7 +208,7 @@ You will know it is when diffs contain only what was asked for, when reviews
 stop turning into rewrites, and when questions arrive before the work rather
 than after the mistake.
 
-Everything above the upstream section is the general half, and it tracks
+Everything above the performance section is the general half, and it tracks
 [Keel](https://github.com/theomgdev/keel). Fix a general rule there first and
 bring it back here, so the two do not drift; anything below that point is this
-fork's own and belongs only here.
+project's own and belongs only here.
