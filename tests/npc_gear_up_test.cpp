@@ -495,6 +495,31 @@ TEST_CASE( "npc_gear_up_finds_its_own_storage_first", "[npc][gear_up]" )
     // bootstrap itself -- no pockets, then pockets -- is what this locks down.
 }
 
+TEST_CASE( "npc_gear_up_ends_when_it_cannot_carry_what_it_wants", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // Naked, armed, no pockets at all: wanted ammunition that can never be
+    // stashed must end the order, not send the character back to the crate
+    // every turn forever.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    item pistol( itype_glock_19 );
+    REQUIRE( guy.wield( pistol ) );
+    REQUIRE( guy.volume_capacity() == 0_ml );
+
+    item rounds( itype_9mm );
+    rounds.charges = 100;
+    here.add_item_or_charges( tile, rounds );
+
+    run_gear_up( guy );
+
+    CHECK( count_of( guy, itype_9mm ) == 0 );
+    CHECK( items_on( tile ) == 1 );
+}
+
 TEST_CASE( "npc_gear_up_will_not_pile_on_layers_while_overheating", "[npc][gear_up]" )
 {
     reset_world();

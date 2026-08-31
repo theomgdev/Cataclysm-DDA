@@ -50,43 +50,21 @@
 #include "weather_type.h"
 
 /*
- * "Gear up from the camp stores" -- a job, not a conjuring trick.
+ * "Gear up from the camp stores": the character walks the faction's loot and
+ * camp zones tile by tile, like sorting or building, and equips from what is
+ * actually stored there -- including inside containers, which is where a
+ * sorted camp keeps things.  Displaced gear goes back to the zone the zone
+ * manager says it belongs in, so the job leaves the camp sorted.
  *
- * The character walks their faction's loot zones the way they walk them to sort
- * or to build, tile by tile, spending real time, and equips themselves from
- * what is actually stored there.  It is a multi_zone_activity_actor for exactly
- * that reason: travel, routing and interruption are the framework's problem,
- * and a camp's supplies are spread over more tiles than anyone can reach from
- * wherever they happen to be standing.
+ * Two stages: equipment first (weapon, backup blade, clothing), supplies
+ * second (magazines, ammunition, medical, rations).  The stage only advances
+ * once no tile offers an equipment improvement, so the weapon is final before
+ * ammunition for it is picked, or an archer ends up carrying pistol rounds.
  *
- * Zone integration is the whole point.  Players lay specific zones down --
- * LOOT_ARMOR, LOOT_DRUGS, LOOT_AMMO -- and then throw a large CAMP_STORAGE or
- * LOOT_UNSORTED over the top of them for convenience, so the search set has to
- * be every loot zone the faction owns rather than any single one of them.
- * Displaced gear goes back to whichever zone the zone manager says it belongs
- * in, which is the same question the loot sorter asks, so gearing up leaves the
- * camp sorted instead of strewn.
- *
- * Nesting matters as much as zones.  A sorted camp keeps bandages inside a
- * first aid kit and rounds inside an ammo box; anything that only reads the top
- * of the pile looks at a full store room and reports that it is empty.
- *
- * Two stages, because ordering matters and cannot be enforced tile by tile:
- *
- *   stage 0  weapons, a backup to swing, and everything worn
- *   stage 1  magazines and ammunition for the weapon finally chosen, then
- *            bandages, painkillers, food and water
- *
- * Choosing ammunition before the weapon is settled is how an archer ends up
- * carrying pistol rounds.  The stage only advances once no tile anywhere still
- * offers an equipment improvement, so the weapon is final before the first
- * round is picked up.
- *
- * Termination: rejected item *types* are remembered on the character.  Trying a
- * coat on and putting it back is a decision that can only be made after the
- * fact, so without that memory the character would walk back to the same crate
- * and re-test the same coat forever -- and the engine's own loop detector
- * cannot see it, because every lap of that circle spends moves.
+ * Termination hinges on gear_up_rejected: item types tried and turned down --
+ * or that could not be carried -- are remembered on the character, because the
+ * engine's loop detector cannot see a character walking back to the same
+ * crate forever when every lap spends moves.
  */
 
 static const damage_type_id damage_bash( "bash" );
@@ -122,30 +100,20 @@ constexpr int want_quench = 400;
 constexpr int want_ammo_loads = 3;
 constexpr int want_spare_magazines = 2;
 
-// How much carrying capacity is actually worth having: room for ammunition,
-// a medical kit, a day of food and water, a bit of salvage.  Past that,
-// another liter of pocket stops being worth the weight and the layer it
-// occupies, so its credit collapses to a tenth instead of continuing to grow
-// in a straight line.  Without this, storage -- which is not divided across
-// the body the way protection is -- routinely outscored real armour once a
-// character already had a bag or two, and a third redundant bag could still
-// look like an improvement over nothing at all.
+// Carrying capacity worth having: ammunition, a medical kit, a day of food
+// and water, some salvage.  Past that a liter of pocket keeps a tenth of its
+// credit, or storage outscores real armour once a character has a bag or two.
 constexpr double want_storage_liters = 25.0;
 constexpr double weight_storage_per_liter = 0.30;
 constexpr double weight_storage_marginal = weight_storage_per_liter * 0.1;
 
-// Local encumbrance weight for whichever part a candidate actually covers.
-// Legs carry extra weight because being unable to run is how survivors die;
-// eyes and mouth because a gas mask that blinds you is not a free upgrade.
-// This mirrors npc::estimate_armour's head/torso weighting in spirit, but
-// scoped to the part in question rather than averaged across the whole body.
+// Extra encumbrance weight for legs (can't run) and eyes/mouth (a gas mask
+// that blinds you is not a free upgrade), scoped to the covered part.
 constexpr double weight_leg_encumbrance = 2.0;
 constexpr double weight_sense_encumbrance = 1.5;
 
-// Warmth is only worth adding while the character is actually short of the
-// planning target; past that it is a liability (heatstroke, not a bonus),
-// which is why the credit for being under target and the cost of being over
-// it are not the same number.
+// Warmth is credited only while short of the planning target; past that it
+// is a smaller liability, not a bonus.
 constexpr double weight_warmth_needed = 0.10;
 constexpr double weight_warmth_excess = 0.05;
 
@@ -194,11 +162,9 @@ bool is_healing_item( const item &it )
     return it.is_medical_tool();
 }
 
-// Do these two pieces compete for the same patch of skin?  Whole-limb overlap
-// is too coarse -- "leg" covers the knee, the shin and the thigh, and pieces
-// that share a limb often coexist perfectly well.  This is the granularity the
-// engine's own conflict rule uses (outfit::check_rigid_conflicts), which is why
-// you cannot wear kneepads over kneepads but can wear kneepads and shin guards.
+// Same patch of skin?  Sub-part granularity, the same the engine's own
+// conflict rule uses (outfit::check_rigid_conflicts): kneepads and shin
+// guards share a leg but not a sub-part.
 bool shares_sub_part( const item &a, const item &b )
 {
     const std::vector<sub_bodypart_id> a_parts = a.get_covered_sub_body_parts();
@@ -211,15 +177,9 @@ bool shares_sub_part( const item &a, const item &b )
     return false;
 }
 
-// Does this candidate compete with something already worn for the same *slot*
-// in the layering system?  Sub-part overlap alone is not enough to tell --
-// an undershirt and a hoodie both cover the torso and that is exactly how
-// they are meant to be worn together, one at SKINTIGHT and one at NORMAL.
-// Two pairs of pants both sitting at NORMAL on the same sub-part is the
-// actual redundancy: same patch of skin, same layer, so one is just doing
-// the other's job worse.  can_wear() does not catch this soft case (only a
-// second *rigid* piece on one sub-limb is a hard conflict to it), so it has
-// to be checked here before a candidate stacks on top of what is worn.
+// Same sub-part *and* same layer as something worn: that is the redundancy
+// (second pair of pants), where an undershirt under a hoodie is not.
+// can_wear() only forbids a second rigid piece, so the soft case lands here.
 bool conflicts_with_worn( const Character &who, const item &candidate )
 {
     const std::vector<sub_bodypart_id> cand_parts = candidate.get_covered_sub_body_parts();
@@ -275,11 +235,6 @@ double mean_warmth_of( const Character &who )
     return total / warmth.size();
 }
 
-// Legs and the senses cost more mobility per point of encumbrance than
-// anything else does -- being unable to run, or unable to see or breathe
-// properly, is how survivors die.  Scoped to whichever part the candidate
-// actually covers, rather than an average across the whole body, so a leg
-// piece's own encumbrance is judged on the leg it burdens.
 double local_encumbrance_weight( const item &it )
 {
     for( const char *const bp_id : { "leg_l", "leg_r" } ) {
@@ -295,29 +250,20 @@ double local_encumbrance_weight( const item &it )
     return 1.0;
 }
 
-// The score clothing decisions are made on.  Local to the candidate's own
-// coverage rather than diluted across the whole body the way
-// npc::estimate_armour's averaging is -- that dilution is right for a
-// threat-assessment question ("how tough is this character overall"), but it
-// is wrong here: it is what let a leg armour's protection all but vanish
-// next to a whole-body storage or encumbrance term, and let a cargo pocket's
-// storage credit keep growing forever with nothing to weigh it against.
-// Storage tapers off once the character already carries a realistic amount;
-// warmth only counts while the character is actually short of the planning
-// target, and costs a little once they are not.
+// The score clothing decisions are made on: local to the candidate's own
+// coverage, never a whole-body average -- averaging is what let leg armour
+// vanish next to an unrelated backpack's storage term.  Fit and sizing need
+// no term of their own: get_avg_encumber() already charges wrong-size and
+// unfitted garments extra, so they lose here automatically.
 double wear_proxy( const Character &who, const item &it, int target_warmth )
 {
     double resist = it.resist( damage_bash ) + it.resist( damage_cut ) +
                     it.resist( damage_stab ) + it.resist( damage_bullet );
     resist *= it.get_avg_coverage() / 100.0;
 
-    // Judged against what the character would carry *without* this specific
-    // piece.  If it is already worn, its own volume is already counted in
-    // volume_capacity(), so leaving that in would score a big worn pack as
-    // if it were shrinking its own remaining room -- scoring the same piece
-    // lower worn than it would score as an unworn candidate, which is
-    // exactly the inconsistency that let a just-displaced piece look newly
-    // attractive again a moment later and trade places forever.
+    // Storage is judged against what the character carries *without* this
+    // piece, or a worn pack scores lower than its unworn twin and the two
+    // trade places forever.
     const double item_liters = units::to_liter( it.get_volume_capacity() );
     double current_liters = units::to_liter( who.volume_capacity() );
     if( who.is_worn( it ) ) {
@@ -372,10 +318,8 @@ bool tile_is_off_limits( const Character &who, const tripoint_bub_ms &tile )
 }
 
 // Every loot zone the faction owns, plus the basecamp's own storage and food
-// zones, which do not carry the LOOT prefix.  Players lay the specific zones
-// down and then cover them with a big general one, so these overlap heavily and
-// the set does the deduplication.  This is the difference between finding a
-// camp's supplies and reporting that a sorted camp is empty.
+// zones, which do not carry the LOOT prefix.  Specific zones and the big
+// general one laid over them overlap heavily; the set deduplicates.
 std::unordered_set<tripoint_abs_ms> stores_within_reach( Character &who )
 {
     zone_manager &mgr = zone_manager::get_manager();
@@ -407,10 +351,9 @@ std::unordered_set<tripoint_abs_ms> stores_within_reach( Character &who )
     return tiles;
 }
 
-// Where does this belong?  The zone manager already knows -- it is the same
-// question the loot sorter asks, and it prefers the specific zone over the
-// general one laid on top of it -- so putting something down here leaves the
-// camp sorted instead of leaving a pile wherever we happened to be standing.
+// Where does this belong?  The zone manager already knows -- the same
+// question the loot sorter asks -- so putting things down here leaves the
+// camp sorted instead of piled wherever we stood.
 std::optional<tripoint_bub_ms> home_for( Character &who, const item &it,
         const tripoint_bub_ms &fallback )
 {
@@ -508,6 +451,18 @@ int take_charges( Character &who, item_location &loc, int wanted )
     item copy = *loc;
     if( copy.count_by_charges() ) {
         copy.charges = take;
+        // Take what can actually be carried rather than all or nothing.
+        const std::int64_t stack_grams = std::max<std::int64_t>( 1, to_gram( copy.weight() ) );
+        const std::int64_t headroom_grams =
+            to_gram( who.weight_capacity() ) - to_gram( who.weight_carried() );
+        if( stack_grams > headroom_grams ) {
+            take = static_cast<int>( std::max<std::int64_t>( 0,
+                                     headroom_grams * take / stack_grams ) );
+            if( take <= 0 ) {
+                return 0;
+            }
+            copy.charges = take;
+        }
     } else {
         take = 1;
     }
@@ -625,17 +580,10 @@ std::vector<item_location> candidates_at( Character &who, const tripoint_bub_ms 
 // somewhere and then does nothing, over and over.
 // ---------------------------------------------------------------------------
 
-// A tool with decent bash or cut stats (a hatchet, a wrench, a waffle iron)
-// still reads as is_melee() to the engine, because it can be swung in a pinch.
-// That alone does not make it a weapon candidate here: taking it locks the
-// camp's own tools to whichever NPC happened to try one on.  But is_tool()
-// alone over-excludes too -- a combat knife is flagged TOOL for its
-// gunmod/butchering use and would be thrown out by that check alone, the
-// same way a waffle iron would.  Its own item category is what actually
-// tells the two apart: a knife's category stays "weapons" even with a tool
-// slot attached, where a camp tool's does not.  A few real guns (a plasma
-// cutting torch, for one) are also tools, so the exclusion never applies to
-// the gun case at all.
+// A camp tool (wrench, waffle iron) reads as is_melee() but must not be
+// taken as a weapon; a combat knife carries a tool slot but must.  The item's
+// own category tells them apart, and guns (a plasma torch is a tool too) are
+// exempt from the exclusion entirely.
 bool is_weapon_candidate( const item &it )
 {
     if( it.is_gun() ) {
@@ -688,7 +636,8 @@ bool needs_backup_blade( npc &p )
 
 bool wants_as_backup( npc &p, const item &it )
 {
-    if( !is_weapon_candidate( it ) || it.is_gun() || !p.can_wield( it ).success() ) {
+    if( !is_weapon_candidate( it ) || it.is_gun() ||
+        p.gear_up_rejected.count( it.typeId() ) > 0 || !p.can_wield( it ).success() ) {
         return false;
     }
     return p.evaluate_weapon( it ) > p.evaluate_weapon( null_item_reference() );
@@ -836,6 +785,11 @@ bool wanted_for_stage( npc &p, const item &it, gear_stage stage )
                ( needs_backup_blade( p ) && wants_as_backup( p, it ) ) ||
                worth_trying_on( p, it );
     }
+    // A supply that could not be carried (no room, too heavy) never stops
+    // being wanted on its own; only this memory ends the sweep.
+    if( p.gear_up_rejected.count( it.typeId() ) > 0 ) {
+        return false;
+    }
     return wants_magazine( p, it ) || wants_ammo( p, it ) ||
            wants_medical( p, it ) || wants_rations( p, it );
 }
@@ -935,14 +889,10 @@ void transfer_contents( Character &who, item &from, item &to, const tripoint_bub
     }
 }
 
-// Try one garment on and keep it only if it is measurably better than an
-// empty slot, or than the specific piece it would displace -- never the
-// whole outfit, so accepting one piece never raises the bar the next
-// candidate has to clear.  The engine decides what physically fits -- pocket
-// length, body size, integrated and no-takeoff gear, power armour
-// dependencies, a second rigid piece on a sublimb that already has one -- so
-// none of that is re-derived here.  Returns true if something actually
-// changed.
+// Try one garment on; keep it only if it beats an empty slot or the specific
+// piece it displaces, never the whole outfit.  What physically fits (pocket
+// length, body size, rigid conflicts, power armour) is the engine's call and
+// is not re-derived here.  Returns true if something changed.
 bool try_one_garment( npc &p, item_location &loc, const tripoint_bub_ms &tile )
 {
     const int target_warmth = target_warmth_for( planning_temperature( p ) );
@@ -1023,11 +973,9 @@ bool try_one_garment( npc &p, item_location &loc, const tripoint_bub_ms &tile )
     }
 
     loc.remove_item();
-    // Remembered by type, the same way a rejected candidate is: the storage
-    // and warmth terms in wear_proxy() are scored against the character's
-    // current totals, which this swap just changed, so the piece just taken
-    // off could otherwise look newly attractive again on a later pass and
-    // trade places with what just replaced it forever.
+    // The swap changed the totals wear_proxy() scores against, so without
+    // this memory the displaced piece can look attractive again later and
+    // trade places with its replacement forever.
     p.gear_up_rejected.insert( displaced.typeId() );
     if( !put_away( p, removed.front(), tile ) ) {
         // Nowhere for the old piece, so wear it again over the top rather
@@ -1061,6 +1009,9 @@ bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
         if( wielded ) {
             const item old = *wielded;
             if( !p.can_unwield( old ).success() ) {
+                // The candidate can never be taken while the hands are stuck,
+                // so remember it or this repeats every turn.
+                p.gear_up_rejected.insert( best->typeId() );
                 report_problem( p, string_format( _( "can't let go of %s" ), old.tname() ) );
                 return true;
             }
@@ -1069,13 +1020,12 @@ bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
             item removed = p.remove_weapon();
             if( !put_away( p, removed, tile ) ) {
                 p.wield( removed );
+                p.gear_up_rejected.insert( best->typeId() );
                 report_problem( p, string_format( _( "no room to set down %s" ), old.tname() ) );
                 return true;
             }
-            // Remembered by type, the same way a rejected garment is: without
-            // it, a displaced weapon sitting back in the stores can out-score
-            // whatever just replaced it on a later pass, and the two trade
-            // places forever.
+            // Or the displaced weapon can out-score its replacement from the
+            // shelf on a later pass and the two trade places forever.
             p.gear_up_rejected.insert( old.typeId() );
         }
         if( p.wield( best ) ) {
@@ -1102,11 +1052,14 @@ bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
                 say( p, string_format( _( "takes %s as a backup" ), taken ) );
                 return true;
             }
+            p.gear_up_rejected.insert( blade->typeId() );
         }
     }
 
-    // Then clothing, most promising candidate first, so the good coat is
-    // measured before the pile of shirts underneath it.
+    // Then clothing, biggest internal volume first -- a pack worn early is
+    // where everything displaced later can go.  Ties fall back to the score,
+    // so among plain garments the good coat is still measured before the
+    // pile of shirts underneath it.
     std::vector<item_location> wearables;
     for( item_location &loc : pool ) {
         if( loc && worth_trying_on( p, *loc ) ) {
@@ -1116,6 +1069,11 @@ bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
     const int target_warmth = target_warmth_for( planning_temperature( p ) );
     std::sort( wearables.begin(), wearables.end(),
     [&p, target_warmth]( const item_location & a, const item_location & b ) {
+        const units::volume va = a->get_volume_capacity();
+        const units::volume vb = b->get_volume_capacity();
+        if( va != vb ) {
+            return va > vb;
+        }
         return wear_proxy( p, *a, target_warmth ) > wear_proxy( p, *b, target_warmth );
     } );
     for( item_location &loc : wearables ) {
@@ -1142,6 +1100,8 @@ bool do_supply_stage( npc &p, const tripoint_bub_ms &tile )
         if( take_into_inventory( p, loc ) ) {
             say( p, string_format( _( "picks up %s" ), name ) );
             did_something = true;
+        } else {
+            p.gear_up_rejected.insert( loc->typeId() );
         }
     }
 
@@ -1154,7 +1114,12 @@ bool do_supply_stage( npc &p, const tripoint_bub_ms &tile )
         if( !loc || !wants_ammo( p, *loc ) ) {
             continue;
         }
-        taken += take_charges( p, loc, want );
+        const int got = take_charges( p, loc, want );
+        if( got > 0 ) {
+            taken += got;
+        } else {
+            p.gear_up_rejected.insert( loc->typeId() );
+        }
     }
     if( taken > 0 ) {
         say( p, string_format( _( "takes %d rounds of ammunition" ), taken ) );
@@ -1173,6 +1138,8 @@ bool do_supply_stage( npc &p, const tripoint_bub_ms &tile )
         if( take_charges( p, loc, want ) > 0 ) {
             say( p, string_format( _( "takes %s" ), name ) );
             did_something = true;
+        } else {
+            p.gear_up_rejected.insert( loc->typeId() );
         }
     }
 
@@ -1184,6 +1151,8 @@ bool do_supply_stage( npc &p, const tripoint_bub_ms &tile )
         if( take_into_inventory( p, loc ) ) {
             say( p, string_format( _( "packs %s" ), name ) );
             did_something = true;
+        } else {
+            p.gear_up_rejected.insert( loc->typeId() );
         }
     }
 
@@ -1304,12 +1273,9 @@ bool multi_gear_up_activity_actor::multi_activity_do( Character &you,
     p->has_new_items = true;
     p->invalidate_range_cache();
 
-    // The framework reads this as "the work failed", which is what keeps the
-    // sweep going: returning false says something was done here and the
-    // activity should survive the turn, so that the second stage is reached and
-    // a crate with several useful things in it is not abandoned after one.
-    // Returning true when nothing happened lets the sweep run out and the
-    // activity end, which is the only thing that terminates it.
+    // false keeps the activity alive so a crate with several useful things is
+    // not abandoned after one; true when nothing happened is the only thing
+    // that lets the sweep run out and end.
     return !did_something;
 }
 
