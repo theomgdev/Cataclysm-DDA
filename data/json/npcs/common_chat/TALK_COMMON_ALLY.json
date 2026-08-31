@@ -318,6 +318,12 @@
         "effect": "sort_loot"
       },
       {
+        "text": "Gear up from the camp stores.",
+        "topic": "TALK_DONE",
+        "condition": { "not": { "npc_has_trait": "HALLUCINATION" } },
+        "effect": "gear_up_from_stores"
+      },
+      {
         "text": "Please do any construction work that you can.",
         "topic": "TALK_DONE",
         "condition": { "and": [ { "not": "npc_has_activity" }, { "not": { "npc_has_trait": "HALLUCINATION" } } ] },

@@ -62,6 +62,7 @@ void buy_shave( npc & );
 void morale_chat_activity( npc & );
 void start_trade( npc & );
 void sort_loot( npc & );
+void gear_up_from_stores( npc & );
 void do_construction( npc & );
 void do_mining( npc & );
 void do_mopping( npc & );

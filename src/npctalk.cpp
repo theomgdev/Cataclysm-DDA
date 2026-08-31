@@ -712,7 +712,8 @@ enum npc_chat_menu {
     NPC_CHAT_ACTIVITIES_STUDY,
     NPC_CHAT_ACTIVITIES_VEHICLE_DECONSTRUCTION,
     NPC_CHAT_ACTIVITIES_VEHICLE_REPAIR,
-    NPC_CHAT_ACTIVITIES_UNASSIGN
+    NPC_CHAT_ACTIVITIES_UNASSIGN,
+    NPC_CHAT_GEAR_UP
 };
 } // namespace
 
@@ -995,6 +996,9 @@ static int npc_activities_menu()
     nmenu.addentry( NPC_CHAT_ACTIVITIES_VEHICLE_REPAIR, true, 'V', _( "Repairing vehicles" ) );
     nmenu.addentry( NPC_CHAT_ACTIVITIES_UNASSIGN, true, '-',
                     _( "Taking it easy (Stop what they are working on)" ) );
+    // Not an ongoing job: this one resolves immediately and reports what it did.
+    nmenu.addentry( NPC_CHAT_GEAR_UP, true, 'g',
+                    _( "Gearing up from the camp stores (done right away)" ) );
 
     nmenu.query();
 
@@ -1515,6 +1519,10 @@ void game::chat( const std::optional<tripoint_bub_ms> &p )
                     }
                     case NPC_CHAT_ACTIVITIES_UNASSIGN: {
                         talk_function::revert_activity( *selected_npc );
+                        break;
+                    }
+                    case NPC_CHAT_GEAR_UP: {
+                        talk_function::gear_up_from_stores( *selected_npc );
                         break;
                     }
                     default:
@@ -8584,6 +8592,7 @@ void talk_effect_t::parse_string_effect( const std::string &effect_id, const Jso
             WRAP( mission_reward ),
             WRAP( start_trade ),
             WRAP( sort_loot ),
+            WRAP( gear_up_from_stores ),
             WRAP( find_mount ),
             WRAP( dismount ),
             WRAP( do_chop_plank ),
