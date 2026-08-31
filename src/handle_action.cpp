@@ -74,6 +74,7 @@
 #include "move_mode.h"
 #include "mtype.h"
 #include "mutation.h"
+#include "npc_gear_up.h"
 #include "options.h"
 #include "output.h"
 #include "overmap_ui.h"
@@ -1518,7 +1519,8 @@ static void loot()
         MultiDis = 16384,
         MultiMopping = 32768,
         MultiStudy = 131072,
-        UnloadLoot = 65536
+        UnloadLoot = 65536,
+        GearUp = 262144
     };
 
     Character &player_character = get_player_character();
@@ -1563,6 +1565,9 @@ static void loot()
                                  player_character.pos_bub() ) ? MultiDis : 0;
     flags |= g->check_near_zone( zone_type_MOPPING, player_character.pos_bub() ) ? MultiMopping : 0;
     flags |= g->check_near_zone( zone_type_STUDY_ZONE, player_character.pos_bub() ) ? MultiStudy : 0;
+    // Gearing up draws from every loot zone and the camp's own stores, so it
+    // asks the gear-up code itself rather than naming one zone type here.
+    flags |= gear_up_stores_available( player_character ) ? GearUp : 0;
     if( flags == 0 ) {
         add_msg( m_info, _( "There is no compatible zone nearby." ) );
         add_msg( m_info, _( "Compatible zones are %s and %s" ),
@@ -1635,6 +1640,10 @@ static void loot()
     if( flags & MultiStudy ) {
         menu.addentry_desc( MultiStudy, true, 's', _( "Study from books in study zones" ),
                             wrap60( _( "Find and read books from study zones." ) ) );
+    }
+    if( flags & GearUp ) {
+        menu.addentry_desc( GearUp, true, 'g', _( "Gear up for a fight" ),
+                            wrap60( _( "Work through the loot and camp storage zones and equip yourself from what is stored there - weapon, backup blade, armour, then ammunition, first aid, rations and water.  Displaced gear goes back where it belongs, and favourites are left alone." ) ) );
     }
 
     menu.query();
@@ -1713,6 +1722,9 @@ static void loot()
             break;
         case MultiStudy:
             player_character.assign_activity( multi_study_activity_actor() );
+            break;
+        case GearUp:
+            start_gear_up_from_stores( player_character );
             break;
         default:
             debugmsg( "Unsupported flag" );
