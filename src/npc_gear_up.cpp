@@ -1,6 +1,7 @@
-#include "npctalk.h" // IWYU pragma: associated
+#include "activity_actor_definitions.h"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <functional>
 #include <list>
@@ -11,6 +12,9 @@
 #include <utility>
 #include <vector>
 
+#include "activity_handlers.h"
+#include "activity_item_handling.h"
+#include "avatar.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "character.h"
@@ -26,45 +30,62 @@
 #include "game_constants.h"
 #include "item.h"
 #include "item_location.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "line.h"
 #include "map.h"
 #include "map_selector.h"
 #include "messages.h"
 #include "npc.h"
+#include "npctalk.h"
 #include "output.h"
+#include "player_activity.h"
 #include "ret_val.h"
 #include "translations.h"
 #include "units.h"
 #include "value_ptr.h"
-#include "vehicle.h"
-#include "vehicle_selector.h"
 #include "visitable.h"
-#include "vpart_position.h"
 #include "weather.h"
 #include "weather_type.h"
 
 /*
- * Manually triggered "gear up from the camp stores" order.
+ * "Gear up from the camp stores" -- a job, not a conjuring trick.
  *
- * This is deliberately a ONE-SHOT resolution rather than an activity: it has a
- * single trigger, runs to completion inside that one call, and prints a summary
- * of everything it decided.  That gives the order a clear beginning and a clear
- * end, which is the entire point -- when something misbehaves in play it is
- * obvious which step produced it.  There is no persistent state, no backlog and
- * no multi-turn planning, so there is also no way for it to spin in a loop.
+ * The character walks their faction's loot zones the way they walk them to sort
+ * or to build, tile by tile, spending real time, and equips themselves from
+ * what is actually stored there.  It is a multi_zone_activity_actor for exactly
+ * that reason: travel, routing and interruption are the framework's problem,
+ * and a camp's supplies are spread over more tiles than anyone can reach from
+ * wherever they happen to be standing.
  *
- * Because it resolves synchronously and physically removes items from the map,
- * several NPCs handled by the same menu selection never contend for the same
- * item: the second one simply no longer sees what the first one took.
+ * Zone integration is the whole point.  Players lay specific zones down --
+ * LOOT_ARMOR, LOOT_DRUGS, LOOT_AMMO -- and then throw a large CAMP_STORAGE or
+ * LOOT_UNSORTED over the top of them for convenience, so the search set has to
+ * be every loot zone the faction owns rather than any single one of them.
+ * Displaced gear goes back to whichever zone the zone manager says it belongs
+ * in, which is the same question the loot sorter asks, so gearing up leaves the
+ * camp sorted instead of strewn.
  *
- * The ordering of the steps is not arbitrary:
- *   1. shed ballast   - free up storage before trying to fill it
- *   2. weapon         - the weapon decides which ammunition is coherent
- *   2b. backup blade  - never leave with a gun and nothing else
- *   3. worn gear      - worn gear is where the carrying capacity comes from
- *   4. ammunition     - matched to the weapon chosen in step 2, then reload
- *   5. consumables    - medical first, then food and water
+ * Nesting matters as much as zones.  A sorted camp keeps bandages inside a
+ * first aid kit and rounds inside an ammo box; anything that only reads the top
+ * of the pile looks at a full store room and reports that it is empty.
+ *
+ * Two stages, because ordering matters and cannot be enforced tile by tile:
+ *
+ *   stage 0  weapons, a backup to swing, and everything worn
+ *   stage 1  magazines and ammunition for the weapon finally chosen, then
+ *            bandages, painkillers, food and water
+ *
+ * Choosing ammunition before the weapon is settled is how an archer ends up
+ * carrying pistol rounds.  The stage only advances once no tile anywhere still
+ * offers an equipment improvement, so the weapon is final before the first
+ * round is picked up.
+ *
+ * Termination: rejected item *types* are remembered on the character.  Trying a
+ * coat on and putting it back is a decision that can only be made after the
+ * fact, so without that memory the character would walk back to the same crate
+ * and re-test the same coat forever -- and the engine's own loop detector
+ * cannot see it, because every lap of that circle spends moves.
  */
 
 static const damage_type_id damage_bash( "bash" );
@@ -80,17 +101,14 @@ static const itype_id itype_ibuprofen( "ibuprofen" );
 static const itype_id itype_oxycodone( "oxycodone" );
 static const itype_id itype_tramadol( "tramadol" );
 
+static const zone_type_id zone_type_CAMP_FOOD( "CAMP_FOOD" );
 static const zone_type_id zone_type_CAMP_STORAGE( "CAMP_STORAGE" );
+static const zone_type_id zone_type_LOOT_IGNORE( "LOOT_IGNORE" );
 static const zone_type_id zone_type_LOOT_UNSORTED( "LOOT_UNSORTED" );
 static const zone_type_id zone_type_NO_NPC_PICKUP( "NO_NPC_PICKUP" );
 
 namespace
 {
-
-// How far the NPC will reach for the camp stores.  This order does not walk the
-// NPC anywhere, so the radius is deliberately the same one the other NPC local
-// acquisition helpers use (find_nearby_food, find_nearby_warm_clothing).
-constexpr int gear_up_radius = 6;
 
 // Nothing is swapped for a marginal gain.  An experienced player does not strip
 // and re-dress for a three percent improvement; the time and the risk are not
@@ -99,11 +117,6 @@ constexpr double weapon_swap_margin = 1.15;
 constexpr double outfit_swap_margin = 1.15;
 // A swap that costs mobility has to clear a higher bar than one that does not.
 constexpr double outfit_mobility_margin = 1.25;
-
-// Hard iteration caps.  A player-triggered order may be a little expensive, but
-// it must never be unbounded.
-constexpr int max_worn_swaps = 12;
-constexpr int max_wear_trials = 60;
 
 // Supply targets.  Concrete numbers rather than "a little", so that falling
 // short of them is reportable and testable.
@@ -116,8 +129,8 @@ constexpr int want_spare_magazines = 2;
 
 // Scoring weights.  Coverage-weighted protection rather than raw resistance,
 // head and torso worth four times a limb, mobility loss punished harder than
-// anything except freezing, and storage treated as genuinely valuable rather
-// than as an afterthought.
+// anything except body temperature, and storage treated as genuinely valuable
+// rather than as an afterthought.
 constexpr double weight_protection = 1.0;
 constexpr double weight_encumbrance = 0.25;
 // Legs carry double weight because being unable to run is how survivors die.
@@ -132,14 +145,14 @@ constexpr double weight_warmth = 0.10;
 // freeze" and "you will cook" both beat any amount of extra plating, while a
 // small mismatch stays cheap enough not to cause constant re-dressing.
 constexpr double warmth_curve = 25.0;
-// Gas masks and sealed suits earn a small standing credit, enough that the NPC
-// does not trade one away for a marginally better hat.
+// Gas masks and sealed suits earn a small standing credit, enough that the
+// character does not trade one away for a marginally better hat.
 constexpr double weight_environment = 0.10;
 // Filthy gear risks infection through any wound.  Better than nothing, worse
 // than the clean equivalent.
 constexpr double weight_filth = 0.5;
 
-// Dressing for the reading on the thermometer right now is how an NPC ends up
+// Dressing for the reading on the thermometer right now is how someone ends up
 // freezing after dark.  Plan for a colder moment than the current one.
 constexpr int night_margin_c = 8;
 // At or above this ambient temperature no extra warmth is wanted at all.
@@ -147,27 +160,28 @@ constexpr int comfort_temperature_c = 21;
 // Roughly how much clothing warmth one degree of missing ambient heat costs.
 constexpr double warmth_per_degree = 4.0;
 
-struct gear_up_report {
-    std::vector<std::string> changes;
-    std::vector<std::string> notes;
-    std::vector<std::string> problems;
+// Going through a crate costs time whether or not anything comes of it, and
+// moving one item in or out of a container costs a little more.
+constexpr int search_cost_moves = 30;
+constexpr int handle_cost_moves = 20;
 
-    void change( const std::string &s ) {
-        changes.push_back( s );
-    }
-    // Something the player should know that is neither a change nor a fault.
-    void note( const std::string &s ) {
-        notes.push_back( s );
-    }
-    void problem( const std::string &s ) {
-        problems.push_back( s );
-    }
+// How deep into nested containers to look.  A crate holding a first aid kit
+// holding bandages is two; beyond three is packing material, not storage.
+constexpr int max_nesting_depth = 3;
+
+enum class gear_stage : int {
+    equipment = 0,
+    supplies = 1,
 };
+
+// ---------------------------------------------------------------------------
+// Small predicates
+// ---------------------------------------------------------------------------
 
 bool is_painkiller( const item &it )
 {
-    // Mirrors inventory::most_appropriate_painkiller, so the NPC only stocks
-    // painkillers its own AI already knows how to use.
+    // Mirrors inventory::most_appropriate_painkiller, so the character only
+    // stocks painkillers the NPC AI already knows how to use.
     const itype_id &id = it.typeId();
     return id == itype_aspirin || id == itype_acetaminophen || id == itype_ibuprofen ||
            id == itype_codeine || id == itype_oxycodone || id == itype_tramadol ||
@@ -179,111 +193,30 @@ bool is_healing_item( const item &it )
     return it.is_medical_tool();
 }
 
-// ---------------------------------------------------------------------------
-// Candidate pool
-// ---------------------------------------------------------------------------
-
-struct gear_pool {
-    std::vector<item_location> items;
-    // Tiles belonging to a camp storage zone, nearest first.  Displaced gear
-    // goes back here -- never onto the ground.
-    std::vector<tripoint_bub_ms> storage_tiles;
-    bool saw_storage_zone_out_of_range = false;
-};
-
-bool tile_is_camp_storage( const npc &p, const tripoint_bub_ms &tile )
+// Do these two pieces compete for the same patch of skin?  Whole-limb overlap
+// is too coarse -- "leg" covers the knee, the shin and the thigh, and pieces
+// that share a limb often coexist perfectly well.  This is the granularity the
+// engine's own conflict rule uses (outfit::check_rigid_conflicts), which is why
+// you cannot wear kneepads over kneepads but can wear kneepads and shin guards.
+bool shares_sub_part( const item &a, const item &b )
 {
-    const zone_manager &mgr = zone_manager::get_manager();
-    const tripoint_abs_ms abs = get_map().get_abs( tile );
-    const faction_id fac = p.get_fac_id();
-    return mgr.has( zone_type_CAMP_STORAGE, abs, fac ) ||
-           mgr.has( zone_type_LOOT_UNSORTED, abs, fac );
-}
-
-// A camp store the leader has pointed us at is not theft: the order to gear up
-// is itself the permission.  Anything outside it still goes through the normal
-// ownership check.
-bool may_take( npc &p, item &it, const tripoint_bub_ms &tile, bool from_storage )
-{
-    if( it.is_favorite ) {
-        return false;
-    }
-    if( it.made_of( phase_id::LIQUID ) ) {
-        return false;
-    }
-    return from_storage || p.would_take_that( it, tile );
-}
-
-void collect_tile_items( npc &p, gear_pool &pool, const tripoint_bub_ms &tile )
-{
-    map &here = get_map();
-    const bool from_storage = tile_is_camp_storage( p, tile );
-    if( from_storage ) {
-        pool.storage_tiles.push_back( tile );
-    }
-
-    if( here.sees_some_items( tile, p ) ) {
-        for( item &it : here.i_at( tile ) ) {
-            if( may_take( p, it, tile, from_storage ) ) {
-                pool.items.emplace_back( map_cursor( tile ), &it );
-            }
+    const std::vector<sub_bodypart_id> a_parts = a.get_covered_sub_body_parts();
+    const std::vector<sub_bodypart_id> b_parts = b.get_covered_sub_body_parts();
+    for( const sub_bodypart_id &sbp : a_parts ) {
+        if( std::find( b_parts.begin(), b_parts.end(), sbp ) != b_parts.end() ) {
+            return true;
         }
     }
-
-    const optional_vpart_position vp = here.veh_at( tile );
-    if( !vp || vp->vehicle().is_moving() ) {
-        return;
-    }
-    const std::optional<vpart_reference> cargo = vp.cargo();
-    if( !cargo || cargo->has_feature( "LOCKED" ) ) {
-        return;
-    }
-    if( vp.part_with_feature( "CARGO_LOCKING", true ) ) {
-        return;
-    }
-    for( item &it : cargo->items() ) {
-        if( may_take( p, it, tile, from_storage ) ) {
-            pool.items.emplace_back(
-                vehicle_cursor( cargo->vehicle(), static_cast<ptrdiff_t>( cargo->part_index() ) ), &it );
-        }
-    }
-}
-
-gear_pool build_pool( npc &p )
-{
-    gear_pool pool;
-    map &here = get_map();
-
-    for( const tripoint_bub_ms &tile : closest_points_first( p.pos_bub(), gear_up_radius ) ) {
-        if( p.is_no_go_position( here.get_abs( tile ) ) ) {
-            continue;
-        }
-        if( p.is_player_ally() && g->check_zone( zone_type_NO_NPC_PICKUP, tile ) ) {
-            continue;
-        }
-        if( !p.sees( here, tile ) ) {
-            continue;
-        }
-        collect_tile_items( p, pool, tile );
-    }
-
-    // Tell the difference between "this camp has no storage zone at all" and
-    // "the storage zone is over there and the NPC is standing here".
-    if( pool.storage_tiles.empty() ) {
-        const zone_manager &mgr = zone_manager::get_manager();
-        pool.saw_storage_zone_out_of_range =
-            mgr.has_near( zone_type_CAMP_STORAGE, p.pos_abs(), MAX_VIEW_DISTANCE, p.get_fac_id() );
-    }
-    return pool;
+    return false;
 }
 
 // ---------------------------------------------------------------------------
 // Scoring
 // ---------------------------------------------------------------------------
 
-units::temperature planning_temperature( const npc &p )
+units::temperature planning_temperature( const Character &who )
 {
-    const units::temperature now = get_weather().get_temperature( p.pos_bub() );
+    const units::temperature now = get_weather().get_temperature( who.pos_bub() );
     return now - units::from_celsius_delta( night_margin_c );
 }
 
@@ -297,9 +230,7 @@ int target_warmth_for( units::temperature planning )
 }
 
 // Coverage-weighted protection, with head and torso weighted the way
-// npc::estimate_armour already weights them.  Unlike estimate_armour this is
-// only ever used for the wearer's own gear decisions and never for threat
-// assessment, so it cannot make combat slower.
+// npc::estimate_armour already weights them.
 //
 // The coverage term is the part estimate_armour is missing.  get_armor_type
 // sums the raw resistance of everything covering a limb and never asks how much
@@ -367,8 +298,8 @@ int filthy_worn( const Character &who )
 }
 
 // The single number the wear decisions are made on.  Protection, mobility,
-// carrying capacity and warmth converted into one currency, because otherwise
-// they cannot be traded off against each other at all.
+// carrying capacity, sealing and warmth converted into one currency, because
+// otherwise they cannot be traded off against each other at all.
 double outfit_score( const Character &who, int target_warmth )
 {
     const double protection = protection_of( who ) * weight_protection;
@@ -394,25 +325,10 @@ double outfit_score( const Character &who, int target_warmth )
     return protection - encumbrance + storage - warmth_gap + environment - filth;
 }
 
-// Do these two pieces compete for the same patch of skin?  Whole-limb overlap
-// is too coarse -- "leg" covers the knee, the shin and the thigh, and pieces
-// that share a limb often coexist perfectly well.
-bool shares_sub_part( const item &a, const item &b )
-{
-    const std::vector<sub_bodypart_id> a_parts = a.get_covered_sub_body_parts();
-    const std::vector<sub_bodypart_id> b_parts = b.get_covered_sub_body_parts();
-    for( const sub_bodypart_id &sbp : a_parts ) {
-        if( std::find( b_parts.begin(), b_parts.end(), sbp ) != b_parts.end() ) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Cheap pre-filter so a full re-score is not run for every scrap of cloth in
-// the camp.  It only decides the order candidates are tried in and whether a
-// trial fitting is worth attempting at all; the actual decision is always the
-// measured outfit score.
+// Cheap pre-filter, so a full re-score is not run for every scrap of cloth in
+// the camp.  It decides the order candidates are tried in and whether a trial
+// fitting is worth attempting at all; the real decision is always the measured
+// outfit score.
 double wear_proxy( const Character &who, const item &it )
 {
     double resist = it.resist( damage_bash ) + it.resist( damage_cut ) +
@@ -427,52 +343,160 @@ double wear_proxy( const Character &who, const item &it )
     return proxy;
 }
 
-// ---------------------------------------------------------------------------
-// Moving items around
-// ---------------------------------------------------------------------------
-
-// Put a displaced item somewhere safe: inventory first, camp storage second.
-// If neither works the caller keeps the item where it was.  Nothing this order
-// does ever leaves gear lying in the mud.
-bool put_away( npc &p, const item &it, const gear_pool &pool )
+// Body temperature beats every other consideration, in both directions.  The
+// cold side is the predicate the behaviour tree already uses; the hot side
+// matters just as much, because the finest set of plate in the county is
+// worthless to someone who collapses from heatstroke wearing it.
+bool temperature_forbids_dressing( const Character &who )
 {
-    if( p.can_stash( it ) && p.i_add( it ) ) {
-        return true;
-    }
-    map &here = get_map();
-    for( const tripoint_bub_ms &tile : pool.storage_tiles ) {
-        if( !here.add_item_or_charges( tile, it ).is_null() ) {
+    for( const bodypart_id &bp : who.get_all_body_parts() ) {
+        const units::temperature part_temp = who.get_part_temp_conv( bp );
+        if( part_temp <= BODYTEMP_VERY_COLD || part_temp >= BODYTEMP_VERY_HOT ) {
             return true;
         }
     }
     return false;
 }
 
-// Move a whole item from the pool into the NPC's inventory.  Adds first and
-// only then removes from the source, so a failure cannot destroy the item.
-bool take_into_inventory( npc &p, item_location &loc )
+// ---------------------------------------------------------------------------
+// Zone-aware search and placement
+// ---------------------------------------------------------------------------
+
+bool tile_is_off_limits( const Character &who, const tripoint_bub_ms &tile )
+{
+    if( g->check_zone( zone_type_NO_NPC_PICKUP, tile ) ||
+        g->check_zone( zone_type_LOOT_IGNORE, tile ) ) {
+        return true;
+    }
+    const npc *guy = who.as_npc();
+    return guy && guy->is_no_go_position( get_map().get_abs( tile ) );
+}
+
+// Every loot zone the faction owns, plus the basecamp's own storage and food
+// zones, which do not carry the LOOT prefix.  Players lay the specific zones
+// down and then cover them with a big general one, so these overlap heavily and
+// the set does the deduplication.  This is the difference between finding a
+// camp's supplies and reporting that a sorted camp is empty.
+std::unordered_set<tripoint_abs_ms> stores_within_reach( Character &who )
+{
+    zone_manager &mgr = zone_manager::get_manager();
+    map &here = get_map();
+    const faction_id fac = who.get_faction_id();
+    std::unordered_set<tripoint_abs_ms> tiles;
+
+    for( const tripoint_bub_ms &tile :
+         mgr.get_point_set_loot( who.pos_abs(), MAX_VIEW_DISTANCE, who.is_npc(), fac ) ) {
+        tiles.emplace( here.get_abs( tile ) );
+    }
+    for( const zone_type_id &type : {
+             zone_type_CAMP_STORAGE, zone_type_CAMP_FOOD
+         } ) {
+        for( const tripoint_abs_ms &tile :
+             mgr.get_near( type, who.pos_abs(), MAX_VIEW_DISTANCE, nullptr, fac ) ) {
+            tiles.emplace( tile );
+        }
+    }
+
+    for( auto it = tiles.begin(); it != tiles.end(); ) {
+        const tripoint_bub_ms bub = here.get_bub( *it );
+        if( here.inbounds( bub ) && tile_is_off_limits( who, bub ) ) {
+            it = tiles.erase( it );
+        } else {
+            ++it;
+        }
+    }
+    return tiles;
+}
+
+// Where does this belong?  The zone manager already knows -- it is the same
+// question the loot sorter asks, and it prefers the specific zone over the
+// general one laid on top of it -- so putting something down here leaves the
+// camp sorted instead of leaving a pile wherever we happened to be standing.
+std::optional<tripoint_bub_ms> home_for( Character &who, const item &it,
+        const tripoint_bub_ms &fallback )
+{
+    zone_manager &mgr = zone_manager::get_manager();
+    map &here = get_map();
+    const faction_id fac = who.get_faction_id();
+
+    const zone_type_id dest =
+        mgr.get_near_zone_type_for_item( it, who.pos_abs(), MAX_VIEW_DISTANCE, fac );
+
+    std::vector<zone_type_id> tries;
+    if( !dest.is_empty() ) {
+        tries.push_back( dest );
+    }
+    tries.push_back( zone_type_CAMP_STORAGE );
+    tries.push_back( zone_type_LOOT_UNSORTED );
+
+    for( const zone_type_id &type : tries ) {
+        std::optional<tripoint_bub_ms> best;
+        int best_dist = INT_MAX;
+        for( const tripoint_abs_ms &spot :
+             mgr.get_near( type, who.pos_abs(), MAX_VIEW_DISTANCE, &it, fac ) ) {
+            const tripoint_bub_ms bub = here.get_bub( spot );
+            if( !here.inbounds( bub ) || tile_is_off_limits( who, bub ) ) {
+                continue;
+            }
+            const int dist = rl_dist( who.pos_bub(), bub );
+            if( dist < best_dist ) {
+                best_dist = dist;
+                best = bub;
+            }
+        }
+        if( best ) {
+            return best;
+        }
+    }
+    if( here.inbounds( fallback ) ) {
+        return fallback;
+    }
+    return std::nullopt;
+}
+
+// Put a displaced item somewhere sensible: inventory first, then the zone it
+// belongs in.  Nothing this job does ever leaves gear lying in the mud, and a
+// swap that cannot find a home for the old piece simply does not happen.
+bool put_away( Character &who, const item &it, const tripoint_bub_ms &fallback )
+{
+    if( who.can_stash( it ) &&
+        who.weight_carried() + it.weight() <= who.weight_capacity() &&
+        who.i_add( it ) ) {
+        return true;
+    }
+    map &here = get_map();
+    const std::optional<tripoint_bub_ms> home = home_for( who, it, fallback );
+    if( !home ) {
+        return false;
+    }
+    return !here.add_item_or_charges( *home, it ).is_null();
+}
+
+// ---------------------------------------------------------------------------
+// Moving items around
+// ---------------------------------------------------------------------------
+
+bool take_into_inventory( Character &who, item_location &loc )
 {
     if( !loc ) {
         return false;
     }
     const item copy = *loc;
     // can_stash only asks about volume.  Ammunition and rations are heavy, and
-    // an NPC weighed down below walking pace has been made worse, not better.
-    if( p.weight_carried() + copy.weight() > p.weight_capacity() ) {
+    // someone weighed down below walking pace has been made worse, not better.
+    if( who.weight_carried() + copy.weight() > who.weight_capacity() ) {
         return false;
     }
-    if( !p.can_stash( copy ) ) {
+    if( !who.can_stash( copy ) || !who.i_add( copy ) ) {
         return false;
     }
-    if( !p.i_add( copy ) ) {
-        return false;
-    }
+    who.mod_moves( -handle_cost_moves );
     loc.remove_item();
     return true;
 }
 
 // The same, for part of a charge-based stack such as ammunition or water.
-int take_charges( npc &p, item_location &loc, int wanted )
+int take_charges( Character &who, item_location &loc, int wanted )
 {
     if( !loc || wanted <= 0 ) {
         return 0;
@@ -488,12 +512,13 @@ int take_charges( npc &p, item_location &loc, int wanted )
     } else {
         take = 1;
     }
-    if( p.weight_carried() + copy.weight() > p.weight_capacity() ) {
+    if( who.weight_carried() + copy.weight() > who.weight_capacity() ) {
         return 0;
     }
-    if( !p.can_stash( copy ) || !p.i_add( copy ) ) {
+    if( !who.can_stash( copy ) || !who.i_add( copy ) ) {
         return 0;
     }
+    who.mod_moves( -handle_cost_moves );
     if( loc->count_by_charges() && loc->charges > take ) {
         loc->charges -= take;
     } else {
@@ -502,8 +527,26 @@ int take_charges( npc &p, item_location &loc, int wanted )
     return take;
 }
 
-// Reload something, but only once we are certain there is something to reload it
-// with: npc::do_reload throws a debugmsg if asked to load a thing it cannot.
+// takeoff() without the "<npcname> takes off their X" line.  Trial fittings
+// would otherwise bury the summary under dozens of messages, and the summary is
+// what the player actually needs to read.
+bool quiet_takeoff( Character &who, item_location loc, std::list<item> &into )
+{
+    if( !loc || !who.can_takeoff( *loc, &into ).success() ) {
+        return false;
+    }
+    if( !who.worn.takeoff( loc, &into, who ) ) {
+        return false;
+    }
+    who.recalc_sight_limits();
+    who.calc_encumbrance();
+    who.worn.recalc_ablative_blocking( &who );
+    who.calc_discomfort();
+    return true;
+}
+
+// Reload something, but only once we are certain there is something to reload
+// it with: npc::do_reload throws a debugmsg if asked to load a thing it cannot.
 bool try_reload( npc &p, item_location target )
 {
     if( !target || !p.can_reload( *target ) ) {
@@ -516,28 +559,10 @@ bool try_reload( npc &p, item_location target )
     return true;
 }
 
-// takeoff() without the "<npcname> takes off their X" line.  Trial fittings
-// would otherwise bury the summary under dozens of messages, and the summary is
-// what the player actually needs to read.
-bool quiet_takeoff( npc &p, item_location loc, std::list<item> &into )
-{
-    if( !loc || !p.can_takeoff( *loc, &into ).success() ) {
-        return false;
-    }
-    if( !p.worn.takeoff( loc, &into, p ) ) {
-        return false;
-    }
-    p.recalc_sight_limits();
-    p.calc_encumbrance();
-    p.worn.recalc_ablative_blocking( &p );
-    p.calc_discomfort();
-    return true;
-}
-
-int count_carried( const npc &p, const std::function<bool( const item & )> &pred )
+int count_carried( const Character &who, const std::function<bool( const item & )> &pred )
 {
     int total = 0;
-    p.visit_items( [&]( const item * node, item * ) {
+    who.visit_items( [&total, &pred]( const item * node, item * ) {
         if( pred( *node ) ) {
             total += node->count();
         }
@@ -547,424 +572,166 @@ int count_carried( const npc &p, const std::function<bool( const item & )> &pred
 }
 
 // ---------------------------------------------------------------------------
-// Steps
+// Candidates on one tile
 // ---------------------------------------------------------------------------
 
-// Step 1: shed ballast.
-//
-// This only fires when the NPC is genuinely overloaded, which is the literal
-// reading of "heavy junk that is slowing them down".  Thirty kilos of sand the
-// leader handed over on purpose is not thrown away merely for being thirty
-// kilos of sand -- the leader may have a reason the NPC cannot see.  Favourites
-// and anything on the player's pickup whitelist are never touched, because an
-// explicit order outranks the NPC's own judgement.  What is put down goes into
-// camp storage, so even a wrong call costs nothing but a short walk.
-void shed_ballast( npc &p, const gear_pool &pool, gear_up_report &report )
+bool off_limits_item( const item &it )
 {
-    const bool overloaded = p.weight_carried() > p.weight_capacity() ||
-                            p.volume_carried() > p.volume_capacity();
-    if( !overloaded ) {
+    // Favourites are the player's word on the subject, at any depth.
+    return it.is_favorite || it.made_of( phase_id::LIQUID );
+}
+
+// Everything on this tile, including what is nested inside crates, boxes,
+// duffel bags and first aid kits -- which is where a sorted camp actually keeps
+// things.  A bandage does not stop being a bandage for being inside a box, and
+// a coat is still a candidate for hanging in a locker.
+void collect_from( item_location parent, std::vector<item_location> &out, int depth )
+{
+    if( depth > max_nesting_depth ) {
         return;
     }
-
-    const auto is_ballast = [&p]( const item & it ) {
-        if( it.is_favorite || p.is_worn( it ) || p.is_wielding( it ) ) {
-            return false;
-        }
-        if( p.item_whitelisted( it ) ) {
-            // The player told this NPC to collect these.  Not ours to overrule.
-            return false;
-        }
-        if( it.is_armor() || it.is_gun() || it.is_magazine() || it.is_ammo() ||
-            it.is_medication() || it.is_food() || it.is_food_container() ||
-            it.is_ammo_container() || it.is_tool() || it.is_book() ) {
-            return false;
-        }
-        // Never put down a container that still has something in it.
-        return it.empty();
-    };
-
-    std::vector<item_location> ballast;
-    for( item_location &loc : p.all_items_loc() ) {
-        if( loc && is_ballast( *loc ) ) {
-            ballast.push_back( loc );
-        }
-    }
-    // Heaviest first: the fastest way back under the limit.
-    std::sort( ballast.begin(), ballast.end(), []( const item_location & a, const item_location & b ) {
-        return a->weight() > b->weight();
-    } );
-
-    map &here = get_map();
-    int dropped = 0;
-    for( item_location &loc : ballast ) {
-        if( p.weight_carried() <= p.weight_capacity() &&
-            p.volume_carried() <= p.volume_capacity() ) {
-            break;
-        }
-        if( !loc ) {
+    for( item *inner : parent->all_items_top( pocket_type::CONTAINER ) ) {
+        if( off_limits_item( *inner ) ) {
             continue;
         }
-        const item copy = *loc;
-        bool placed = false;
-        for( const tripoint_bub_ms &tile : pool.storage_tiles ) {
-            if( !here.add_item_or_charges( tile, copy ).is_null() ) {
-                placed = true;
-                break;
-            }
-        }
-        if( placed ) {
-            loc.remove_item();
-            report.change( string_format( _( "put down %s" ), copy.tname() ) );
-            dropped++;
-        }
-    }
-    if( dropped == 0 ) {
-        report.problem( _( "overloaded, but carrying nothing worth putting down" ) );
+        item_location child( parent, inner );
+        out.push_back( child );
+        collect_from( child, out, depth + 1 );
     }
 }
 
-// Step 2: weapon.
-//
-// Scored with npc::evaluate_weapon, the same function the NPC's own combat AI
-// uses.  A second opinion here would only mean the NPC quietly undoes this
-// choice on its next turn, which would look exactly like a bug.
-void choose_weapon( npc &p, gear_pool &pool, gear_up_report &report )
+std::vector<item_location> candidates_at( Character &who, const tripoint_bub_ms &tile )
 {
+    std::vector<item_location> out;
+    map &here = get_map();
+    if( !here.inbounds( tile ) || !here.sees_some_items( tile, who ) ) {
+        return out;
+    }
+    for( item &it : here.i_at( tile ) ) {
+        if( off_limits_item( it ) ) {
+            continue;
+        }
+        item_location loc( map_cursor( tile ), &it );
+        out.push_back( loc );
+        collect_from( loc, out, 1 );
+    }
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// Wants
+//
+// One predicate answers both "is this tile worth walking to" and "what do I do
+// now that I am standing here".  They must agree, or the character walks
+// somewhere and then does nothing, over and over.
+// ---------------------------------------------------------------------------
+
+bool wants_as_weapon( npc &p, const item &it )
+{
+    if( ( !it.is_melee() && !it.is_gun() ) || !p.can_wield( it ).success() ) {
+        return false;
+    }
     item_location wielded = p.get_wielded_item();
     const double current = p.evaluate_weapon( wielded ? *wielded : null_item_reference() );
-
-    item_location best;
-    double best_value = current * weapon_swap_margin;
-    for( item_location &loc : pool.items ) {
-        if( !loc ) {
-            continue;
-        }
-        item &it = *loc;
-        if( !it.is_melee() && !it.is_gun() ) {
-            continue;
-        }
-        if( !p.can_wield( it ).success() ) {
-            continue;
-        }
-        const double value = p.evaluate_weapon( it );
-        if( value > best_value ) {
-            best_value = value;
-            best = loc;
-        }
-    }
-    if( !best ) {
-        return;
-    }
-
-    // Empty the hands here rather than letting the wield path stow the old
-    // weapon, because that path is allowed to drop it on the ground.
-    if( wielded ) {
-        const item old = *wielded;
-        if( !p.can_unwield( old ).success() ) {
-            report.problem( string_format( _( "can't let go of %s" ), old.tname() ) );
-            return;
-        }
-        item removed = p.remove_weapon();
-        if( !put_away( p, removed, pool ) ) {
-            // No safe home for it, so put it straight back and change nothing.
-            p.wield( removed );
-            report.problem( string_format( _( "no room to set down %s" ), old.tname() ) );
-            return;
-        }
-        report.change( string_format( _( "stowed %s" ), old.tname() ) );
-    }
-
-    const std::string name = best->tname();
-    if( p.wield( best ) ) {
-        report.change( string_format( _( "took up %s" ), name ) );
-    } else {
-        report.problem( string_format( _( "failed to take up %s" ), name ) );
-    }
+    return p.evaluate_weapon( it ) > current * weapon_swap_margin;
 }
 
-// Step 3: worn gear -- armour, ordinary clothing and carrying equipment alike,
-// since the game makes no distinction between them.
-//
-// Every candidate is tried on and the whole outfit re-scored, then reverted if
-// it did not help.  The engine decides what physically fits: pocket length,
-// body size, integrated and no-takeoff gear, power armour dependencies, layer
-// conflicts.  A metre of sword does not end up in a thirty centimetre pocket
-// because can_stash says no, not because this function did the arithmetic.
-void fit_out( npc &p, gear_pool &pool, gear_up_report &report )
-{
-    // Body temperature beats every other consideration, in both directions.
-    // The cold side is the predicate the behaviour tree already uses
-    // (character_oracle_t::needs_warmth_badly); the hot side matters just as
-    // much, because the finest set of plate in the county is worthless to
-    // someone who collapses from heatstroke wearing it.
-    for( const bodypart_id &bp : p.get_all_body_parts() ) {
-        const units::temperature part_temp = p.get_part_temp_conv( bp );
-        if( part_temp <= BODYTEMP_VERY_COLD ) {
-            report.problem( _( "too cold to think about anything but staying warm" ) );
-            return;
-        }
-        if( part_temp >= BODYTEMP_VERY_HOT ) {
-            report.problem( _( "too hot already to be putting more layers on" ) );
-            return;
-        }
-    }
-
-    const int target_warmth = target_warmth_for( planning_temperature( p ) );
-
-    std::vector<item_location> candidates;
-    for( item_location &loc : pool.items ) {
-        if( loc && loc->is_armor() ) {
-            candidates.push_back( loc );
-        }
-    }
-    std::sort( candidates.begin(), candidates.end(),
-    [&p]( const item_location & a, const item_location & b ) {
-        return wear_proxy( p, *a ) > wear_proxy( p, *b );
-    } );
-
-    double score = outfit_score( p, target_warmth );
-    int swaps = 0;
-    int trials = 0;
-
-    for( item_location &loc : candidates ) {
-        if( swaps >= max_worn_swaps || trials >= max_wear_trials ) {
-            break;
-        }
-        if( !loc ) {
-            continue;
-        }
-        const item candidate = *loc;
-
-        // First see whether it can simply be put on as an addition.
-        if( p.can_wear( candidate ).success() ) {
-            trials++;
-            std::optional<std::list<item>::iterator> worn_it =
-                p.wear_item( candidate, false, true, true, true );
-            if( worn_it ) {
-                const double after = outfit_score( p, target_warmth );
-                if( after > score * outfit_swap_margin ) {
-                    score = after;
-                    swaps++;
-                    loc.remove_item();
-                    report.change( string_format( _( "put on %s" ), candidate.tname() ) );
-                    continue;
-                }
-                std::list<item> removed;
-                item_location worn_loc( p, &**worn_it );
-                if( !quiet_takeoff( p, worn_loc, removed ) ) {
-                    // Should not happen -- it was just put on.  Keep it rather
-                    // than risk losing track of it, and stop touching clothing.
-                    debugmsg( "gear up: %s could not remove trial item %s", p.get_name(),
-                              candidate.tname() );
-                    loc.remove_item();
-                    return;
-                }
-                continue;
-            }
-        }
-
-        // Otherwise consider displacing something already worn.  Only empty
-        // worn items qualify: taking off a full backpack means finding a home
-        // for everything inside it, which is a separate problem and not one
-        // worth solving silently.
-        item_location replace_target;
-        double replace_proxy = 0.0;
-        const double candidate_proxy = wear_proxy( p, candidate );
-        for( item_location &worn_loc : p.all_items_loc() ) {
-            if( !worn_loc || !p.is_worn( *worn_loc ) ) {
-                continue;
-            }
-            const item &worn = *worn_loc;
-            if( worn.is_favorite || !worn.empty() ) {
-                continue;
-            }
-            if( !p.can_takeoff( worn ).success() ) {
-                continue;
-            }
-            // Overlap is measured on sub-body-parts, which is the granularity
-            // the engine's own conflict rule works at: outfit::check_rigid_conflicts
-            // refuses a second rigid piece on a sublimb that already has one,
-            // which is why you cannot wear kneepads over kneepads but can wear
-            // kneepads and shin guards together.  Testing whole limbs instead
-            // would displace the shin guard to make room for the kneepad.
-            if( !shares_sub_part( worn, candidate ) ) {
-                continue;
-            }
-            const double proxy = wear_proxy( p, worn );
-            if( proxy >= candidate_proxy ) {
-                continue;
-            }
-            if( !replace_target || proxy < replace_proxy ) {
-                replace_target = worn_loc;
-                replace_proxy = proxy;
-            }
-        }
-        if( !replace_target ) {
-            continue;
-        }
-
-        trials++;
-        const item displaced = *replace_target;
-        std::list<item> removed;
-        if( !quiet_takeoff( p, replace_target, removed ) || removed.empty() ) {
-            continue;
-        }
-        bool kept = false;
-        if( p.can_wear( candidate ).success() ) {
-            std::optional<std::list<item>::iterator> worn_it =
-                p.wear_item( candidate, false, true, true, true );
-            if( worn_it ) {
-                const double after = outfit_score( p, target_warmth );
-                // A swap that costs mobility has to earn more than one that
-                // does not.  Being unable to run is how survivors die.
-                const bool costs_mobility =
-                    candidate.get_avg_encumber( p ) > displaced.get_avg_encumber( p );
-                const double margin = costs_mobility ? outfit_mobility_margin : outfit_swap_margin;
-                if( after > score * margin ) {
-                    score = after;
-                    kept = true;
-                } else {
-                    std::list<item> undo;
-                    item_location worn_loc( p, &**worn_it );
-                    if( !quiet_takeoff( p, worn_loc, undo ) ) {
-                        debugmsg( "gear up: %s could not revert trial item %s", p.get_name(),
-                                  candidate.tname() );
-                        kept = true;
-                    }
-                }
-            }
-        }
-
-        if( kept ) {
-            swaps++;
-            loc.remove_item();
-            if( put_away( p, removed.front(), pool ) ) {
-                report.change( string_format( _( "swapped %1$s for %2$s" ), displaced.tname(),
-                                              candidate.tname() ) );
-            } else {
-                // Nowhere to put the old piece down, so wear it again over the
-                // top and say what happened.  Losing it is not an option.
-                p.wear_item( removed.front(), false, true, true, true );
-                report.change( string_format( _( "put on %s" ), candidate.tname() ) );
-            }
-        } else {
-            // Put the displaced piece back exactly as it was.
-            if( !p.wear_item( removed.front(), false, true, true, true ) ) {
-                if( !put_away( p, removed.front(), pool ) ) {
-                    get_map().add_item_or_charges( p.pos_bub(), removed.front() );
-                }
-                report.problem( string_format( _( "could not put %s back on" ), displaced.tname() ) );
-            }
-        }
-    }
-
-    if( trials >= max_wear_trials || swaps >= max_worn_swaps ) {
-        report.problem( _( "stopped sorting through the clothing before finishing" ) );
-    }
-}
-
-// Step 2b: a backup you can swing.
-//
 // Nobody who knows what they are doing walks out with a rifle and nothing else.
 // Guns jam, run dry, and are useless when something is already on top of you.
-// If the NPC has no melee option beyond their own fists, take one.
-void keep_a_backup_blade( npc &p, gear_pool &pool, gear_up_report &report )
+bool needs_backup_blade( npc &p )
 {
-    item_location wielded = p.get_wielded_item();
     const double fists = p.evaluate_weapon( null_item_reference() );
-
-    // Already holding something you can hit with?  Then there is nothing to do.
+    item_location wielded = p.get_wielded_item();
     if( wielded && !wielded->is_gun() && p.evaluate_weapon( *wielded ) > fists ) {
-        return;
+        return false;
     }
-    bool has_backup = false;
-    p.visit_items( [&p, &has_backup, fists]( const item * node, item * ) {
-        if( node->is_melee() && p.evaluate_weapon( *node ) > fists &&
+    bool found = false;
+    p.visit_items( [&p, &found, fists]( const item * node, item * ) {
+        if( node->is_melee() && !node->is_gun() && p.evaluate_weapon( *node ) > fists &&
             p.can_wield( *node ).success() ) {
-            has_backup = true;
+            found = true;
             return VisitResponse::ABORT;
         }
         return VisitResponse::NEXT;
     } );
-    if( has_backup ) {
-        return;
-    }
-
-    item_location best;
-    double best_value = fists;
-    for( item_location &loc : pool.items ) {
-        if( !loc || !loc->is_melee() || loc->is_gun() ) {
-            continue;
-        }
-        if( !p.can_wield( *loc ).success() ) {
-            continue;
-        }
-        const double value = p.evaluate_weapon( *loc );
-        if( value > best_value ) {
-            best_value = value;
-            best = loc;
-        }
-    }
-    if( !best ) {
-        return;
-    }
-    const std::string name = best->tname();
-    if( take_into_inventory( p, best ) ) {
-        report.change( string_format( _( "took %s as a backup" ), name ) );
-    } else {
-        report.problem( string_format( _( "no room to carry %s as a backup" ), name ) );
-    }
+    return !found;
 }
 
-// Step 4: ammunition, matched to whatever weapon step 2 settled on.
-//
-// This is exactly why the weapon is chosen first.  An archer has no business
-// filling their pockets with 9mm, and since the ammunition types are read off
-// the weapon itself, that mismatch cannot happen.
-void stock_ammunition( npc &p, gear_pool &pool, gear_up_report &report )
+bool wants_as_backup( npc &p, const item &it )
+{
+    if( !it.is_melee() || it.is_gun() || !p.can_wield( it ).success() ) {
+        return false;
+    }
+    return p.evaluate_weapon( it ) > p.evaluate_weapon( null_item_reference() );
+}
+
+// Worth taking the coat off the rack and trying it on?  Deliberately cheap and
+// optimistic: the measured outfit score makes the real decision, and every
+// rejection is remembered by item type so the same coat is never carried back
+// to the same crate twice.
+bool worth_trying_on( npc &p, const item &it )
+{
+    if( !it.is_armor() || p.gear_up_rejected.count( it.typeId() ) > 0 ) {
+        return false;
+    }
+    if( temperature_forbids_dressing( p ) ) {
+        return false;
+    }
+    const double candidate_proxy = wear_proxy( p, it );
+    if( candidate_proxy <= 0.0 ) {
+        return false;
+    }
+    // Something that goes straight on without displacing anything is always
+    // worth measuring.
+    if( p.can_wear( it ).success() ) {
+        return true;
+    }
+    // Otherwise it has to beat something already worn on the same patch of skin.
+    bool better_than_something = false;
+    p.visit_items( [&]( const item * node, item * ) {
+        if( !p.is_worn( *node ) || node->is_favorite || !shares_sub_part( *node, it ) ) {
+            return VisitResponse::NEXT;
+        }
+        if( wear_proxy( p, *node ) < candidate_proxy ) {
+            better_than_something = true;
+            return VisitResponse::ABORT;
+        }
+        return VisitResponse::NEXT;
+    } );
+    return better_than_something;
+}
+
+bool wants_magazine( npc &p, const item &it )
+{
+    item_location wielded = p.get_wielded_item();
+    if( !wielded || !wielded->is_gun() || wielded->magazine_integral() || !it.is_magazine() ) {
+        return false;
+    }
+    const std::set<itype_id> compatible = wielded->magazine_compatible();
+    if( compatible.count( it.typeId() ) == 0 ) {
+        return false;
+    }
+    const int have = count_carried( p, [&compatible]( const item & carried ) {
+        return carried.is_magazine() && compatible.count( carried.typeId() ) > 0;
+    } );
+    return have < want_spare_magazines;
+}
+
+int ammo_shortfall( npc &p )
 {
     item_location wielded = p.get_wielded_item();
     if( !wielded || !wielded->is_gun() ) {
-        return;
+        return 0;
     }
-    item &gun = *wielded;
-    const std::set<ammotype> types = gun.ammo_types();
+    const std::set<ammotype> types = wielded->ammo_types();
     if( types.empty() ) {
-        return;
+        return 0;
     }
-
-    // A weapon that feeds from a magazine is useless with loose rounds alone.
-    if( !gun.magazine_integral() ) {
-        const std::set<itype_id> compatible = gun.magazine_compatible();
-        const int have = count_carried( p, [&compatible]( const item & it ) {
-            return it.is_magazine() && compatible.count( it.typeId() ) > 0;
-        } );
-        int need = std::max( 0, want_spare_magazines - have );
-        for( item_location &loc : pool.items ) {
-            if( need <= 0 ) {
-                break;
-            }
-            if( !loc || !loc->is_magazine() || compatible.count( loc->typeId() ) == 0 ) {
-                continue;
-            }
-            const std::string name = loc->tname();
-            if( take_into_inventory( p, loc ) ) {
-                report.change( string_format( _( "picked up %s" ), name ) );
-                need--;
-            }
-        }
-        if( need > 0 && have == 0 ) {
-            report.problem( string_format( _( "no magazine for %s in the stores" ), gun.tname() ) );
-        }
-    }
-
     // An empty magazine-fed gun reports no capacity of its own, so take the
-    // figure from a magazine the NPC is actually carrying.  Otherwise the
-    // archer-with-9mm problem turns into a rifleman with four rounds.
-    int capacity = gun.ammo_capacity( *types.begin() );
-    if( capacity <= 0 && !gun.magazine_integral() ) {
-        const std::set<itype_id> compatible = gun.magazine_compatible();
+    // figure from a magazine actually being carried.
+    int capacity = wielded->ammo_capacity( *types.begin() );
+    if( capacity <= 0 && !wielded->magazine_integral() ) {
+        const std::set<itype_id> compatible = wielded->magazine_compatible();
         p.visit_items( [&capacity, &types, &compatible]( const item * node, item * ) {
             if( node->is_magazine() && compatible.count( node->typeId() ) > 0 ) {
                 capacity = std::max( capacity, node->ammo_capacity( *types.begin() ) );
@@ -973,178 +740,555 @@ void stock_ammunition( npc &p, gear_pool &pool, gear_up_report &report )
         } );
     }
     capacity = std::max( 1, capacity );
-    const int want = capacity * want_ammo_loads;
-    const auto matches = [&types]( const item & it ) {
-        return it.is_ammo() && types.count( it.ammo_type() ) > 0;
-    };
-    int have = count_carried( p, matches );
-    if( have >= want ) {
-        return;
-    }
-
-    int taken = 0;
-    bool saw_any = false;
-    for( item_location &loc : pool.items ) {
-        if( have >= want ) {
-            break;
-        }
-        if( !loc || !matches( *loc ) ) {
-            continue;
-        }
-        saw_any = true;
-        const int got = take_charges( p, loc, want - have );
-        have += got;
-        taken += got;
-    }
-    if( taken > 0 ) {
-        report.change( string_format( _( "took %d rounds of ammunition" ), taken ) );
-    }
-    if( have == 0 ) {
-        // "There is none" and "there is nowhere to put it" are very different
-        // problems and the player can only act on the one they are told about.
-        report.problem( saw_any ?
-                        string_format( _( "no room to carry ammunition for %s" ), gun.tname() ) :
-                        string_format( _( "no ammunition for %s in the stores" ), gun.tname() ) );
-        return;
-    }
-
-    // Walk into the fight with a full magazine, not just a full pocket.  A
-    // pouch of loose rounds is no use in the first three seconds.
-    //
-    // Two stages, because a magazine-fed weapon needs both: loose rounds go
-    // into the magazines first, and only then does a loaded magazine go into
-    // the gun.  Skipping the first stage leaves an NPC standing there with
-    // ammunition, empty magazines and an empty weapon.
-    if( !gun.magazine_integral() ) {
-        const std::set<itype_id> compatible = gun.magazine_compatible();
-        for( item_location &carried : p.all_items_loc() ) {
-            if( !carried || !carried->is_magazine() ||
-                compatible.count( carried->typeId() ) == 0 ) {
-                continue;
-            }
-            if( carried->is_magazine_full() ) {
-                continue;
-            }
-            try_reload( p, carried );
-        }
-    }
-
-    item_location to_load = p.get_wielded_item();
-    if( to_load && try_reload( p, to_load ) ) {
-        report.change( string_format( _( "loaded %s" ), to_load->tname() ) );
-    }
+    const int have = count_carried( p, [&types]( const item & carried ) {
+        return carried.is_ammo() && types.count( carried.ammo_type() ) > 0;
+    } );
+    return std::max( 0, capacity * want_ammo_loads - have );
 }
 
-// Step 5: medical supplies, then food and water.
-void stock_consumables( npc &p, gear_pool &pool, gear_up_report &report )
+bool wants_ammo( npc &p, const item &it )
 {
-    int healing = count_carried( p, is_healing_item );
-    bool saw_healing = false;
-    for( item_location &loc : pool.items ) {
-        if( healing >= want_healing_items ) {
-            break;
-        }
-        if( !loc || !is_healing_item( *loc ) ) {
-            continue;
-        }
-        saw_healing = true;
-        const int got = take_charges( p, loc, want_healing_items - healing );
-        healing += got;
-        if( got > 0 ) {
-            report.change( string_format( _( "took %d bandage(s) or first aid" ), got ) );
-        }
+    if( !it.is_ammo() ) {
+        return false;
     }
-    if( healing == 0 ) {
-        report.problem( saw_healing ? _( "no room to carry bandages" ) :
-                        _( "no bandages in the stores" ) );
+    item_location wielded = p.get_wielded_item();
+    if( !wielded || !wielded->is_gun() ) {
+        return false;
     }
+    return wielded->ammo_types().count( it.ammo_type() ) > 0 && ammo_shortfall( p ) > 0;
+}
 
-    int pain_meds = count_carried( p, is_painkiller );
-    for( item_location &loc : pool.items ) {
-        if( pain_meds >= want_painkillers ) {
-            break;
-        }
-        if( !loc || !is_painkiller( *loc ) ) {
-            continue;
-        }
-        const int got = take_charges( p, loc, want_painkillers - pain_meds );
-        pain_meds += got;
-        if( got > 0 ) {
-            report.change( string_format( _( "took %d dose(s) of painkiller" ), got ) );
-        }
+bool wants_medical( npc &p, const item &it )
+{
+    if( is_healing_item( it ) ) {
+        return count_carried( p, is_healing_item ) < want_healing_items;
     }
-
-    // With the NPC needs mod active NPCs neither eat nor drink, so handing them
-    // rations would be pure clutter.  Skip it, and say that is what happened.
-    if( !p.needs_food() ) {
-        report.note( _( "took no rations; they don't need to eat or drink" ) );
-        return;
+    if( is_painkiller( it ) ) {
+        return count_carried( p, is_painkiller ) < want_painkillers;
     }
+    return false;
+}
 
+// With the NPC needs mod active NPCs neither eat nor drink, so handing them
+// rations would be pure clutter.  needs_food() is the same gate the behaviour
+// tree uses, so this stays aligned with the mod rather than fighting it.
+bool wants_rations( npc &p, const item &it )
+{
+    if( !p.needs_food() || !it.is_food() ) {
+        return false;
+    }
+    const auto &com = it.get_comestible();
+    if( !com || !p.will_eat( it ).success() ) {
+        return false;
+    }
     int kcal = 0;
     int quench = 0;
     p.visit_items( [&kcal, &quench]( const item * node, item * ) {
         if( node->is_food() ) {
-            const auto &com = node->get_comestible();
-            if( com ) {
-                kcal += com->default_nutrition_read_only().kcal() * node->count();
-                quench += com->quench * node->count();
+            const auto &carried = node->get_comestible();
+            if( carried ) {
+                kcal += carried->default_nutrition_read_only().kcal() * node->count();
+                quench += carried->quench * node->count();
             }
         }
         return VisitResponse::NEXT;
     } );
+    if( kcal < want_kcal && com->default_nutrition_read_only().kcal() > 0 ) {
+        return true;
+    }
+    return quench < want_quench && com->quench > 0;
+}
 
-    bool saw_rations = false;
-    for( item_location &loc : pool.items ) {
-        if( kcal >= want_kcal && quench >= want_quench ) {
-            break;
-        }
-        if( !loc ) {
+bool wanted_for_stage( npc &p, const item &it, gear_stage stage )
+{
+    if( stage == gear_stage::equipment ) {
+        return wants_as_weapon( p, it ) ||
+               ( needs_backup_blade( p ) && wants_as_backup( p, it ) ) ||
+               worth_trying_on( p, it );
+    }
+    return wants_magazine( p, it ) || wants_ammo( p, it ) ||
+           wants_medical( p, it ) || wants_rations( p, it );
+}
+
+// Cheap tile test for "is this worth walking to".  Bails on the first hit
+// rather than building and sorting a pool: with nesting, one storage tile can
+// expose hundreds of items, and this runs for every location every turn.
+bool tile_has_anything_wanted( npc &p, const tripoint_bub_ms &tile, gear_stage stage )
+{
+    map &here = get_map();
+    if( !here.inbounds( tile ) || !here.sees_some_items( tile, p ) ) {
+        return false;
+    }
+    for( item &it : here.i_at( tile ) ) {
+        if( off_limits_item( it ) ) {
             continue;
         }
-        item *food = nullptr;
-        if( loc->is_food() ) {
-            food = loc.get_item();
-        } else if( loc->is_food_container() ) {
-            for( item *inner : loc->all_items_top() ) {
-                if( inner->is_food() ) {
-                    food = inner;
-                    break;
-                }
+        bool found = false;
+        it.visit_items( [&]( const item * node, item * ) {
+            if( off_limits_item( *node ) ) {
+                return VisitResponse::SKIP;
             }
-        }
-        if( !food || !food->is_food() ) {
-            continue;
-        }
-        const auto &com = food->get_comestible();
-        if( !com ) {
-            continue;
-        }
-        const bool useful = ( kcal < want_kcal && com->default_nutrition_read_only().kcal() > 0 ) ||
-                            ( quench < want_quench && com->quench > 0 );
-        if( !useful || !p.will_eat( *food ).success() ) {
-            continue;
-        }
-        saw_rations = true;
-        const std::string name = loc->tname();
-        const int count = food->count();
-        const int gained_kcal = com->default_nutrition_read_only().kcal() * count;
-        const int gained_quench = com->quench * count;
-        if( take_into_inventory( p, loc ) ) {
-            kcal += gained_kcal;
-            quench += gained_quench;
-            report.change( string_format( _( "packed %s" ), name ) );
+            if( wanted_for_stage( p, *node, stage ) ) {
+                found = true;
+                return VisitResponse::ABORT;
+            }
+            return VisitResponse::NEXT;
+        } );
+        if( found ) {
+            return true;
         }
     }
-    if( kcal < want_kcal ) {
-        report.problem( saw_rations ? _( "no room to carry enough food" ) : _( "short on food" ) );
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Acting on one tile
+// ---------------------------------------------------------------------------
+
+void say( const Character &who, const std::string &line )
+{
+    add_msg_if_player_sees( who, m_good, _( "%1$s: %2$s" ), who.disp_name(), line );
+}
+
+void report_problem( const Character &who, const std::string &line )
+{
+    add_msg_if_player_sees( who, m_warning, _( "%1$s: %2$s" ), who.disp_name(), line );
+}
+
+// Empty a container out where it stands before wearing it.  Picking up a sports
+// bag and inheriting seventy-six shirts is not gearing up, and the contents
+// belong in the camp's zones rather than on someone's back.
+void empty_where_it_stands( Character &who, item_location &loc, const tripoint_bub_ms &tile )
+{
+    map &here = get_map();
+    const std::list<item *> contents = loc->all_items_top( pocket_type::CONTAINER );
+    int moved = 0;
+    for( item *inner : contents ) {
+        const item copy = *inner;
+        const std::optional<tripoint_bub_ms> home = home_for( who, copy, tile );
+        if( !home || here.add_item_or_charges( *home, copy ).is_null() ) {
+            continue;
+        }
+        loc->remove_item( *inner );
+        moved++;
     }
-    if( quench < want_quench ) {
-        report.problem( saw_rations ? _( "no room to carry enough water" ) : _( "short on water" ) );
+    if( moved > 0 ) {
+        who.mod_moves( -moved * handle_cost_moves );
     }
 }
 
+// Move whatever was in the old garment into the new one, then find a home for
+// anything that will not fit.  Doing this after the old one came off would
+// leave its contents with nowhere to go.
+void transfer_contents( Character &who, item &from, item &to, const tripoint_bub_ms &tile )
+{
+    map &here = get_map();
+    const std::list<item *> contents = from.all_items_top( pocket_type::CONTAINER );
+    for( item *inner : contents ) {
+        const item copy = *inner;
+        if( to.can_contain( copy ).success() ) {
+            from.remove_item( *inner );
+            to.put_in( copy, pocket_type::CONTAINER );
+            who.mod_moves( -handle_cost_moves );
+            continue;
+        }
+        if( who.can_stash( copy ) && who.i_add( copy ) ) {
+            from.remove_item( *inner );
+            who.mod_moves( -handle_cost_moves );
+            continue;
+        }
+        const std::optional<tripoint_bub_ms> home = home_for( who, copy, tile );
+        if( home && !here.add_item_or_charges( *home, copy ).is_null() ) {
+            from.remove_item( *inner );
+            who.mod_moves( -handle_cost_moves );
+        }
+    }
+}
+
+// Try one garment on and keep it only if the whole outfit measurably improved.
+// The engine decides what physically fits -- pocket length, body size,
+// integrated and no-takeoff gear, power armour dependencies, a second rigid
+// piece on a sublimb that already has one -- so none of that is re-derived here.
+// Returns true if something actually changed.
+bool try_one_garment( npc &p, item_location &loc, const tripoint_bub_ms &tile )
+{
+    const int target_warmth = target_warmth_for( planning_temperature( p ) );
+    const double before = outfit_score( p, target_warmth );
+    const itype_id candidate_type = loc->typeId();
+
+    // A bag full of someone else's laundry is emptied where it stands first.
+    empty_where_it_stands( p, loc, tile );
+    if( !loc ) {
+        return false;
+    }
+    const item candidate = *loc;
+    p.mod_moves( -p.item_wear_cost( candidate ) );
+
+    // Straight on, if it goes on at all.
+    if( p.can_wear( candidate ).success() &&
+        p.weight_carried() + candidate.weight() <= p.weight_capacity() ) {
+        std::optional<std::list<item>::iterator> worn_it =
+            p.wear_item( candidate, false, true, true, true );
+        if( worn_it ) {
+            if( outfit_score( p, target_warmth ) > before * outfit_swap_margin ) {
+                loc.remove_item();
+                say( p, string_format( _( "puts on %s" ), candidate.tname() ) );
+                return true;
+            }
+            std::list<item> removed;
+            item_location worn_loc( p, &**worn_it );
+            if( !quiet_takeoff( p, worn_loc, removed ) ) {
+                debugmsg( "gear up: %s could not remove trial item %s", p.get_name(),
+                          candidate.tname() );
+                loc.remove_item();
+                return true;
+            }
+            p.gear_up_rejected.insert( candidate_type );
+            return false;
+        }
+    }
+
+    // Otherwise displace whatever already sits on that patch of skin, if this
+    // is better.  An old pack is never discarded with its contents inside.
+    item_location replace_target;
+    double replace_proxy = 0.0;
+    const double candidate_proxy = wear_proxy( p, candidate );
+    for( item_location &worn_loc : p.all_items_loc() ) {
+        if( !worn_loc || !p.is_worn( *worn_loc ) ) {
+            continue;
+        }
+        const item &worn = *worn_loc;
+        if( worn.is_favorite || !shares_sub_part( worn, candidate ) ||
+            !p.can_takeoff( worn ).success() ) {
+            continue;
+        }
+        const double proxy = wear_proxy( p, worn );
+        if( proxy >= candidate_proxy ) {
+            continue;
+        }
+        if( !replace_target || proxy < replace_proxy ) {
+            replace_target = worn_loc;
+            replace_proxy = proxy;
+        }
+    }
+    if( !replace_target ) {
+        p.gear_up_rejected.insert( candidate_type );
+        return false;
+    }
+
+    const item displaced = *replace_target;
+    // Wear the new one first, so the old one's contents have somewhere to go.
+    std::optional<std::list<item>::iterator> worn_it =
+        p.wear_item( candidate, false, true, true, true );
+    if( !worn_it ) {
+        p.gear_up_rejected.insert( candidate_type );
+        return false;
+    }
+    item &new_worn = **worn_it;
+    transfer_contents( p, *replace_target, new_worn, tile );
+
+    std::list<item> removed;
+    if( !quiet_takeoff( p, replace_target, removed ) || removed.empty() ) {
+        // Could not get the old one off after all; undo and remember.
+        std::list<item> undo;
+        item_location worn_loc( p, &new_worn );
+        quiet_takeoff( p, worn_loc, undo );
+        p.gear_up_rejected.insert( candidate_type );
+        return false;
+    }
+
+    const bool costs_mobility =
+        candidate.get_avg_encumber( p ) > displaced.get_avg_encumber( p );
+    const double margin = costs_mobility ? outfit_mobility_margin : outfit_swap_margin;
+    if( outfit_score( p, target_warmth ) > before * margin ) {
+        loc.remove_item();
+        if( !put_away( p, removed.front(), tile ) ) {
+            // Nowhere for the old piece, so wear it again over the top rather
+            // than lose it.
+            p.wear_item( removed.front(), false, true, true, true );
+        }
+        say( p, string_format( _( "swaps %1$s for %2$s" ), displaced.tname(),
+                               candidate.tname() ) );
+        return true;
+    }
+
+    // Not worth it after all: put everything back the way it was.
+    std::list<item> undo;
+    item_location worn_loc( p, &new_worn );
+    if( quiet_takeoff( p, worn_loc, undo ) && !undo.empty() ) {
+        std::optional<std::list<item>::iterator> restored =
+            p.wear_item( removed.front(), false, true, true, true );
+        if( restored ) {
+            transfer_contents( p, undo.front(), **restored, tile );
+        } else {
+            put_away( p, removed.front(), tile );
+        }
+        get_map().add_item_or_charges( tile, undo.front() );
+    } else {
+        put_away( p, removed.front(), tile );
+    }
+    p.gear_up_rejected.insert( candidate_type );
+    return false;
+}
+
+bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
+{
+    std::vector<item_location> pool = candidates_at( p, tile );
+
+    // Weapon first: the weapon decides which ammunition is coherent later.
+    item_location best;
+    double best_value = 0.0;
+    for( item_location &loc : pool ) {
+        if( loc && wants_as_weapon( p, *loc ) ) {
+            const double value = p.evaluate_weapon( *loc );
+            if( !best || value > best_value ) {
+                best = loc;
+                best_value = value;
+            }
+        }
+    }
+    if( best ) {
+        const std::string taken = best->tname();
+        item_location wielded = p.get_wielded_item();
+        if( wielded ) {
+            const item old = *wielded;
+            if( !p.can_unwield( old ).success() ) {
+                report_problem( p, string_format( _( "can't let go of %s" ), old.tname() ) );
+                return true;
+            }
+            // Empty the hands here rather than letting the wield path stow the
+            // old weapon, because that path is allowed to drop it on the ground.
+            item removed = p.remove_weapon();
+            if( !put_away( p, removed, tile ) ) {
+                p.wield( removed );
+                report_problem( p, string_format( _( "no room to set down %s" ), old.tname() ) );
+                return true;
+            }
+        }
+        if( p.wield( best ) ) {
+            say( p, string_format( _( "takes up %s" ), taken ) );
+        }
+        return true;
+    }
+
+    if( needs_backup_blade( p ) ) {
+        item_location blade;
+        double blade_value = 0.0;
+        for( item_location &loc : pool ) {
+            if( loc && wants_as_backup( p, *loc ) ) {
+                const double value = p.evaluate_weapon( *loc );
+                if( !blade || value > blade_value ) {
+                    blade = loc;
+                    blade_value = value;
+                }
+            }
+        }
+        if( blade ) {
+            const std::string taken = blade->tname();
+            if( take_into_inventory( p, blade ) ) {
+                say( p, string_format( _( "takes %s as a backup" ), taken ) );
+                return true;
+            }
+        }
+    }
+
+    // Then clothing, most promising candidate first, so the good coat is
+    // measured before the pile of shirts underneath it.
+    std::vector<item_location> wearables;
+    for( item_location &loc : pool ) {
+        if( loc && worth_trying_on( p, *loc ) ) {
+            wearables.push_back( loc );
+        }
+    }
+    std::sort( wearables.begin(), wearables.end(),
+    [&p]( const item_location & a, const item_location & b ) {
+        return wear_proxy( p, *a ) > wear_proxy( p, *b );
+    } );
+    for( item_location &loc : wearables ) {
+        if( !loc ) {
+            continue;
+        }
+        if( try_one_garment( p, loc, tile ) || p.get_moves() <= 0 ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool do_supply_stage( npc &p, const tripoint_bub_ms &tile )
+{
+    std::vector<item_location> pool = candidates_at( p, tile );
+    bool did_something = false;
+
+    for( item_location &loc : pool ) {
+        if( !loc || !wants_magazine( p, *loc ) ) {
+            continue;
+        }
+        const std::string name = loc->tname();
+        if( take_into_inventory( p, loc ) ) {
+            say( p, string_format( _( "picks up %s" ), name ) );
+            did_something = true;
+        }
+    }
+
+    int taken = 0;
+    for( item_location &loc : pool ) {
+        const int want = ammo_shortfall( p );
+        if( want <= 0 ) {
+            break;
+        }
+        if( !loc || !wants_ammo( p, *loc ) ) {
+            continue;
+        }
+        taken += take_charges( p, loc, want );
+    }
+    if( taken > 0 ) {
+        say( p, string_format( _( "takes %d rounds of ammunition" ), taken ) );
+        did_something = true;
+    }
+
+    for( item_location &loc : pool ) {
+        if( !loc || !wants_medical( p, *loc ) ) {
+            continue;
+        }
+        const bool healing = is_healing_item( *loc );
+        const int want = healing
+                         ? want_healing_items - count_carried( p, is_healing_item )
+                         : want_painkillers - count_carried( p, is_painkiller );
+        const std::string name = loc->tname();
+        if( take_charges( p, loc, want ) > 0 ) {
+            say( p, string_format( _( "takes %s" ), name ) );
+            did_something = true;
+        }
+    }
+
+    for( item_location &loc : pool ) {
+        if( !loc || !wants_rations( p, *loc ) ) {
+            continue;
+        }
+        const std::string name = loc->tname();
+        if( take_into_inventory( p, loc ) ) {
+            say( p, string_format( _( "packs %s" ), name ) );
+            did_something = true;
+        }
+    }
+
+    // Walk into the fight with a full magazine, not just a full pocket.  Two
+    // steps, because a magazine-fed weapon needs both: loose rounds go into the
+    // magazines first, and only then does a loaded magazine go into the gun.
+    item_location wielded = p.get_wielded_item();
+    if( wielded && wielded->is_gun() ) {
+        if( !wielded->magazine_integral() ) {
+            const std::set<itype_id> compatible = wielded->magazine_compatible();
+            for( item_location &carried : p.all_items_loc() ) {
+                if( !carried || !carried->is_magazine() ||
+                    compatible.count( carried->typeId() ) == 0 || carried->is_magazine_full() ) {
+                    continue;
+                }
+                if( try_reload( p, carried ) ) {
+                    did_something = true;
+                }
+            }
+        }
+        item_location to_load = p.get_wielded_item();
+        if( to_load && try_reload( p, to_load ) ) {
+            did_something = true;
+        }
+    }
+
+    return did_something;
+}
+
 } // namespace
+
+// ---------------------------------------------------------------------------
+// The activity
+// ---------------------------------------------------------------------------
+
+std::unordered_set<tripoint_abs_ms> multi_gear_up_activity_actor::multi_activity_locations(
+    Character &you )
+{
+    npc *p = you.as_npc();
+    if( !p ) {
+        return {};
+    }
+    map &here = get_map();
+    const std::unordered_set<tripoint_abs_ms> stores = stores_within_reach( you );
+
+    // Ammunition is only coherent once the weapon is final, so the equipment
+    // stage has to be exhausted everywhere before the supply stage can begin.
+    for( int attempt = 0; attempt < 2; attempt++ ) {
+        const gear_stage stage = static_cast<gear_stage>( p->gear_up_stage );
+        std::unordered_set<tripoint_abs_ms> wanted;
+        for( const tripoint_abs_ms &tile : stores ) {
+            const tripoint_bub_ms bub = here.get_bub( tile );
+            if( !here.inbounds( bub ) ) {
+                // Outside the reality bubble; let the framework route there and
+                // decide once it can actually see the tile.
+                wanted.emplace( tile );
+                continue;
+            }
+            if( tile_has_anything_wanted( *p, bub, stage ) ) {
+                wanted.emplace( tile );
+            }
+        }
+        if( !wanted.empty() || stage == gear_stage::supplies ) {
+            multi_activity_actor::prune_dangerous_field_locations( wanted );
+            // Guarded exactly the way generic_locations guards it: a camp's
+            // store room is usually windowless, and sorting loot is allowed
+            // there, so gearing up out of it is too.
+            if( !multi_activity_actor::can_do_in_dark( get_type() ) ) {
+                multi_activity_actor::prune_dark_locations( you, wanted, get_type() );
+            }
+            return wanted;
+        }
+        p->gear_up_stage = static_cast<int>( gear_stage::supplies );
+    }
+    return {};
+}
+
+activity_reason_info multi_gear_up_activity_actor::multi_activity_can_do( Character &you,
+        const tripoint_bub_ms &src_loc )
+{
+    npc *p = you.as_npc();
+    if( !p ) {
+        return activity_reason_info::fail( do_activity_reason::NO_ZONE );
+    }
+    const gear_stage stage = static_cast<gear_stage>( p->gear_up_stage );
+    if( !tile_has_anything_wanted( *p, src_loc, stage ) ) {
+        return activity_reason_info::fail( do_activity_reason::ALREADY_DONE );
+    }
+    return activity_reason_info::ok( do_activity_reason::NEEDS_GEAR_UP );
+}
+
+bool multi_gear_up_activity_actor::multi_activity_do( Character &you,
+        const activity_reason_info &, const tripoint_abs_ms &, const tripoint_bub_ms &src_loc )
+{
+    npc *p = you.as_npc();
+    if( !p ) {
+        return true;
+    }
+    // Going through a crate costs time whether or not anything comes of it.
+    you.mod_moves( -search_cost_moves );
+
+    const bool did_something =
+        static_cast<gear_stage>( p->gear_up_stage ) == gear_stage::equipment
+        ? do_equipment_stage( *p, src_loc )
+        : do_supply_stage( *p, src_loc );
+
+    // Let the NPC's own AI re-examine what it is now carrying; it scores
+    // weapons with the same function used here, so it will agree.
+    p->has_new_items = true;
+    p->invalidate_range_cache();
+
+    // The framework reads this as "the work failed", which is what keeps the
+    // sweep going: returning false says something was done here and the
+    // activity should survive the turn, so that the second stage is reached and
+    // a crate with several useful things in it is not abandoned after one.
+    // Returning true when nothing happened lets the sweep run out and the
+    // activity end, which is the only thing that terminates it.
+    return !did_something;
+}
 
 void talk_function::gear_up_from_stores( npc &p )
 {
@@ -1172,48 +1316,18 @@ void talk_function::gear_up_from_stores( npc &p )
         return;
     }
 
-    gear_pool pool = build_pool( p );
-    if( pool.storage_tiles.empty() ) {
-        if( pool.saw_storage_zone_out_of_range ) {
-            add_msg( m_info, _( "%s is too far from the camp stores to reach them." ), p.get_name() );
-        } else {
-            add_msg( m_info, _( "%s has no camp storage or unsorted loot zone within reach." ),
-                     p.get_name() );
-        }
+    if( stores_within_reach( p ).empty() ) {
+        add_msg( m_info, _( "%s has no loot or camp storage zone in range to draw from." ),
+                 p.get_name() );
         return;
     }
 
-    gear_up_report report;
-    shed_ballast( p, pool, report );
-    choose_weapon( p, pool, report );
-    keep_a_backup_blade( p, pool, report );
-    fit_out( p, pool, report );
-    stock_ammunition( p, pool, report );
-    stock_consumables( p, pool, report );
-
-    p.invalidate_range_cache();
-    p.calc_encumbrance();
-    // Let the NPC's own AI re-examine what it is now carrying next turn.  It
-    // scores weapons with the same function used above, so it will agree.
-    p.has_new_items = true;
-    // Digging through crates and changing clothes is not free.  Move budget
-    // carries over between turns, so this really does keep the NPC busy for a
-    // few turns afterwards -- capped, so a big re-kit never strands them.
-    const int handled = std::min( 10, static_cast<int>( report.changes.size() ) );
-    if( handled > 0 ) {
-        p.mod_moves( -handled * to_moves<int>( 1_seconds ) );
-    }
-
-    if( report.changes.empty() ) {
-        add_msg( m_info, _( "%s is already as well equipped as the stores allow." ), p.get_name() );
-    } else {
-        add_msg( m_good, _( "%1$s gears up: %2$s." ), p.get_name(),
-                 enumerate_as_string( report.changes ) );
-    }
-    for( const std::string &note : report.notes ) {
-        add_msg( m_info, _( "%1$s: %2$s." ), p.get_name(), note );
-    }
-    for( const std::string &problem : report.problems ) {
-        add_msg( m_warning, _( "%1$s: %2$s." ), p.get_name(), problem );
-    }
+    // Reset the sweep here rather than in the actor's start(): multi-zone
+    // actors are cloned through the backlog and restarted every turn, so state
+    // reset there would drop back to the first stage forever.  A fresh order
+    // reconsiders everything turned down last time -- the weather has moved on,
+    // and so has what is in the crates.
+    p.gear_up_rejected.clear();
+    p.gear_up_stage = 0;
+    p.assign_activity( multi_gear_up_activity_actor() );
 }

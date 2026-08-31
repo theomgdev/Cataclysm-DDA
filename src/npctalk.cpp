@@ -994,11 +994,9 @@ static int npc_activities_menu()
     nmenu.addentry( NPC_CHAT_ACTIVITIES_VEHICLE_DECONSTRUCTION, true, 'v',
                     _( "Deconstructing vehicles" ) );
     nmenu.addentry( NPC_CHAT_ACTIVITIES_VEHICLE_REPAIR, true, 'V', _( "Repairing vehicles" ) );
+    nmenu.addentry( NPC_CHAT_GEAR_UP, true, 'g', _( "Gearing up from the camp stores" ) );
     nmenu.addentry( NPC_CHAT_ACTIVITIES_UNASSIGN, true, '-',
                     _( "Taking it easy (Stop what they are working on)" ) );
-    // Not an ongoing job: this one resolves immediately and reports what it did.
-    nmenu.addentry( NPC_CHAT_GEAR_UP, true, 'g',
-                    _( "Gearing up from the camp stores (done right away)" ) );
 
     nmenu.query();
 

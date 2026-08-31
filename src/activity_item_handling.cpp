@@ -96,6 +96,7 @@ static const activity_id ACT_MULTIPLE_DIS( "ACT_MULTIPLE_DIS" );
 static const activity_id ACT_MULTIPLE_FARM( "ACT_MULTIPLE_FARM" );
 static const activity_id ACT_MULTIPLE_FISH( "ACT_MULTIPLE_FISH" );
 static const activity_id ACT_MULTIPLE_MINE( "ACT_MULTIPLE_MINE" );
+static const activity_id ACT_MULTIPLE_GEAR_UP( "ACT_MULTIPLE_GEAR_UP" );
 static const activity_id ACT_MULTIPLE_MOP( "ACT_MULTIPLE_MOP" );
 static const activity_id ACT_MULTIPLE_STUDY( "ACT_MULTIPLE_STUDY" );
 static const activity_id ACT_VEHICLE_DECONSTRUCTION( "ACT_VEHICLE_DECONSTRUCTION" );
@@ -2518,6 +2519,9 @@ bool can_do_in_dark( const activity_id &act_id )
 {
     return act_id == ACT_MULTIPLE_MOP ||
            act_id == ACT_MOVE_LOOT ||
+           // Gearing up is loot sorting into your own pockets, and a camp's
+           // store room is usually a windowless one.  Same rule as ACT_MOVE_LOOT.
+           act_id == ACT_MULTIPLE_GEAR_UP ||
            act_id == ACT_FETCH_REQUIRED;
 }
 

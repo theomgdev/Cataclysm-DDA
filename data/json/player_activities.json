@@ -63,6 +63,14 @@
   },
   {
     "type": "activity_type",
+    "id": "ACT_MULTIPLE_GEAR_UP",
+    "activity_level": "LIGHT_EXERCISE",
+    "verb": "gearing up",
+    "based_on": "neither",
+    "multi_activity": true
+  },
+  {
+    "type": "activity_type",
     "id": "ACT_MULTIPLE_MOP",
     "activity_level": "NO_EXERCISE",
     "verb": "mopping",

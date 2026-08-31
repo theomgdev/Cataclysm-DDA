@@ -215,6 +215,7 @@ static const activity_id ACT_MULTIPLE_DIS( "ACT_MULTIPLE_DIS" );
 static const activity_id ACT_MULTIPLE_FARM( "ACT_MULTIPLE_FARM" );
 static const activity_id ACT_MULTIPLE_FISH( "ACT_MULTIPLE_FISH" );
 static const activity_id ACT_MULTIPLE_MINE( "ACT_MULTIPLE_MINE" );
+static const activity_id ACT_MULTIPLE_GEAR_UP( "ACT_MULTIPLE_GEAR_UP" );
 static const activity_id ACT_MULTIPLE_MOP( "ACT_MULTIPLE_MOP" );
 static const activity_id ACT_MULTIPLE_READ( "ACT_MULTIPLE_READ" );
 static const activity_id ACT_MULTIPLE_STUDY( "ACT_MULTIPLE_STUDY" );
@@ -11146,6 +11147,11 @@ std::unique_ptr<activity_actor> mop_activity_actor::deserialize( JsonValue &jsin
     return actor.clone();
 }
 
+std::unique_ptr<activity_actor> multi_gear_up_activity_actor::deserialize( JsonValue & )
+{
+    return multi_gear_up_activity_actor().clone();
+}
+
 std::unique_ptr<activity_actor> multi_mop_activity_actor::deserialize( JsonValue & )
 {
     multi_mop_activity_actor actor;
@@ -14995,6 +15001,7 @@ deserialize_functions = {
     { ACT_MULTIPLE_FARM, &multi_farm_activity_actor::deserialize },
     { ACT_MULTIPLE_FISH, &multi_fish_activity_actor::deserialize },
     { ACT_MULTIPLE_MINE, &multi_mine_activity_actor::deserialize },
+    { ACT_MULTIPLE_GEAR_UP, &multi_gear_up_activity_actor::deserialize },
     { ACT_MULTIPLE_MOP, &multi_mop_activity_actor::deserialize },
     { ACT_MULTIPLE_READ, &multi_read_activity_actor::deserialize },
     { ACT_MULTIPLE_STUDY, &multi_study_activity_actor::deserialize },

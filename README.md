@@ -39,13 +39,19 @@ speed here means removing wasted work, never adding parallelism.
 
 **Smarter followers**
 
-- *Gear up from the camp stores* — a single order, from the `C` menu or in
-  conversation, and the follower fits themselves out from the camp's supplies:
-  the best weapon they can use, something to swing if all they had was a gun,
-  better armour and clothing, ammunition matched to the weapon they actually
-  chose — and loaded, not just carried — plus bandages, painkillers and rations.
-  It resolves immediately and tells you exactly what it did and what it could
-  not find.
+- *Gear up from the camp stores* — one order, from the `C` menu or in
+  conversation, and the follower walks the camp's loot zones the way they walk
+  them to sort or to build, working through the crates and equipping themselves
+  from what is actually stored there: the best weapon they can use, something to
+  swing if all they had was a gun, better armour and clothing, ammunition
+  matched to the weapon they actually chose — and loaded, not just carried —
+  plus bandages, painkillers and rations. It takes real time and it tells you
+  what it did along the way.
+- It reads the zones you already keep. Armour in `LOOT_ARMOR`, bandages in
+  `LOOT_DRUGS`, rounds in `LOOT_AMMO`, all of it under whatever `CAMP_STORAGE`
+  you threw over the top — and inside the boxes and kits, not just what is
+  loose on the floor. Displaced gear goes back to the zone it belongs in, so
+  gearing up leaves the camp sorted rather than strewn.
 - Gear is judged on what it does, not on what it costs. Armour is scored on
   coverage-weighted protection, encumbrance, carrying capacity, weather and
   sealing, with mobility protected: nothing that slows a follower down gets worn

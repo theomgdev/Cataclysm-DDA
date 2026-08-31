@@ -169,6 +169,27 @@ class multi_mine_activity_actor : public multi_zone_activity_actor
         static std::unique_ptr<activity_actor> deserialize( JsonValue & );
 };
 
+// Walks the camp's loot zones and equips the character from what is stored
+// there.  Implemented in npc_gear_up.cpp.
+class multi_gear_up_activity_actor : public multi_zone_activity_actor
+{
+    public:
+        using multi_zone_activity_actor::multi_zone_activity_actor;
+        const activity_id &get_type() const override {
+            static const activity_id ACT_MULTIPLE_GEAR_UP( "ACT_MULTIPLE_GEAR_UP" );
+            return ACT_MULTIPLE_GEAR_UP;
+        }
+        std::unordered_set<tripoint_abs_ms> multi_activity_locations( Character &you ) override;
+        activity_reason_info multi_activity_can_do( Character &you,
+                const tripoint_bub_ms &src_loc ) override;
+        bool multi_activity_do( Character &you, const activity_reason_info &act_info,
+                                const tripoint_abs_ms &src, const tripoint_bub_ms &src_loc ) override;
+        std::unique_ptr<activity_actor> clone() const override {
+            return std::make_unique<multi_gear_up_activity_actor>( *this );
+        }
+        static std::unique_ptr<activity_actor> deserialize( JsonValue & );
+};
+
 class multi_mop_activity_actor : public multi_zone_activity_actor
 {
     public:
