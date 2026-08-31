@@ -2886,6 +2886,26 @@ class Character : public Creature, public visitable
 
         mutable tripoint_rel_ms view_offset;
 
+        /**
+         * Gear-up sweep state (see npc_gear_up.cpp).  Deliberately not saved:
+         * it lives only for the duration of one order, and losing it across a
+         * save costs nothing worse than re-issuing that order.
+         *
+         * Item types already tried on and found not worth it.  Keyed by type
+         * rather than by item, so that a rack of eighty identical shirts costs
+         * one decision instead of eighty, and so that the character cannot walk
+         * back to the same crate forever re-testing the same rejected coat.
+         */
+        std::set<itype_id> gear_up_rejected; // NOLINT(cata-serialize)
+        // 0 while weapons and clothing are still being settled, 1 once they are
+        // and only supplies remain.  Ammunition has to be chosen after the
+        // weapon or an archer ends up carrying pistol rounds.
+        int gear_up_stage = 0; // NOLINT(cata-serialize)
+        // Set once the "finished gearing up" line has been said for the
+        // current order, so a later re-check of an empty want set does not say
+        // it again.
+        bool gear_up_done_reported = false; // NOLINT(cata-serialize)
+
         player_activity stashed_outbounds_activity;
         player_activity stashed_outbounds_backlog;
         player_activity activity;

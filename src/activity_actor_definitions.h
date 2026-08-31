@@ -179,6 +179,11 @@ class multi_gear_up_activity_actor : public multi_zone_activity_actor
             static const activity_id ACT_MULTIPLE_GEAR_UP( "ACT_MULTIPLE_GEAR_UP" );
             return ACT_MULTIPLE_GEAR_UP;
         }
+        // Overridden to hand the sweep from the equipment stage to the supply
+        // stage when it runs dry: the base class would end the activity there,
+        // and its per-turn source cache bypasses multi_activity_locations,
+        // which is where the stage would otherwise advance.
+        void do_turn( player_activity &act, Character &you ) override;
         std::unordered_set<tripoint_abs_ms> multi_activity_locations( Character &you ) override;
         activity_reason_info multi_activity_can_do( Character &you,
                 const tripoint_bub_ms &src_loc ) override;

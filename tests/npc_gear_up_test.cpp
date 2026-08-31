@@ -22,6 +22,7 @@
 #include "map_helpers.h"
 #include "material.h"
 #include "npc.h"
+#include "npc_gear_up.h"
 #include "npctalk.h"
 #include "options_helpers.h"
 #include "player_activity.h"
@@ -33,6 +34,8 @@
 #include "units.h"
 #include "weather.h"
 
+static const faction_id faction_free_merchants( "free_merchants" );
+
 static const item_category_id item_category_weapons( "weapons" );
 
 static const itype_id itype_2x4( "2x4" );
@@ -40,6 +43,7 @@ static const itype_id itype_9mm( "9mm" );
 static const itype_id itype_backpack( "backpack" );
 static const itype_id itype_bandages( "bandages" );
 static const itype_id itype_box_small( "box_small" );
+static const itype_id itype_canteen( "canteen" );
 static const itype_id itype_duffelbag( "duffelbag" );
 static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
@@ -51,6 +55,7 @@ static const itype_id itype_sandwich_cheese( "sandwich_cheese" );
 static const itype_id itype_wrench( "wrench" );
 static const itype_id itype_shot_00( "shot_00" );
 static const itype_id itype_tshirt( "tshirt" );
+static const itype_id itype_water_clean( "water_clean" );
 
 static const zone_type_id zone_type_CAMP_STORAGE( "CAMP_STORAGE" );
 static const zone_type_id zone_type_LOOT_ARMOR( "LOOT_ARMOR" );
@@ -66,26 +71,38 @@ namespace
 // turn budget fails, because "walks back to the same crate forever" is the
 // failure mode this whole feature has to avoid, and the engine's own loop
 // detector cannot catch it since every lap of that circle spends moves.
-void run_gear_up( npc &guy, int max_turns = 400 )
+void drive_gear_up( Character &who, int max_turns )
 {
     map &here = get_map();
-    talk_function::gear_up_from_stores( guy );
-
     int turns = 0;
-    while( !guy.activity.is_null() || guy.is_auto_moving() ) {
+    while( !who.activity.is_null() || who.is_auto_moving() ) {
         if( turns >= max_turns ) {
             FAIL( "turn count exceeded, infinite loop possible" );
             return;
         }
-        guy.set_moves( guy.get_speed() );
-        if( guy.is_auto_moving() ) {
-            guy.setpos( here, here.get_bub( *guy.destination_point ) );
-            here.build_map_cache( guy.posz() );
-            guy.start_destination_activity();
+        who.set_moves( who.get_speed() );
+        if( who.is_auto_moving() ) {
+            who.setpos( here, here.get_bub( *who.destination_point ) );
+            here.build_map_cache( who.posz() );
+            who.start_destination_activity();
         }
-        guy.activity.do_turn( guy );
+        who.activity.do_turn( who );
         turns++;
     }
+}
+
+void run_gear_up( npc &guy, int max_turns = 400 )
+{
+    talk_function::gear_up_from_stores( guy );
+    drive_gear_up( guy, max_turns );
+}
+
+// The same order the avatar gives itself from the zone-activities menu.
+void run_gear_up( avatar &you, int max_turns = 400 )
+{
+    REQUIRE( gear_up_stores_available( you ) );
+    start_gear_up_from_stores( you );
+    drive_gear_up( you, max_turns );
 }
 
 npc &spawn_bare_npc( const point_bub_ms &pos )
@@ -111,22 +128,38 @@ npc &spawn_gear_up_npc( const point_bub_ms &pos )
     return guy;
 }
 
-tripoint_bub_ms make_zone( npc &guy, const zone_type_id &type, const tripoint &offset )
+avatar &prepare_avatar( const point_bub_ms &pos )
 {
-    const tripoint_bub_ms tile = guy.pos_bub() + offset;
+    avatar &you = get_avatar();
+    map &here = get_map();
+    clear_character( you, true );
+    you.set_all_parts_temp_conv( BODYTEMP_NORM );
+    you.set_all_parts_temp_cur( BODYTEMP_NORM );
+    you.set_hunger( 0 );
+    you.set_thirst( 0 );
+    you.set_stored_kcal( you.get_healthy_kcal() );
+    you.setpos( here, tripoint_bub_ms( pos.x(), pos.y(), 0 ) );
+    here.build_map_cache( you.posz() );
+    you.worn.wear_item( you, item( itype_backpack ), false, false );
+    return you;
+}
+
+tripoint_bub_ms make_zone( Character &who, const zone_type_id &type, const tripoint &offset )
+{
+    const tripoint_bub_ms tile = who.pos_bub() + offset;
     zone_manager &mgr = zone_manager::get_manager();
-    mgr.add( "test_" + type.str(), type, guy.get_fac_id(), false, true,
+    mgr.add( "test_" + type.str(), type, who.get_faction_id(), false, true,
              get_map().get_abs( tile ), get_map().get_abs( tile ) );
     mgr.cache_data();
     return tile;
 }
 
-tripoint_bub_ms make_storage_zone( npc &guy )
+tripoint_bub_ms make_storage_zone( Character &who )
 {
-    return make_zone( guy, zone_type_CAMP_STORAGE, tripoint::east );
+    return make_zone( who, zone_type_CAMP_STORAGE, tripoint::east );
 }
 
-int count_of( const npc &guy, const itype_id &id )
+int count_of( const Character &guy, const itype_id &id )
 {
     int found = 0;
     guy.visit_items( [&found, &id]( const item * node, item * ) {
@@ -138,7 +171,7 @@ int count_of( const npc &guy, const itype_id &id )
     return found;
 }
 
-bool wearing( const npc &guy, const itype_id &id )
+bool wearing( const Character &guy, const itype_id &id )
 {
     return guy.amount_worn( id ) > 0;
 }
@@ -294,6 +327,30 @@ TEST_CASE( "npc_gear_up_empties_a_pack_before_wearing_it", "[npc][gear_up]" )
     CHECK( items_on( tile ) > 0 );
 }
 
+TEST_CASE( "npc_gear_up_leaves_a_pack_holding_a_favourite_on_the_shelf", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // Wearing a bag empties it into the camp's zones first, so taking this one
+    // would move the player's favourite out of it.  A favourite is not to be
+    // taken and not to be shuffled around either, so the bag stays put.
+    item pack( itype_backpack );
+    item marked( itype_knife_combat );
+    marked.set_favorite( true );
+    REQUIRE( pack.put_in( marked, pocket_type::CONTAINER ).success() );
+    here.add_item_or_charges( tile, pack );
+
+    run_gear_up( guy );
+
+    CHECK_FALSE( wearing( guy, itype_backpack ) );
+    CHECK( count_of( guy, itype_knife_combat ) == 0 );
+    CHECK( items_on( tile ) == 1 );
+}
+
 TEST_CASE( "npc_gear_up_moves_contents_into_the_replacement", "[npc][gear_up]" )
 {
     reset_world();
@@ -348,6 +405,28 @@ TEST_CASE( "npc_gear_up_respects_explicit_player_intent", "[npc][gear_up]" )
 
         CHECK( count_of( guy, itype_bandages ) == 0 );
     }
+}
+
+TEST_CASE( "npc_gear_up_leaves_someone_elses_property_alone", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // Wielding asks before taking what belongs to someone else.  A sweep
+    // through a whole camp cannot stop and ask about every crate, so it leaves
+    // other people's property where it is instead.
+    item knife( itype_knife_combat );
+    knife.set_owner( faction_free_merchants );
+    REQUIRE_FALSE( knife.is_owned_by( guy, true ) );
+    here.add_item_or_charges( tile, knife );
+
+    run_gear_up( guy );
+
+    CHECK_FALSE( guy.get_wielded_item() );
+    CHECK( items_on( tile ) == 1 );
 }
 
 TEST_CASE( "npc_gear_up_never_touches_a_no_pickup_zone", "[npc][gear_up]" )
@@ -489,10 +568,11 @@ TEST_CASE( "npc_gear_up_finds_its_own_storage_first", "[npc][gear_up]" )
     run_gear_up( guy );
 
     CHECK( guy.volume_capacity() > 0_ml );
-    // Known gap: when the equipment stage does work on the last remaining tile,
-    // the sweep ends before the supply stage gets a look at that same tile, so
-    // the bandages are left behind.  Re-issuing the order picks them up.  The
-    // bootstrap itself -- no pockets, then pockets -- is what this locks down.
+    // And having found pockets on the last tile of the equipment sweep, the
+    // supply stage still gets its look at that same tile: the handover happens
+    // when the equipment stage runs dry, not only when a later tile is left to
+    // walk to.  One order, not two.
+    CHECK( count_of( guy, itype_bandages ) > 0 );
 }
 
 TEST_CASE( "npc_gear_up_ends_when_it_cannot_carry_what_it_wants", "[npc][gear_up]" )
@@ -600,6 +680,168 @@ TEST_CASE( "npc_gear_up_never_carries_a_loose_liquid", "[npc][gear_up]" )
     CHECK( count_of( guy, itype_mutagen ) == 0 );
 }
 
+TEST_CASE( "npc_gear_up_leaves_a_gun_it_has_no_ammunition_for", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // A knife in hand and a pistol on the shelf with not one round for it
+    // anywhere in the camp.  Scored on what it could do if it were loaded the
+    // pistol wins, but an empty pistol is a poor club and the knife was the
+    // better weapon all along.
+    item knife( itype_knife_combat );
+    REQUIRE( guy.wield( knife ) );
+    here.add_item_or_charges( tile, item( itype_glock_19 ) );
+
+    run_gear_up( guy );
+
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_knife_combat );
+    CHECK( count_of( guy, itype_glock_19 ) == 0 );
+}
+
+TEST_CASE( "npc_gear_up_takes_a_gun_the_camp_can_feed", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // The same pistol, with the camp's ammunition behind it.  Now it is worth
+    // more than the knife, and the knife stays as the backup blade.
+    item knife( itype_knife_combat );
+    REQUIRE( guy.wield( knife ) );
+    here.add_item_or_charges( tile, item( itype_glock_19 ) );
+    here.add_item_or_charges( tile, item( itype_glockmag ) );
+    item rounds( itype_9mm );
+    rounds.charges = 100;
+    here.add_item_or_charges( tile, rounds );
+
+    run_gear_up( guy );
+
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_glock_19 );
+    CHECK( guy.get_wielded_item()->ammo_remaining() > 0 );
+    CHECK( count_of( guy, itype_knife_combat ) == 1 );
+}
+
+TEST_CASE( "npc_gear_up_takes_a_day_of_food_not_the_larder", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    REQUIRE( guy.needs_food() );
+
+    // Forty sandwiches is the camp's week, not one fighter's day.
+    for( int i = 0; i < 40; i++ ) {
+        here.add_item_or_charges( tile, item( itype_sandwich_cheese ) );
+    }
+
+    run_gear_up( guy );
+
+    const int packed = count_of( guy, itype_sandwich_cheese );
+    CHECK( packed > 0 );
+    CHECK( packed < 20 );
+    CHECK( items_on( tile ) > 0 );
+}
+
+TEST_CASE( "npc_gear_up_takes_water_by_the_canteen", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    REQUIRE( guy.needs_food() );
+
+    // Loose liquid cannot be carried, and a camp does not keep puddles: the
+    // water has to come by the vessel holding it or it never comes at all.
+    for( int i = 0; i < 4; i++ ) {
+        item canteen( itype_canteen );
+        item water( itype_water_clean );
+        water.charges = 2;
+        REQUIRE( canteen.put_in( water, pocket_type::CONTAINER ).success() );
+        here.add_item_or_charges( tile, canteen );
+    }
+
+    run_gear_up( guy );
+
+    CHECK( count_of( guy, itype_water_clean ) > 0 );
+    // A canteen or two, not the camp's whole water supply.
+    CHECK( count_of( guy, itype_canteen ) <= 2 );
+    CHECK( items_on( tile ) > 0 );
+}
+
+TEST_CASE( "npc_gear_up_dresses_someone_who_is_freezing", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // Being too cold is the strongest reason there is to put a coat on, not a
+    // reason to refuse one.
+    guy.set_all_parts_temp_conv( BODYTEMP_VERY_COLD );
+    guy.set_all_parts_temp_cur( BODYTEMP_VERY_COLD );
+
+    here.add_item_or_charges( tile, item( itype_kevlar ) );
+
+    run_gear_up( guy );
+
+    CHECK( wearing( guy, itype_kevlar ) );
+}
+
+TEST_CASE( "avatar_gear_up_equips_from_the_stores", "[npc][gear_up][avatar]" )
+{
+    reset_world();
+
+    // The same order the player gives themselves from the zone-activities
+    // menu.  Nothing about the sweep is NPC-only.
+    avatar &you = prepare_avatar( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( you );
+    map &here = get_map();
+
+    here.add_item_or_charges( tile, item( itype_kevlar ) );
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+    item bandages( itype_bandages );
+    bandages.charges = 10;
+    here.add_item_or_charges( tile, bandages );
+
+    run_gear_up( you );
+
+    CHECK( wearing( you, itype_kevlar ) );
+    REQUIRE( you.get_wielded_item() );
+    CHECK( you.get_wielded_item()->typeId() == itype_knife_combat );
+    CHECK( count_of( you, itype_bandages ) > 0 );
+}
+
+TEST_CASE( "avatar_gear_up_leaves_favourites_alone", "[npc][gear_up][avatar]" )
+{
+    reset_world();
+
+    avatar &you = prepare_avatar( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( you );
+    map &here = get_map();
+
+    item knife( itype_knife_combat );
+    knife.set_favorite( true );
+    here.add_item_or_charges( tile, knife );
+
+    run_gear_up( you );
+
+    CHECK_FALSE( you.get_wielded_item() );
+    CHECK( items_on( tile ) == 1 );
+}
+
 // ---------------------------------------------------------------------------
 // Random-pool diagnostic
 //
@@ -636,6 +878,24 @@ std::vector<itype_id> random_item_draw( int count )
 std::string describe_item( const item &it )
 {
     return string_format( "%s [%s]", it.tname( 1, false ), it.get_base_material().name() );
+}
+
+// A sorted camp keeps things in crates and duffel bags, not in a heap on the
+// floor, so part of every draw goes inside a container.  Loose items alone
+// would never reach the nested-candidate or empty-before-wearing paths.
+void scatter_draw_over( const tripoint_bub_ms &tile, const std::vector<itype_id> &draw )
+{
+    map &here = get_map();
+    item crate( itype_duffelbag );
+    for( size_t i = 0; i < draw.size(); i++ ) {
+        item made( draw[i] );
+        if( i % 3 == 0 && crate.can_contain( made ).success() ) {
+            crate.put_in( made, pocket_type::CONTAINER );
+        } else {
+            here.add_item_or_charges( tile, made, true );
+        }
+    }
+    here.add_item_or_charges( tile, crate, true );
 }
 
 void report_gear_up_outcome( npc &guy, const tripoint_bub_ms &tile,
@@ -721,17 +981,14 @@ void report_gear_up_outcome( npc &guy, const tripoint_bub_ms &tile,
     // to sanity-check by eye, not a fixed pass/fail line.
     printf( "main-pack-sized items worn: %d\n", main_pack_count );
 
-    // Nothing left in a container on the storage tile: emptying containers
-    // before deciding on them is what the dedicated test covers directly,
-    // but a random draw is a cheap second check across many container types
-    // at once.
+    // A container the sweep decided against keeps its contents; one it wore is
+    // gone from the tile with its contents emptied into the camp's zones.  So
+    // this is a reading, not a target: what it must never show is items the
+    // character wanted still sealed away where the sweep could not reach them.
     map &here = get_map();
     int nested_leftover = 0;
     for( item &it : here.i_at( tile ) ) {
-        for( item *inner : it.all_items_top( pocket_type::CONTAINER ) ) {
-            ( void )inner;
-            nested_leftover++;
-        }
+        nested_leftover += it.all_items_top( pocket_type::CONTAINER ).size();
     }
     printf( "items still nested inside containers left on the tile: %d\n", nested_leftover );
 }
@@ -752,12 +1009,9 @@ TEST_CASE( "npc_gear_up_random_item_pool", "[npc][gear_up][.]" )
 
         npc &guy = spawn_bare_npc( { 50, 50 } );
         const tripoint_bub_ms tile = make_storage_zone( guy );
-        map &here = get_map();
 
         const std::vector<itype_id> draw = random_item_draw( 60 );
-        for( const itype_id &id : draw ) {
-            here.add_item_or_charges( tile, item( id ), true );
-        }
+        scatter_draw_over( tile, draw );
 
         run_gear_up( guy, 4000 );
 
@@ -782,12 +1036,9 @@ TEST_CASE( "npc_gear_up_random_item_pool_over_starting_gear", "[npc][gear_up][.]
         const bool wore_tshirt_at_start = wearing( guy, itype_tshirt );
 
         const tripoint_bub_ms tile = make_storage_zone( guy );
-        map &here = get_map();
 
         const std::vector<itype_id> draw = random_item_draw( 60 );
-        for( const itype_id &id : draw ) {
-            here.add_item_or_charges( tile, item( id ), true );
-        }
+        scatter_draw_over( tile, draw );
 
         run_gear_up( guy, 4000 );
 

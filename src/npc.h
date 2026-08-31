@@ -1631,25 +1631,6 @@ class npc : public Character
         bool quiet_death = false; // supress messages about death
         std::vector<npc_need> needs;
         std::optional<int> confident_range_cache;
-        /**
-         * Gear-up sweep state.  Deliberately not saved: it lives only for the
-         * duration of one order, and losing it across a save costs the player
-         * nothing worse than re-issuing that order.
-         *
-         * Item types already tried on and found not worth it.  Keyed by type
-         * rather than by item, so that a rack of eighty identical shirts costs
-         * one decision instead of eighty, and so that the NPC cannot walk back
-         * to the same crate forever re-testing the same rejected coat.
-         */
-        std::set<itype_id> gear_up_rejected; // NOLINT(cata-serialize)
-        // 0 while weapons and clothing are still being settled, 1 once they are
-        // and only supplies remain.  Ammunition has to be chosen after the
-        // weapon or an archer ends up carrying pistol rounds.
-        int gear_up_stage = 0; // NOLINT(cata-serialize)
-        // Set once the "finished gearing up" line has been said for the
-        // current order, so the framework re-checking an empty want set on a
-        // later turn does not say it again.
-        bool gear_up_done_reported = false; // NOLINT(cata-serialize)
         // Dummy point that indicates that the goal is invalid.
         static constexpr const tripoint_abs_omt &no_goal_point = tripoint_abs_omt::invalid;
         job_data job;
