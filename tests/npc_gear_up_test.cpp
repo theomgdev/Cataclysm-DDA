@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -12,20 +13,27 @@
 #include "faction.h"
 #include "game.h"
 #include "item.h"
+#include "item_category.h"
+#include "item_factory.h"
 #include "item_location.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "map.h"
 #include "map_helpers.h"
+#include "material.h"
 #include "npc.h"
 #include "npctalk.h"
 #include "options_helpers.h"
 #include "player_activity.h"
 #include "player_helpers.h"
 #include "point.h"
+#include "rng.h"
+#include "string_formatter.h"
 #include "type_id.h"
 #include "units.h"
 #include "weather.h"
+
+static const item_category_id item_category_weapons( "weapons" );
 
 static const itype_id itype_2x4( "2x4" );
 static const itype_id itype_9mm( "9mm" );
@@ -37,8 +45,10 @@ static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
 static const itype_id itype_kevlar( "kevlar" );
 static const itype_id itype_knife_combat( "knife_combat" );
+static const itype_id itype_mutagen( "mutagen" );
 static const itype_id itype_pointy_stick( "pointy_stick" );
 static const itype_id itype_sandwich_cheese( "sandwich_cheese" );
+static const itype_id itype_wrench( "wrench" );
 static const itype_id itype_shot_00( "shot_00" );
 static const itype_id itype_tshirt( "tshirt" );
 
@@ -521,4 +531,248 @@ TEST_CASE( "npc_gear_up_skips_rations_with_no_npc_food", "[npc][gear_up]" )
     run_gear_up( guy );
 
     CHECK( count_of( guy, itype_sandwich_cheese ) == 0 );
+}
+
+// Two cases checked directly rather than left to a random draw to happen to
+// include -- a random sample not finding a bug is not the same as the bug
+// not existing, and these are exactly the two the feature was accused of
+// getting wrong from a whole-body score with nothing to catch them.
+
+TEST_CASE( "npc_gear_up_never_wields_a_camp_tool", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // A wrench has real bash stats -- is_melee() reads true for it -- but it
+    // is the camp's own construction tool, not a weapon, and taking it locks
+    // a later building job out of the wrench it needs.
+    here.add_item_or_charges( tile, item( itype_wrench ) );
+
+    run_gear_up( guy );
+
+    CHECK_FALSE( guy.get_wielded_item() );
+    CHECK( count_of( guy, itype_wrench ) == 0 );
+}
+
+TEST_CASE( "npc_gear_up_never_carries_a_loose_liquid", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    // A mutagen sitting loose on a shelf, not in a bottle.  The off-limits
+    // filter has to reject it by phase, not by item type, or a liquid found
+    // outside its usual container slips through.
+    here.add_item_or_charges( tile, item( itype_mutagen ) );
+
+    run_gear_up( guy );
+
+    CHECK( count_of( guy, itype_mutagen ) == 0 );
+}
+
+// ---------------------------------------------------------------------------
+// Random-pool diagnostic
+//
+// Not a correctness test in the usual sense -- a fast, repeatable way to
+// throw an unbiased crate at the gear-up logic and read back what it
+// decided, without a full game launch.  A hand-picked item list would only
+// ever probe the cases already thought of; drawing from the whole item
+// database (item_controller->all(), same source item_test.cpp and friends
+// already iterate) can hand it a mutagen, a corpse, a gun with no matching
+// ammo anywhere in the draw, three coats and no pants.  Hidden from the
+// default run ("[.]") because its assertions are invariants, not specific
+// expected items, and are meant to be read, not just passed.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+
+std::vector<itype_id> random_item_draw( int count )
+{
+    static std::vector<itype_id> pool;
+    if( pool.empty() ) {
+        for( const itype *type : item_controller->all() ) {
+            pool.push_back( type->get_id() );
+        }
+    }
+    std::vector<itype_id> draw;
+    draw.reserve( count );
+    for( int i = 0; i < count; i++ ) {
+        draw.push_back( pool[rng( 0, static_cast<int>( pool.size() ) - 1 )] );
+    }
+    return draw;
+}
+
+std::string describe_item( const item &it )
+{
+    return string_format( "%s [%s]", it.tname( 1, false ), it.get_base_material().name() );
+}
+
+void report_gear_up_outcome( npc &guy, const tripoint_bub_ms &tile,
+                              const std::vector<itype_id> &draw )
+{
+    printf( "\n=== gear-up random draw (%zu items) ===\n", draw.size() );
+
+    item_location wielded = guy.get_wielded_item();
+    printf( "weapon: %s\n", wielded ? describe_item( *wielded ).c_str() : "(none)" );
+    // A camp tool wielded as a weapon is the bug; a camp tool *worn*, if it
+    // happens to also carry an armor slot, is not -- a LENS helmet or a
+    // headwrap can legitimately be both, so only the wielded slot counts.
+    // Mirrors is_weapon_candidate()'s own carve-out: a blade kept as a tool
+    // slot for its gunmod/butchering use (a combat knife, a machete) is still
+    // a weapon if its own category says so.
+    const bool tool_taken_as_weapon = wielded && wielded->is_tool() && !wielded->is_gun() &&
+                                      wielded->get_category_shallow().get_id() != item_category_weapons;
+
+    std::vector<std::string> worn_desc;
+    std::vector<std::string> backup_desc;
+    std::vector<std::string> ammo_desc;
+    std::vector<std::string> med_desc;
+    std::vector<std::string> food_desc;
+    std::vector<std::string> loose_liquid_desc;
+    int main_pack_count = 0;
+    // A liter and a half is roughly a full pair of cargo pockets; anything
+    // holding more than that is doing the job of a pack, not a pocket.
+    constexpr units::volume main_pack_threshold = 1500_ml;
+
+    guy.visit_items( [&]( const item * node, item * ) {
+        if( node == wielded.get_item() ) {
+            return VisitResponse::NEXT;
+        }
+        if( guy.is_worn( *node ) ) {
+            worn_desc.push_back( describe_item( *node ) );
+            if( node->get_volume_capacity() > main_pack_threshold ) {
+                main_pack_count++;
+            }
+        } else if( node->is_gun() || ( node->is_melee() && !node->is_tool() ) ) {
+            backup_desc.push_back( describe_item( *node ) );
+        } else if( node->is_ammo() || node->is_magazine() ) {
+            ammo_desc.push_back( describe_item( *node ) );
+        } else if( node->is_medical_tool() || node->typeId().str().find( "pill" ) != std::string::npos ) {
+            med_desc.push_back( describe_item( *node ) );
+        } else if( node->is_food() ) {
+            food_desc.push_back( describe_item( *node ) );
+        }
+        if( node->made_of( phase_id::LIQUID ) ) {
+            loose_liquid_desc.push_back( describe_item( *node ) );
+        }
+        return VisitResponse::NEXT;
+    } );
+
+    auto print_list = [&]( const char * label, const std::vector<std::string> &items ) {
+        printf( "%s (%zu): ", label, items.size() );
+        for( const std::string &s : items ) {
+            printf( "%s; ", s.c_str() );
+        }
+        printf( "\n" );
+    };
+    print_list( "worn", worn_desc );
+    print_list( "carried weapon-like", backup_desc );
+    print_list( "ammo/magazines", ammo_desc );
+    print_list( "medical", med_desc );
+    print_list( "food", food_desc );
+
+    printf( "left on the storage tile: %d item(s)\n", items_on( tile ) );
+
+    // Invariants, not specific expected items -- specific expectations rot
+    // every time the item JSON changes upstream.
+    CHECK_FALSE( tool_taken_as_weapon );
+    if( tool_taken_as_weapon ) {
+        printf( "!! tool taken as weapon: %s\n", describe_item( *wielded ).c_str() );
+    }
+    CHECK( loose_liquid_desc.empty() );
+    if( !loose_liquid_desc.empty() ) {
+        print_list( "!! loose liquid in inventory", loose_liquid_desc );
+    }
+    // Informational, not a hard invariant: a backpack plus a war belt plus a
+    // chest rig is a realistic loadout, not redundant stacking.  What the
+    // storage cap in wear_proxy() actually guards against is unbounded
+    // accumulation (six bags for the storage alone); read this as a number
+    // to sanity-check by eye, not a fixed pass/fail line.
+    printf( "main-pack-sized items worn: %d\n", main_pack_count );
+
+    // Nothing left in a container on the storage tile: emptying containers
+    // before deciding on them is what the dedicated test covers directly,
+    // but a random draw is a cheap second check across many container types
+    // at once.
+    map &here = get_map();
+    int nested_leftover = 0;
+    for( item &it : here.i_at( tile ) ) {
+        for( item *inner : it.all_items_top( pocket_type::CONTAINER ) ) {
+            ( void )inner;
+            nested_leftover++;
+        }
+    }
+    printf( "items still nested inside containers left on the tile: %d\n", nested_leftover );
+}
+
+} // namespace
+
+// Game data load dominates this binary's startup cost (order ten seconds)
+// far more than any single random draw costs to simulate, so several trials
+// are looped inside one process launch rather than relying on re-invoking
+// the binary per --rng-seed: that pays the load cost once and still covers
+// as much random ground per second of wall-clock time as re-launching would.
+constexpr int random_pool_trials = 6;
+
+TEST_CASE( "npc_gear_up_random_item_pool", "[npc][gear_up][.]" )
+{
+    for( int trial = 0; trial < random_pool_trials; trial++ ) {
+        reset_world();
+
+        npc &guy = spawn_bare_npc( { 50, 50 } );
+        const tripoint_bub_ms tile = make_storage_zone( guy );
+        map &here = get_map();
+
+        const std::vector<itype_id> draw = random_item_draw( 60 );
+        for( const itype_id &id : draw ) {
+            here.add_item_or_charges( tile, item( id ), true );
+        }
+
+        run_gear_up( guy, 4000 );
+
+        report_gear_up_outcome( guy, tile, draw );
+    }
+}
+
+// A naked character only ever exercises the "empty slot" path.  Whether a
+// better find actually displaces something already worn -- the more common
+// case in a real, ongoing game -- needs a character with ordinary gear on
+// already, or the test suite has the same "always start from nothing" bias
+// the feature itself was accused of.
+TEST_CASE( "npc_gear_up_random_item_pool_over_starting_gear", "[npc][gear_up][.]" )
+{
+    for( int trial = 0; trial < random_pool_trials; trial++ ) {
+        reset_world();
+
+        npc &guy = spawn_gear_up_npc( { 50, 50 } );
+        guy.worn.wear_item( guy, item( itype_tshirt ), false, false );
+        item stick( itype_pointy_stick );
+        REQUIRE( guy.wield( stick ) );
+        const bool wore_tshirt_at_start = wearing( guy, itype_tshirt );
+
+        const tripoint_bub_ms tile = make_storage_zone( guy );
+        map &here = get_map();
+
+        const std::vector<itype_id> draw = random_item_draw( 60 );
+        for( const itype_id &id : draw ) {
+            here.add_item_or_charges( tile, item( id ), true );
+        }
+
+        run_gear_up( guy, 4000 );
+
+        report_gear_up_outcome( guy, tile, draw );
+
+        item_location wielded = guy.get_wielded_item();
+        const bool weapon_changed = !wielded || wielded->typeId() != itype_pointy_stick;
+        printf( "started dressed (backpack, tshirt, pointy stick) -- weapon changed: %s, "
+                "starting tshirt still worn: %s\n",
+                weapon_changed ? "yes" : "no",
+                ( wore_tshirt_at_start && wearing( guy, itype_tshirt ) ) ? "yes" : "unknown/no" );
+    }
 }
