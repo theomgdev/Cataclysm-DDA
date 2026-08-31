@@ -210,6 +210,38 @@ bool shares_sub_part( const item &a, const item &b )
     return false;
 }
 
+// Does this candidate compete with something already worn for the same *slot*
+// in the layering system?  Sub-part overlap alone is not enough to tell --
+// an undershirt and a hoodie both cover the torso and that is exactly how
+// they are meant to be worn together, one at SKINTIGHT and one at NORMAL.
+// Two pairs of pants both sitting at NORMAL on the same sub-part is the
+// actual redundancy: same patch of skin, same layer, so one is just doing
+// the other's job worse.  can_wear() does not catch this soft case (only a
+// second *rigid* piece on one sub-limb is a hard conflict to it), so it has
+// to be checked here before a candidate stacks on top of what is worn.
+bool conflicts_with_worn( const Character &who, const item &candidate )
+{
+    const std::vector<sub_bodypart_id> cand_parts = candidate.get_covered_sub_body_parts();
+    bool conflict = false;
+    who.visit_items( [&]( const item * node, item * ) {
+        if( !who.is_worn( *node ) || !shares_sub_part( *node, candidate ) ) {
+            return VisitResponse::NEXT;
+        }
+        for( const sub_bodypart_id &sbp : cand_parts ) {
+            const std::vector<layer_level> cand_layers = candidate.get_layer( sbp );
+            const std::vector<layer_level> worn_layers = node->get_layer( sbp );
+            for( const layer_level &l : cand_layers ) {
+                if( std::find( worn_layers.begin(), worn_layers.end(), l ) != worn_layers.end() ) {
+                    conflict = true;
+                    return VisitResponse::ABORT;
+                }
+            }
+        }
+        return VisitResponse::NEXT;
+    } );
+    return conflict;
+}
+
 // ---------------------------------------------------------------------------
 // Scoring
 // ---------------------------------------------------------------------------
@@ -942,8 +974,10 @@ bool try_one_garment( npc &p, item_location &loc, const tripoint_bub_ms &tile )
     const item candidate = *loc;
     p.mod_moves( -p.item_wear_cost( candidate ) );
 
-    // Straight on, if it goes on at all.
-    if( p.can_wear( candidate ).success() &&
+    // Straight on, if it goes on at all and nothing already worn covers the
+    // same skin -- otherwise this falls through to the displacement logic
+    // below, which is the only path that ever takes the old piece off.
+    if( !conflicts_with_worn( p, candidate ) && p.can_wear( candidate ).success() &&
         p.weight_carried() + candidate.weight() <= p.weight_capacity() ) {
         std::optional<std::list<item>::iterator> worn_it =
             p.wear_item( candidate, false, true, true, true );
