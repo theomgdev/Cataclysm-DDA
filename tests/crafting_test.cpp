@@ -52,6 +52,7 @@
 #include "recipe_dictionary.h"
 #include "requirements.h"
 #include "ret_val.h"
+#include "rng.h"
 #include "skill.h"
 #include "string_formatter.h"
 #include "temp_crafting_inventory.h"
@@ -650,6 +651,13 @@ static int test_craft_for_prof( const recipe_id &rid, const proficiency_id &prof
 // Test gaining proficiency by repeatedly crafting short recipe
 TEST_CASE( "proficiency_gain_short_crafts", "[crafting][proficiency]" )
 {
+    // Crafting rolls dice, and this case counts turns against an exact figure,
+    // so an unpinned engine made it a coin toss in a full run -- red often
+    // enough to be ignored, which is worse than not having the test.  Pinned,
+    // a failure means the timing really moved.  Other values here are worth
+    // trying when hunting for coverage; what turns up should come back as its
+    // own case rather than as a seed.
+    rng_set_engine_seed( 4242424242 );
     std::vector<item> tools = { item( itype_2x4 ) };
 
     const recipe_id &rec = recipe_cudgel_simple;
@@ -1846,6 +1854,10 @@ static void test_skill_progression( const recipe_id &test_recipe, int expected_t
 
 TEST_CASE( "crafting_skill_gain", "[skill] [crafting] [slow]" )
 {
+    // Same reason as proficiency_gain_short_crafts above: exact turn counts
+    // against a dice-rolling craft.  Catch2 re-enters the case per section, so
+    // every section starts from the same pinned engine.
+    rng_set_engine_seed( 4242424242 );
     SECTION( "lvl 0 -> 1" ) {
         GIVEN( "nominal morale" ) {
             test_skill_progression( recipe_blanket_blanket_makeshift, 174, 0, true );

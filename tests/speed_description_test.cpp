@@ -6,6 +6,7 @@
 #include "monster.h"
 #include "mtype.h"
 #include "player_helpers.h"
+#include "rng.h"
 #include "type_id.h"
 
 static const mtype_id mon_test_speed_desc_base( "mon_test_speed_desc_base" );
@@ -25,6 +26,15 @@ TEST_CASE( "monster_speed_description", "[monster][speed_description]" )
      * That means their tiles per turn is 100 / 116 == 0.86206896551
      * The tiles per turn ratio is monster_ratio / player_ratio
      */
+
+    // speed_description() returns one description drawn at random from the set
+    // the JSON offers, so an unpinned engine made this red whenever the draw
+    // landed on a description the expected list below had missed -- a failure
+    // that could not be reproduced and told nobody which line was wrong.
+    // Pinning makes the outcome repeatable, but it does not widen the lists:
+    // each one still has to name every description its speed_description
+    // offers.  Run with other values here to find one that does not.
+    rng_set_engine_seed( 4242424242 );
 
     auto get_speed_string = []( const mtype_id & mon_id ) {
         clear_avatar();

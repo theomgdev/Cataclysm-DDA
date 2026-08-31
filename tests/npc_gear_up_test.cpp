@@ -843,23 +843,41 @@ TEST_CASE( "avatar_gear_up_leaves_favourites_alone", "[npc][gear_up][avatar]" )
 }
 
 // ---------------------------------------------------------------------------
-// Random-pool diagnostic
+// Wide-pool diagnostic
 //
-// Not a correctness test in the usual sense -- a fast, repeatable way to
-// throw an unbiased crate at the gear-up logic and read back what it
-// decided, without a full game launch.  A hand-picked item list would only
-// ever probe the cases already thought of; drawing from the whole item
-// database (item_controller->all(), same source item_test.cpp and friends
-// already iterate) can hand it a mutagen, a corpse, a gun with no matching
-// ammo anywhere in the draw, three coats and no pants.  Hidden from the
-// default run ("[.]") because its assertions are invariants, not specific
-// expected items, and are meant to be read, not just passed.
+// Not a correctness test in the usual sense -- a fast way to throw an unbiased
+// crate at the gear-up logic and read back what it decided, without a full game
+// launch.  A hand-picked list only ever probes the cases already thought of;
+// the whole item database can hand it a mutagen, a corpse, a gun with no
+// matching ammunition anywhere in the draw, three coats and no pants.  Hidden
+// from the default run ("[.]") because its assertions are invariants meant to
+// be read, not specific expected items.
+//
+// Deterministic on purpose.  A check that is green on one run and red on the
+// next reports nothing anyone can reproduce, and it teaches a team to re-run
+// until it passes.  Coverage comes from the stride walking the whole database
+// instead of from a different sample every time.
+//
+// For wider coverage, raise wide_pool_trials or move draw_offset and rebuild;
+// each value is a different slice and every one of them repeats exactly.  The
+// original sampling is kept here for the same purpose -- swap it into
+// wide_item_draw and pick the sample with `--rng-seed <n>`:
+//
+//     draw.push_back( pool[rng( 0, static_cast<int>( pool.size() ) - 1 )] );
+//
+// Whatever that turns up belongs back in this file as a named case with the
+// offending item in it, not as a seed nobody will remember.
 // ---------------------------------------------------------------------------
 
 namespace
 {
 
-std::vector<itype_id> random_item_draw( int count )
+// Pinned because the activity rolls its own dice on top of the draw.
+constexpr unsigned int diagnostic_rng_seed = 4242424242;
+// Where the stride starts; see the note above.
+constexpr int draw_offset = 0;
+
+const std::vector<itype_id> &item_pool()
 {
     static std::vector<itype_id> pool;
     if( pool.empty() ) {
@@ -867,10 +885,23 @@ std::vector<itype_id> random_item_draw( int count )
             pool.push_back( type->get_id() );
         }
     }
+    return pool;
+}
+
+// A stride across the pool rather than a clump out of one corner of it:
+// neighbouring ids are near-identical variants, so a run of them would hand the
+// sweep sixty flavours of the same thing.  Each trial starts one step further
+// along, so the trials within a run do not repeat each other.
+std::vector<itype_id> wide_item_draw( int count, int trial )
+{
+    const std::vector<itype_id> &pool = item_pool();
+    const int size = static_cast<int>( pool.size() );
+    REQUIRE( size > 0 );
+    const int stride = std::max( 1, size / std::max( 1, count ) );
     std::vector<itype_id> draw;
     draw.reserve( count );
     for( int i = 0; i < count; i++ ) {
-        draw.push_back( pool[rng( 0, static_cast<int>( pool.size() ) - 1 )] );
+        draw.push_back( pool[( draw_offset + trial + i * stride ) % size] );
     }
     return draw;
 }
@@ -995,22 +1026,22 @@ void report_gear_up_outcome( npc &guy, const tripoint_bub_ms &tile,
 
 } // namespace
 
-// Game data load dominates this binary's startup cost (order ten seconds)
-// far more than any single random draw costs to simulate, so several trials
-// are looped inside one process launch rather than relying on re-invoking
-// the binary per --rng-seed: that pays the load cost once and still covers
-// as much random ground per second of wall-clock time as re-launching would.
-constexpr int random_pool_trials = 6;
+// Game data load dominates this binary's startup cost (order ten seconds) far
+// more than any single draw costs to simulate, so several trials are looped
+// inside one process launch: that pays the load cost once and still covers as
+// much ground per second of wall-clock time as re-launching would.
+constexpr int wide_pool_trials = 6;
 
-TEST_CASE( "npc_gear_up_random_item_pool", "[npc][gear_up][.]" )
+TEST_CASE( "npc_gear_up_wide_item_pool", "[npc][gear_up][.]" )
 {
-    for( int trial = 0; trial < random_pool_trials; trial++ ) {
+    rng_set_engine_seed( diagnostic_rng_seed );
+    for( int trial = 0; trial < wide_pool_trials; trial++ ) {
         reset_world();
 
         npc &guy = spawn_bare_npc( { 50, 50 } );
         const tripoint_bub_ms tile = make_storage_zone( guy );
 
-        const std::vector<itype_id> draw = random_item_draw( 60 );
+        const std::vector<itype_id> draw = wide_item_draw( 60, trial );
         scatter_draw_over( tile, draw );
 
         run_gear_up( guy, 4000 );
@@ -1024,9 +1055,10 @@ TEST_CASE( "npc_gear_up_random_item_pool", "[npc][gear_up][.]" )
 // case in a real, ongoing game -- needs a character with ordinary gear on
 // already, or the test suite has the same "always start from nothing" bias
 // the feature itself was accused of.
-TEST_CASE( "npc_gear_up_random_item_pool_over_starting_gear", "[npc][gear_up][.]" )
+TEST_CASE( "npc_gear_up_wide_item_pool_over_starting_gear", "[npc][gear_up][.]" )
 {
-    for( int trial = 0; trial < random_pool_trials; trial++ ) {
+    rng_set_engine_seed( diagnostic_rng_seed );
+    for( int trial = 0; trial < wide_pool_trials; trial++ ) {
         reset_world();
 
         npc &guy = spawn_gear_up_npc( { 50, 50 } );
@@ -1037,7 +1069,7 @@ TEST_CASE( "npc_gear_up_random_item_pool_over_starting_gear", "[npc][gear_up][.]
 
         const tripoint_bub_ms tile = make_storage_zone( guy );
 
-        const std::vector<itype_id> draw = random_item_draw( 60 );
+        const std::vector<itype_id> draw = wide_item_draw( 60, trial );
         scatter_draw_over( tile, draw );
 
         run_gear_up( guy, 4000 );

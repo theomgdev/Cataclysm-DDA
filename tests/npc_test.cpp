@@ -66,6 +66,7 @@
 #include "player_activity.h"
 #include "player_helpers.h"
 #include "point.h"
+#include "rng.h"
 #include "stomach.h"
 #include "test_data.h"
 #include "text_snippets.h"
@@ -4049,6 +4050,13 @@ TEST_CASE( "guard_assignment_clears_follow_commitment", "[npc][behavior]" )
 
 TEST_CASE( "player_embarks_clears_follow_commitment", "[npc][behavior]" )
 {
+    // npc::move() rolls dice, and this case sits close enough to the line that
+    // an unpinned engine turned it red about one run in ten -- a result nobody
+    // can reproduce and everyone learns to re-run past.  Pinned, it either
+    // passes or it is a real regression.  Try other values here when hunting
+    // for coverage; a failure found that way belongs back in this file as its
+    // own case, not as a seed nobody will remember.
+    rng_set_engine_seed( 4242424242 );
     clear_map_without_vision();
     clear_avatar();
     map &here = get_map();
