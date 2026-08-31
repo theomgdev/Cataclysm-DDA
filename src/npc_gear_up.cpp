@@ -626,14 +626,32 @@ std::vector<item_location> candidates_at( Character &who, const tripoint_bub_ms 
 // somewhere and then does nothing, over and over.
 // ---------------------------------------------------------------------------
 
+// A tool with decent bash or cut stats (a hatchet, a wrench, a waffle iron)
+// still reads as is_melee() to the engine, because it can be swung in a pinch.
+// That does not make it a weapon candidate here: taking it locks the camp's
+// own tools to whichever NPC happened to try one on.  A few real guns (a
+// plasma cutting torch, for one) are also tools, so the exclusion only
+// applies to the melee case -- a gun is always a legitimate candidate.
+bool is_weapon_candidate( const item &it )
+{
+    if( it.is_gun() ) {
+        return true;
+    }
+    return it.is_melee() && !it.is_tool();
+}
+
 bool wants_as_weapon( npc &p, const item &it )
 {
-    if( ( !it.is_melee() && !it.is_gun() ) || !p.can_wield( it ).success() ) {
+    if( !is_weapon_candidate( it ) || !p.can_wield( it ).success() ) {
         return false;
     }
     item_location wielded = p.get_wielded_item();
-    const double current = p.evaluate_weapon( wielded ? *wielded : null_item_reference() );
-    return p.evaluate_weapon( it ) > current * weapon_swap_margin;
+    // Ammunition is chosen after the weapon, so an unloaded gun still has to be
+    // judged on what it can do once loaded -- otherwise it can never win this
+    // comparison against a knife, and a knife is never in a magazine.
+    const double current =
+        p.evaluate_weapon( wielded ? *wielded : null_item_reference(), true );
+    return p.evaluate_weapon( it, true ) > current * weapon_swap_margin;
 }
 
 // Nobody who knows what they are doing walks out with a rifle and nothing else.
@@ -647,7 +665,7 @@ bool needs_backup_blade( npc &p )
     }
     bool found = false;
     p.visit_items( [&p, &found, fists]( const item * node, item * ) {
-        if( node->is_melee() && !node->is_gun() && p.evaluate_weapon( *node ) > fists &&
+        if( is_weapon_candidate( *node ) && !node->is_gun() && p.evaluate_weapon( *node ) > fists &&
             p.can_wield( *node ).success() ) {
             found = true;
             return VisitResponse::ABORT;
@@ -659,7 +677,7 @@ bool needs_backup_blade( npc &p )
 
 bool wants_as_backup( npc &p, const item &it )
 {
-    if( !it.is_melee() || it.is_gun() || !p.can_wield( it ).success() ) {
+    if( !is_weapon_candidate( it ) || it.is_gun() || !p.can_wield( it ).success() ) {
         return false;
     }
     return p.evaluate_weapon( it ) > p.evaluate_weapon( null_item_reference() );
@@ -1040,7 +1058,7 @@ bool do_equipment_stage( npc &p, const tripoint_bub_ms &tile )
     double best_value = 0.0;
     for( item_location &loc : pool ) {
         if( loc && wants_as_weapon( p, *loc ) ) {
-            const double value = p.evaluate_weapon( *loc );
+            const double value = p.evaluate_weapon( *loc, true );
             if( !best || value > best_value ) {
                 best = loc;
                 best_value = value;
