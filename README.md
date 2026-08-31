@@ -37,33 +37,32 @@ speed here means removing wasted work, never adding parallelism.
 <details>
 <summary><b>What Signal adds on top of Dark Days Ahead</b> (mild spoilers)</summary>
 
-**Smarter followers**
+**Gearing up for a fight**
 
-- *Gear up from the camp stores* — one order, from the `C` menu or in
-  conversation, and the follower walks the camp's loot zones the way they walk
-  them to sort or to build, working through the crates and equipping themselves
-  from what is actually stored there: the best weapon they can use, something to
-  swing if all they had was a gun, better armour and clothing, ammunition
-  matched to the weapon they actually chose — and loaded, not just carried —
-  plus bandages, painkillers and rations. It takes real time and it tells you
-  what it did along the way.
+- *Gear up from the stores* — one order, and the character walks the camp's loot
+  zones the way they walk them to sort or to build, working through the crates
+  and equipping themselves from what is stored there: the best weapon they can
+  use, something to swing if all they had was a gun, better armour and clothing,
+  then ammunition matched to the weapon they actually chose — loaded, not merely
+  carried — bandages, painkillers, a day of rations and a canteen. It takes real
+  time and it says what it did along the way. Give it to a follower from the `C`
+  menu or in conversation, or take it yourself from the `O` zone-activities menu.
 - It reads the zones you already keep. Armour in `LOOT_ARMOR`, bandages in
   `LOOT_DRUGS`, rounds in `LOOT_AMMO`, all of it under whatever `CAMP_STORAGE`
-  you threw over the top — and inside the boxes and kits, not just what is
-  loose on the floor. Displaced gear goes back to the zone it belongs in, so
-  gearing up leaves the camp sorted rather than strewn.
-- Gear is judged on what it does, not on what it costs, one piece against the
-  one piece it would replace rather than a whole-body total that let an early
-  find crowd out a better one still sitting in the next crate. Armour is scored
-  on coverage-weighted protection, encumbrance — legs and eyes or mouth weighted
-  extra, since losing mobility or vision is how survivors die — and weather,
-  with carrying capacity valued up to what is actually useful rather than
-  without limit: nobody puts on a parka in August, strips their gas mask for a
-  slightly better hat, or keeps stacking bags once there is nowhere left to put
-  anything.
+  you threw over the top — and inside the boxes and kits, not just what is loose
+  on the floor. Displaced gear goes back to the zone it belongs in, so gearing up
+  leaves the camp sorted rather than strewn.
+- Every piece is judged against the one piece it would replace: coverage-weighted
+  protection, encumbrance with legs and eyes or mouth weighted extra since losing
+  mobility or vision is how survivors die, weather, and carrying capacity up to
+  what is actually useful. Nobody puts on a parka in August, strips a gas mask
+  for a slightly better hat, or keeps stacking bags once there is nowhere left to
+  put anything.
+- It knows what it cannot use. A rifle the camp has no round for stays on the
+  shelf rather than replacing the knife that was working. Somebody already
+  overheating puts nothing else on; somebody freezing is dressed first.
 - Your explicit orders always win. Favourites, pickup whitelists and anything you
-  handed over on purpose are never quietly taken or thrown away, and displaced
-  gear goes back into camp storage rather than onto the ground.
+  handed over on purpose are never quietly taken or thrown away.
 
 **Faster where it hurts**
 
