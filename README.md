@@ -52,11 +52,15 @@ speed here means removing wasted work, never adding parallelism.
   you threw over the top — and inside the boxes and kits, not just what is
   loose on the floor. Displaced gear goes back to the zone it belongs in, so
   gearing up leaves the camp sorted rather than strewn.
-- Gear is judged on what it does, not on what it costs. Armour is scored on
-  coverage-weighted protection, encumbrance, carrying capacity, weather and
-  sealing, with mobility protected: nothing that slows a follower down gets worn
-  for a marginal gain in protection, and nobody puts on a parka in August or
-  strips their gas mask for a slightly better hat.
+- Gear is judged on what it does, not on what it costs, one piece against the
+  one piece it would replace rather than a whole-body total that let an early
+  find crowd out a better one still sitting in the next crate. Armour is scored
+  on coverage-weighted protection, encumbrance — legs and eyes or mouth weighted
+  extra, since losing mobility or vision is how survivors die — and weather,
+  with carrying capacity valued up to what is actually useful rather than
+  without limit: nobody puts on a parka in August, strips their gas mask for a
+  slightly better hat, or keeps stacking bags once there is nowhere left to put
+  anything.
 - Your explicit orders always win. Favourites, pickup whitelists and anything you
   handed over on purpose are never quietly taken or thrown away, and displaced
   gear goes back into camp storage rather than onto the ground.
