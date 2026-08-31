@@ -1233,12 +1233,21 @@ std::unordered_set<tripoint_abs_ms> multi_gear_up_activity_actor::multi_activity
             }
         }
         if( !wanted.empty() || stage == gear_stage::supplies ) {
+            // Nothing wanted before pruning means the order is genuinely
+            // finished, not merely blocked by darkness or a dangerous field
+            // this turn -- that distinction has to be made before pruning
+            // touches the set.
+            const bool order_complete = wanted.empty() && stage == gear_stage::supplies;
             multi_activity_actor::prune_dangerous_field_locations( wanted );
             // Guarded exactly the way generic_locations guards it: a camp's
             // store room is usually windowless, and sorting loot is allowed
             // there, so gearing up out of it is too.
             if( !multi_activity_actor::can_do_in_dark( get_type() ) ) {
                 multi_activity_actor::prune_dark_locations( you, wanted, get_type() );
+            }
+            if( order_complete && !p->gear_up_done_reported ) {
+                p->gear_up_done_reported = true;
+                say( *p, _( "finishes gearing up from the stores." ) );
             }
             return wanted;
         }
@@ -1329,5 +1338,6 @@ void talk_function::gear_up_from_stores( npc &p )
     // and so has what is in the crates.
     p.gear_up_rejected.clear();
     p.gear_up_stage = 0;
+    p.gear_up_done_reported = false;
     p.assign_activity( multi_gear_up_activity_actor() );
 }

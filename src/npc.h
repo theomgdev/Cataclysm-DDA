@@ -1646,6 +1646,10 @@ class npc : public Character
         // and only supplies remain.  Ammunition has to be chosen after the
         // weapon or an archer ends up carrying pistol rounds.
         int gear_up_stage = 0; // NOLINT(cata-serialize)
+        // Set once the "finished gearing up" line has been said for the
+        // current order, so the framework re-checking an empty want set on a
+        // later turn does not say it again.
+        bool gear_up_done_reported = false; // NOLINT(cata-serialize)
         // Dummy point that indicates that the goal is invalid.
         static constexpr const tripoint_abs_omt &no_goal_point = tripoint_abs_omt::invalid;
         job_data job;
