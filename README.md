@@ -34,6 +34,42 @@ large item piles — with content and mechanics of its own to follow. The game i
 single-threaded by design and runs on everything from a phone to a desktop, so
 speed here means removing wasted work, never adding parallelism.
 
+<details>
+<summary><b>What Signal adds on top of Dark Days Ahead</b> (mild spoilers)</summary>
+
+**Smarter followers**
+
+- *Gear up from the camp stores* — a single order, from the `C` menu or in
+  conversation, and the follower fits themselves out from the camp's supplies:
+  the best weapon they can use, something to swing if all they had was a gun,
+  better armour and clothing, ammunition matched to the weapon they actually
+  chose — and loaded, not just carried — plus bandages, painkillers and rations.
+  It resolves immediately and tells you exactly what it did and what it could
+  not find.
+- Gear is judged on what it does, not on what it costs. Armour is scored on
+  coverage-weighted protection, encumbrance, carrying capacity, weather and
+  sealing, with mobility protected: nothing that slows a follower down gets worn
+  for a marginal gain in protection, and nobody puts on a parka in August or
+  strips their gas mask for a slightly better hat.
+- Your explicit orders always win. Favourites, pickup whitelists and anything you
+  handed over on purpose are never quietly taken or thrown away, and displaced
+  gear goes back into camp storage rather than onto the ground.
+
+**Faster where it hurts**
+
+- The crafting menu no longer re-asks your whole inventory for every recipe on
+  screen, and remembers recipe names for the duration of a sort.
+- Tool quality lookups are cached on the inventory itself.
+- Zone auto-sort no longer copies the whole zone tile set on every lookup, which
+  is what made large loot piles crawl.
+
+**Kept current**
+
+- Signal tracks upstream Cataclysm: Dark Days Ahead, so everything the DDA
+  volunteers add keeps arriving here.
+
+</details>
+
 ## Building
 
 [COMPILING.md](doc/c++/COMPILING.md) covers general information and recipes for
