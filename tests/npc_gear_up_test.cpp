@@ -44,23 +44,46 @@ static const item_category_id item_category_weapons( "weapons" );
 
 static const itype_id itype_2x4( "2x4" );
 static const itype_id itype_9mm( "9mm" );
+static const itype_id itype_aspirin( "aspirin" );
 static const itype_id itype_backpack( "backpack" );
+static const itype_id itype_backpack_leather( "backpack_leather" );
 static const itype_id itype_bandages( "bandages" );
+static const itype_id itype_bandolier_shotgun( "bandolier_shotgun" );
 static const itype_id itype_bleach( "bleach" );
+static const itype_id itype_boots( "boots" );
+static const itype_id itype_bottle_plastic( "bottle_plastic" );
+static const itype_id itype_crowbar( "crowbar" );
 static const itype_id itype_box_small( "box_small" );
 static const itype_id itype_canteen( "canteen" );
+static const itype_id itype_chestrig( "chestrig" );
 static const itype_id itype_duffelbag( "duffelbag" );
+static const itype_id itype_dump_pouch( "dump_pouch" );
 static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
+static const itype_id itype_gloves_leather( "gloves_leather" );
+static const itype_id itype_hammer( "hammer" );
+static const itype_id itype_hat_hard( "hat_hard" );
+static const itype_id itype_helmet_army( "helmet_army" );
 static const itype_id itype_hoodie( "hoodie" );
+static const itype_id itype_jacket_leather( "jacket_leather" );
 static const itype_id itype_jacket_light( "jacket_light" );
 static const itype_id itype_jeans( "jeans" );
+static const itype_id itype_longbow( "longbow" );
+static const itype_id itype_longshirt( "longshirt" );
 static const itype_id itype_kevlar( "kevlar" );
 static const itype_id itype_knife_combat( "knife_combat" );
 static const itype_id itype_machete( "machete" );
+static const itype_id itype_molle_pack( "molle_pack" );
 static const itype_id itype_mutagen( "mutagen" );
 static const itype_id itype_pointy_stick( "pointy_stick" );
+static const itype_id itype_purse( "purse" );
+static const itype_id itype_quiver( "quiver" );
+static const itype_id itype_runner_bag( "runner_bag" );
+static const itype_id itype_pebble( "pebble" );
 static const itype_id itype_rock( "rock" );
+static const itype_id itype_sheet_cotton( "sheet_cotton" );
+static const itype_id itype_socks( "socks" );
+static const itype_id itype_sunglasses( "sunglasses" );
 static const itype_id itype_sandwich_cheese( "sandwich_cheese" );
 static const itype_id itype_wrench( "wrench" );
 static const itype_id itype_shot_00( "shot_00" );
@@ -226,31 +249,65 @@ TEST_CASE( "npc_gear_up_turns_out_a_whole_loadout", "[npc][gear_up]" )
     const tripoint_bub_ms tile = make_storage_zone( guy );
     map &here = get_map();
 
-    here.add_item_or_charges( tile, item( itype_backpack ) );
+    // Several ways to carry things, so the choice of bag is a choice and not
+    // the only option on the shelf.  A quiver and a bandolier are storage too,
+    // and neither is a substitute for a pack.
+    for( const itype_id &bag : {
+             itype_backpack, itype_backpack_leather, itype_duffelbag, itype_molle_pack,
+             itype_runner_bag, itype_purse, itype_dump_pouch, itype_quiver,
+             itype_bandolier_shotgun, itype_chestrig
+         } ) {
+        here.add_item_or_charges( tile, item( bag ) );
+    }
+
+    // Weapons, several of them, so there is a choice to get right rather than
+    // a single option to accept.
     here.add_item_or_charges( tile, item( itype_glock_19 ) );
-    here.add_item_or_charges( tile, item( itype_glockmag ) );
-    item rounds( itype_9mm );
-    rounds.charges = 100;
-    here.add_item_or_charges( tile, rounds );
+    here.add_item_or_charges( tile, item( itype_pointy_stick ) );
+    here.add_item_or_charges( tile, item( itype_machete ) );
     here.add_item_or_charges( tile, item( itype_knife_combat ) );
-    item bandages( itype_bandages );
-    bandages.charges = 10;
-    here.add_item_or_charges( tile, bandages );
-    here.add_item_or_charges( tile, item( itype_sandwich_cheese ) );
-    item canteen( itype_canteen );
-    item water( itype_water_clean );
-    water.charges = 4;
-    REQUIRE( canteen.put_in( water, pocket_type::CONTAINER ).success() );
-    here.add_item_or_charges( tile, canteen );
+    for( int i = 0; i < 4; i++ ) {
+        here.add_item_or_charges( tile, item( itype_glockmag ) );
+    }
+    item rounds( itype_9mm );
+    rounds.charges = 200;
+    here.add_item_or_charges( tile, rounds );
+
+    // Far more supply than one fighter should take: the point is that it
+    // takes a working amount and leaves the rest for everybody else.
+    for( int i = 0; i < 6; i++ ) {
+        item bandages( itype_bandages );
+        bandages.charges = 5;
+        here.add_item_or_charges( tile, bandages );
+        item painkillers( itype_aspirin );
+        painkillers.charges = 20;
+        here.add_item_or_charges( tile, painkillers );
+        here.add_item_or_charges( tile, item( itype_sandwich_cheese ) );
+        item canteen( itype_canteen );
+        item water( itype_water_clean );
+        water.charges = 4;
+        REQUIRE( canteen.put_in( water, pocket_type::CONTAINER ).success() );
+        here.add_item_or_charges( tile, canteen );
+    }
+
+    // A wardrobe with duplicates and competing pieces for the same skin.
     for( const itype_id &clothing : {
-             itype_tshirt, itype_jeans, itype_hoodie, itype_trenchcoat, itype_sweater
+             itype_tshirt, itype_tshirt, itype_longshirt, itype_jeans, itype_jeans,
+             itype_hoodie, itype_trenchcoat, itype_sweater, itype_jacket_leather,
+             itype_socks, itype_boots, itype_gloves_leather, itype_hat_hard,
+             itype_helmet_army, itype_sunglasses, itype_kevlar
          } ) {
         here.add_item_or_charges( tile, item( clothing ) );
     }
+
     // Junk on the same shelf, the way a real camp has it.  None of it belongs
     // on somebody heading out to fight.
-    here.add_item_or_charges( tile, item( itype_rock ) );
-    here.add_item_or_charges( tile, item( itype_bleach ) );
+    for( const itype_id &junk : {
+             itype_rock, itype_pebble, itype_bleach, itype_sheet_cotton,
+             itype_crowbar, itype_hammer, itype_2x4, itype_bottle_plastic
+         } ) {
+        here.add_item_or_charges( tile, item( junk ) );
+    }
     item filthy_shirt( itype_tshirt );
     filthy_shirt.set_flag( flag_FILTHY );
     here.add_item_or_charges( tile, filthy_shirt );
@@ -262,11 +319,45 @@ TEST_CASE( "npc_gear_up_turns_out_a_whole_loadout", "[npc][gear_up]" )
     REQUIRE( guy.get_wielded_item() );
     CHECK( guy.get_wielded_item()->typeId() == itype_glock_19 );
     CHECK( guy.get_wielded_item()->ammo_remaining() > 0 );
-    CHECK( count_of( guy, itype_knife_combat ) > 0 );
-    CHECK( guy.amount_worn( itype_backpack ) > 0 );
+
+    // Something to carry things in -- which of the bags is a judgement call,
+    // but leaving with none of them is not.  And not all ten either: the
+    // storage target is a working load, not everything with a strap.
+    int bags_worn = 0;
+    for( const itype_id &bag : {
+             itype_backpack, itype_backpack_leather, itype_duffelbag, itype_molle_pack,
+             itype_runner_bag, itype_purse, itype_dump_pouch, itype_quiver,
+             itype_bandolier_shotgun, itype_chestrig
+         } ) {
+        bags_worn += guy.amount_worn( bag );
+    }
+    CHECK( bags_worn > 0 );
+    CHECK( bags_worn <= 4 );
+    CHECK( guy.volume_capacity() > 10_liter );
+
+    // Something to swing when the gun runs dry, and the best of what was
+    // there rather than the first blade the walk reached.
+    CHECK( count_of( guy, itype_machete ) + count_of( guy, itype_knife_combat ) > 0 );
+    CHECK( count_of( guy, itype_pointy_stick ) == 0 );
+
+    // Enough of each supply to fight on, and not the camp's whole stock: the
+    // numbers here mirror the targets the order works to, loosely enough that
+    // a tweak to those does not fail the test for the wrong reason.
     CHECK( count_of( guy, itype_bandages ) > 0 );
+    CHECK( count_of( guy, itype_bandages ) <= 5 );
+    CHECK( count_of( guy, itype_aspirin ) > 0 );
+    CHECK( count_of( guy, itype_aspirin ) <= 8 );
     CHECK( count_of( guy, itype_sandwich_cheese ) > 0 );
+    CHECK( count_of( guy, itype_sandwich_cheese ) <= 6 );
     CHECK( count_of( guy, itype_water_clean ) > 0 );
+    CHECK( count_of( guy, itype_canteen ) <= 2 );
+    CHECK( count_of( guy, itype_glockmag ) >= 1 );
+    CHECK( count_of( guy, itype_glockmag ) <= 3 );
+
+    // Duplicates of the same garment are the redundancy this has been wrong
+    // about before: one shirt, one pair of trousers.
+    CHECK( guy.amount_worn( itype_tshirt ) <= 1 );
+    CHECK( guy.amount_worn( itype_jeans ) <= 1 );
 
     // Nobody fights zombies in a sweater under a hoodie under a trenchcoat.
     // Two garments on one patch of skin at the same layer is the redundancy
@@ -278,9 +369,14 @@ TEST_CASE( "npc_gear_up_turns_out_a_whole_loadout", "[npc][gear_up]" )
     CHECK( torso_outerwear <= 2 );
 
     // And none of the junk came along: a rock is not a weapon, bleach is not
-    // a drink, and a filthy shirt loses to the clean one beside it.
-    CHECK( count_of( guy, itype_rock ) == 0 );
-    CHECK( count_of( guy, itype_bleach ) == 0 );
+    // a drink, a crowbar is a camp tool, and a filthy shirt loses to the
+    // clean one beside it.
+    for( const itype_id &junk : {
+             itype_rock, itype_pebble, itype_bleach, itype_sheet_cotton,
+             itype_crowbar, itype_hammer, itype_2x4, itype_bottle_plastic
+         } ) {
+        CHECK( count_of( guy, junk ) == 0 );
+    }
     int filthy_worn = 0;
     guy.visit_items( [&guy, &filthy_worn]( const item * node, item * ) {
         if( guy.is_worn( *node ) && node->is_filthy() ) {
@@ -289,6 +385,92 @@ TEST_CASE( "npc_gear_up_turns_out_a_whole_loadout", "[npc][gear_up]" )
         return VisitResponse::NEXT;
     } );
     CHECK( filthy_worn == 0 );
+}
+
+TEST_CASE( "npc_gear_up_respects_what_a_pocket_will_actually_hold", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // Pockets have a length limit as well as a volume: a 61 cm machete does
+    // not go in a 19 cm jeans pocket, and the sweep has to take the engine's
+    // word for that rather than trying it every turn forever.  A knife that
+    // does fit is on the same shelf, so there is a right answer to find.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    item pistol( itype_glock_19 );
+    REQUIRE( guy.wield( pistol ) );
+    here.add_item_or_charges( tile, item( itype_jeans ) );
+    here.add_item_or_charges( tile, item( itype_machete ) );
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+
+    // A bow with no arrow anywhere is a club with a string, and too long for
+    // any pocket here besides.
+    here.add_item_or_charges( tile, item( itype_longbow ) );
+
+    run_gear_up( guy );
+
+    // Jeans pockets are 19 cm and the blades are twice that, so the honest
+    // outcome is that neither comes along -- and, just as important, that the
+    // order finishes instead of walking back to the shelf forever.  Anything
+    // it did take has to be something a pocket would actually hold.
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_glock_19 );
+    CHECK( count_of( guy, itype_longbow ) == 0 );
+    for( const itype_id &blade : { itype_machete, itype_knife_combat } ) {
+        if( count_of( guy, blade ) > 0 ) {
+            CHECK( guy.can_stash( item( blade ) ) );
+        }
+    }
+}
+
+TEST_CASE( "npc_gear_up_wields_what_no_pocket_would_take", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // Nobody walks past a rifle because it will not fit in their pocket:
+    // hands carry it.  Pockets gate what can be stowed as a backup, never
+    // what can be held, and a character with no pockets at all still arms
+    // themselves.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    REQUIRE( guy.volume_capacity() == 0_ml );
+    here.add_item_or_charges( tile, item( itype_machete ) );
+    REQUIRE_FALSE( guy.can_stash( item( itype_machete ) ) );
+
+    run_gear_up( guy );
+
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_machete );
+}
+
+TEST_CASE( "npc_gear_up_takes_the_blade_once_a_pocket_can_hold_it", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // The same shelf as the case above, with a pack whose main pocket takes a
+    // long item.  Now there is somewhere for a blade to go, so one comes.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    item pistol( itype_glock_19 );
+    REQUIRE( guy.wield( pistol ) );
+    here.add_item_or_charges( tile, item( itype_duffelbag ) );
+    here.add_item_or_charges( tile, item( itype_machete ) );
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+    here.add_item_or_charges( tile, item( itype_longbow ) );
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_duffelbag ) > 0 );
+    CHECK( count_of( guy, itype_machete ) + count_of( guy, itype_knife_combat ) > 0 );
+    // A bow with no arrow in the camp is still not a weapon worth the hands.
+    CHECK( count_of( guy, itype_longbow ) == 0 );
+    CHECK( guy.get_wielded_item()->typeId() == itype_glock_19 );
 }
 
 TEST_CASE( "npc_gear_up_does_not_stack_four_coats_on_one_torso", "[npc][gear_up]" )
