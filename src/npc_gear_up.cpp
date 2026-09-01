@@ -141,6 +141,12 @@ constexpr double weight_bare_skin = 6.0;
 constexpr double weight_leg_encumbrance = 2.0;
 constexpr double weight_sense_encumbrance = 1.5;
 
+// Protection is scaled by the share of the body a piece stands in front of,
+// which for anything short of a full suit is a small fraction.  This puts the
+// result back on the same scale as the storage, warmth and encumbrance terms
+// it is added to.
+constexpr double weight_hit_share = 6.0;
+
 // Warmth is credited only while short of the planning target; past that it
 // is a smaller liability, not a bonus.
 constexpr double weight_warmth_needed = 0.10;
@@ -341,15 +347,87 @@ double local_encumbrance_weight( const item &it )
     return 1.0;
 }
 
-// The score clothing decisions are made on, scoped to the candidate's own
-// coverage: a whole-body average dilutes leg armour against an unrelated
-// backpack's storage.  Fit and sizing need no term of their own, because
-// get_avg_encumber() already charges wrong-size and unfitted garments extra.
+// How much of an attack this piece stands to meet, as a share of the whole
+// body.  anatomy::random_body_part() draws the struck part weighted by
+// hit_size -- a torso is 36 and an eye is 0.5 -- so that is what coverage is
+// worth.  Without it, goggles and trousers score alike and the legwear loses.
+double hit_share( const Character &who, const item &it )
+{
+    double covered = 0.0;
+    double total = 0.0;
+    for( const bodypart_id &bp : who.get_all_body_parts() ) {
+        total += bp->hit_size;
+        if( it.covers( bp ) ) {
+            covered += bp->hit_size;
+        }
+    }
+    return total > 0.0 ? covered / total : 0.0;
+}
+
+// What the engine would charge for putting this on, layering penalty and all.
+// outfit::item_encumb() is what calc_encumbrance() calls, asked hypothetically:
+// a second pair of sunglasses conflicts on the same sub-part at the same layer,
+// so layer_item() doubles it into the eyes.  An item's own encumbrance number
+// in isolation cannot show that, which is how a character ends up wearing two.
+double added_encumbrance( const Character &who, const item &it )
+{
+    // A piece already worn is measured against the outfit without it; passing
+    // it as the hypothetical would count it twice and score it worse on the
+    // back than on the shelf.
+    std::map<bodypart_id, encumbrance_data> without;
+    std::map<bodypart_id, encumbrance_data> with;
+    if( who.is_worn( it ) ) {
+        std::vector<const item *> rest;
+        who.worn.inv_dump( rest );
+        std::list<item> stripped;
+        for( const item *node : rest ) {
+            if( node != &it ) {
+                stripped.push_back( *node );
+            }
+        }
+        outfit( stripped ).item_encumb( without, item(), who );
+        who.worn.item_encumb( with, item(), who );
+    } else {
+        // The outfit as it stands is the same baseline for every candidate in
+        // reach, and this is asked once per item in the camp.
+        static std::map<bodypart_id, encumbrance_data> bare;
+        static time_point cached_turn = calendar::before_time_starts;
+        static character_id cached_who;
+        static unsigned int cached_generation = 0;
+        if( cached_turn != calendar::turn || cached_who != who.getID() ||
+            cached_generation != gear_up_cache_generation ) {
+            cached_turn = calendar::turn;
+            cached_who = who.getID();
+            cached_generation = gear_up_cache_generation;
+            who.worn.item_encumb( bare, item(), who );
+        }
+        without = bare;
+        who.worn.item_encumb( with, it, who );
+    }
+    double delta = 0.0;
+    for( const std::pair<const bodypart_id, encumbrance_data> &entry : with ) {
+        const auto found = without.find( entry.first );
+        const int before = found != without.end() ? found->second.encumbrance : 0;
+        const double gain = entry.second.encumbrance - before;
+        if( gain > 0.0 ) {
+            delta += gain * local_encumbrance_weight( it );
+        }
+    }
+    return delta;
+}
+
+// The score clothing decisions are made on.  Protection is valued the way
+// npc::estimate_armour() values it -- the same four damage types summed -- but
+// weighted by how much of the body the piece actually stands in front of,
+// because that is how the engine picks what gets hit.  Fit and sizing need no
+// term of their own, because get_encumber() already charges wrong-size and
+// unfitted garments extra.
 double wear_proxy( const Character &who, const item &it, int target_warmth )
 {
     double resist = it.resist( damage_bash ) + it.resist( damage_cut ) +
                     it.resist( damage_stab ) + it.resist( damage_bullet );
     resist *= it.get_avg_coverage() / 100.0;
+    resist *= hit_share( who, it ) * weight_hit_share;
 
     // Storage is judged against what the character carries *without* this
     // piece, or a worn pack scores lower than its unworn twin and the two
@@ -364,7 +442,9 @@ double wear_proxy( const Character &who, const item &it, int target_warmth )
     const double storage = credited_liters * weight_storage_per_liter +
                            ( item_liters - credited_liters ) * weight_storage_marginal;
 
-    const double enc = it.get_avg_encumber( who ) * 0.5 * local_encumbrance_weight( it );
+    // Asked of the engine rather than read off the item, so that stacking a
+    // second piece onto an occupied layer costs what it really costs.
+    const double enc = added_encumbrance( who, it ) * 0.5;
 
     const double warmth_gap = target_warmth - warmth_under( who, it );
     const double warmth = warmth_gap > 0
@@ -1104,9 +1184,10 @@ bool is_garment_upgrade( Character &p, const item &it )
     const double candidate_proxy = wear_proxy( p, it, target_warmth );
     // What it has to beat: bare skin where it would cover any, nothing where
     // the skin under it is already clothed.  A parka in August still loses to
-    // the shirt already on, and still wins against a bare back.
+    // the shirt already on, and still wins against a bare back.  Weighted by
+    // hit share like the score, or bare legs are held to a bare eyelid's bar.
     const double bar = -weight_bare_skin * exposed_share( p, it ) *
-                       ( it.get_avg_coverage() / 100.0 );
+                       ( it.get_avg_coverage() / 100.0 ) * hit_share( p, it ) * weight_hit_share;
     if( candidate_proxy <= bar ) {
         return false;
     }
@@ -1172,8 +1253,12 @@ item_location best_storage_in_reach( Character &p )
     best = best_candidate_in_reach( p, []( Character & who, const item & it ) {
         return it.get_volume_capacity() > 0_ml && is_garment_upgrade( who, it );
     },
-    []( Character & who, const item & it ) {
-        return wear_proxy( who, it, target_warmth_for( planning_temperature( who ) ) );
+    []( Character &, const item & it ) {
+        // Ranked on the room it offers, not on wear_proxy(): this search runs
+        // only while there is nowhere to put anything, and a coat that scores
+        // well on armour is not the answer to that.  Everything the supply
+        // stage does, and carrying a backup blade at all, waits on pockets.
+        return units::to_liter( it.get_volume_capacity() );
     } );
     return best;
 }
