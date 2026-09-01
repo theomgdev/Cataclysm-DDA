@@ -1379,6 +1379,35 @@ TEST_CASE( "avatar_gear_up_leaves_favourites_alone", "[npc][gear_up][avatar]" )
     CHECK( items_on( tile ) == 1 );
 }
 
+TEST_CASE( "npc_gear_up_collects_from_multiple_separate_tiles", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    map &here = get_map();
+
+    const tripoint_bub_ms tile_a = make_zone( guy, zone_type_CAMP_STORAGE, tripoint(1, 0, 0) );
+    const tripoint_bub_ms tile_b = make_zone( guy, zone_type_CAMP_STORAGE, tripoint( 4, 0, 0 ) );
+    const tripoint_bub_ms tile_c = make_zone( guy, zone_type_CAMP_STORAGE, tripoint( 8, 0, 0 ) );
+
+    here.add_item_or_charges( tile_a, item( itype_backpack ) );
+    here.add_item_or_charges( tile_b, item( itype_kevlar ) );
+    here.add_item_or_charges( tile_b, item( itype_jeans ) );
+    here.add_item_or_charges( tile_c, item( itype_knife_combat ) );
+    item bandages( itype_bandages );
+    bandages.charges = 5;
+    here.add_item_or_charges( tile_c, bandages );
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_backpack ) > 0 );
+    CHECK( wearing( guy, itype_kevlar ) );
+    CHECK( wearing( guy, itype_jeans ) );
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_knife_combat );
+    CHECK( count_of( guy, itype_bandages ) > 0 );
+}
+
 // ---------------------------------------------------------------------------
 // Wide-pool diagnostic
 //
