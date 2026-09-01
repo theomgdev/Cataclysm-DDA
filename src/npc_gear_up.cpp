@@ -1278,7 +1278,7 @@ int rations_wanted( const Character &p, const item &it )
 bool wanted_for_stage( Character &p, const item &it, gear_stage stage )
 {
     if( stage == gear_stage::equipment ) {
-        // needs_backup_blade() first now: it only walks carried gear, where
+        // needs_backup_blade() first: it only walks carried gear, where
         // wants_as_backup() scans every store tile in reach for the best
         // candidate, and this runs for every item in the camp.
         return wants_as_weapon( p, it ) ||
@@ -1508,15 +1508,13 @@ bool do_equipment_stage( Character &p, const tripoint_bub_ms &tile )
     std::vector<item_location> pool = candidates_at( p, tile );
 
     // Weapon first: the weapon decides which ammunition is coherent later.
+    // At most one entry in this tile's pool can be the camp's single best
+    // weapon, wants_as_weapon() having already ruled out every runner-up.
     item_location best;
-    double best_value = 0.0;
     for( item_location &loc : pool ) {
         if( loc && wants_as_weapon( p, *loc ) ) {
-            const double value = weapon_score( p, *loc );
-            if( !best || value > best_value ) {
-                best = loc;
-                best_value = value;
-            }
+            best = loc;
+            break;
         }
     }
     if( best ) {
@@ -1551,12 +1549,11 @@ bool do_equipment_stage( Character &p, const tripoint_bub_ms &tile )
                 return true;
             }
             // The old weapon is not blacklisted here: weapon_score() scores a
-            // wielded item and a shelved one on the same uncached terms now, so
-            // a strictly worse weapon stays strictly worse and cannot trade
-            // places with its replacement.  Blacklisting it would only cost the
-            // one role gear_up_rejected does not distinguish -- the same item
-            // as a candidate backup blade, back on a store tile where it now
-            // belongs and genuinely worth carrying.
+            // wielded item and a shelved one on identical, uncached terms, so a
+            // strictly worse weapon stays strictly worse and cannot trade places
+            // with its replacement.  Blacklisting it would only cost the one
+            // role gear_up_rejected does not distinguish -- the same item as a
+            // candidate backup blade, back on a store tile where it belongs.
         } else if( !wield_loc( p, best ) ) {
             p.gear_up_rejected.insert( taken_type );
             return true;
@@ -1567,15 +1564,13 @@ bool do_equipment_stage( Character &p, const tripoint_bub_ms &tile )
     }
 
     if( needs_backup_blade( p ) ) {
+        // Same reasoning as the weapon above: at most one entry here can be
+        // the camp's single best backup blade.
         item_location blade;
-        double blade_value = 0.0;
         for( item_location &loc : pool ) {
             if( loc && wants_as_backup( p, *loc ) ) {
-                const double value = weapon_score( p, *loc, false );
-                if( !blade || value > blade_value ) {
-                    blade = loc;
-                    blade_value = value;
-                }
+                blade = loc;
+                break;
             }
         }
         if( blade ) {
