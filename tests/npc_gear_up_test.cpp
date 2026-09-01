@@ -12,6 +12,7 @@
 #include "clzones.h"
 #include "coordinates.h"
 #include "faction.h"
+#include "flag.h"
 #include "game.h"
 #include "item.h"
 #include "item_category.h"
@@ -45,21 +46,27 @@ static const itype_id itype_2x4( "2x4" );
 static const itype_id itype_9mm( "9mm" );
 static const itype_id itype_backpack( "backpack" );
 static const itype_id itype_bandages( "bandages" );
+static const itype_id itype_bleach( "bleach" );
 static const itype_id itype_box_small( "box_small" );
 static const itype_id itype_canteen( "canteen" );
 static const itype_id itype_duffelbag( "duffelbag" );
 static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
+static const itype_id itype_hoodie( "hoodie" );
+static const itype_id itype_jacket_light( "jacket_light" );
 static const itype_id itype_jeans( "jeans" );
 static const itype_id itype_kevlar( "kevlar" );
 static const itype_id itype_knife_combat( "knife_combat" );
 static const itype_id itype_machete( "machete" );
 static const itype_id itype_mutagen( "mutagen" );
 static const itype_id itype_pointy_stick( "pointy_stick" );
+static const itype_id itype_rock( "rock" );
 static const itype_id itype_sandwich_cheese( "sandwich_cheese" );
 static const itype_id itype_wrench( "wrench" );
 static const itype_id itype_shot_00( "shot_00" );
+static const itype_id itype_sweater( "sweater" );
 static const itype_id itype_towel( "towel" );
+static const itype_id itype_trenchcoat( "trenchcoat" );
 static const itype_id itype_tshirt( "tshirt" );
 static const itype_id itype_umbrella( "umbrella" );
 static const itype_id itype_water_clean( "water_clean" );
@@ -205,6 +212,112 @@ void reset_world()
 }
 
 } // namespace
+
+TEST_CASE( "npc_gear_up_turns_out_a_whole_loadout", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // The question every other case here stops short of: at the end of the
+    // order, is this character actually ready for a fight?  A weapon that is
+    // loaded, something to swing when it runs dry, a bag to carry it in,
+    // bandages, food and water -- and clothes that make sense together rather
+    // than four coats stacked on one torso.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    here.add_item_or_charges( tile, item( itype_backpack ) );
+    here.add_item_or_charges( tile, item( itype_glock_19 ) );
+    here.add_item_or_charges( tile, item( itype_glockmag ) );
+    item rounds( itype_9mm );
+    rounds.charges = 100;
+    here.add_item_or_charges( tile, rounds );
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+    item bandages( itype_bandages );
+    bandages.charges = 10;
+    here.add_item_or_charges( tile, bandages );
+    here.add_item_or_charges( tile, item( itype_sandwich_cheese ) );
+    item canteen( itype_canteen );
+    item water( itype_water_clean );
+    water.charges = 4;
+    REQUIRE( canteen.put_in( water, pocket_type::CONTAINER ).success() );
+    here.add_item_or_charges( tile, canteen );
+    for( const itype_id &clothing : {
+             itype_tshirt, itype_jeans, itype_hoodie, itype_trenchcoat, itype_sweater
+         } ) {
+        here.add_item_or_charges( tile, item( clothing ) );
+    }
+    // Junk on the same shelf, the way a real camp has it.  None of it belongs
+    // on somebody heading out to fight.
+    here.add_item_or_charges( tile, item( itype_rock ) );
+    here.add_item_or_charges( tile, item( itype_bleach ) );
+    item filthy_shirt( itype_tshirt );
+    filthy_shirt.set_flag( flag_FILTHY );
+    here.add_item_or_charges( tile, filthy_shirt );
+
+    REQUIRE( guy.needs_food() );
+
+    run_gear_up( guy );
+
+    REQUIRE( guy.get_wielded_item() );
+    CHECK( guy.get_wielded_item()->typeId() == itype_glock_19 );
+    CHECK( guy.get_wielded_item()->ammo_remaining() > 0 );
+    CHECK( count_of( guy, itype_knife_combat ) > 0 );
+    CHECK( guy.amount_worn( itype_backpack ) > 0 );
+    CHECK( count_of( guy, itype_bandages ) > 0 );
+    CHECK( count_of( guy, itype_sandwich_cheese ) > 0 );
+    CHECK( count_of( guy, itype_water_clean ) > 0 );
+
+    // Nobody fights zombies in a sweater under a hoodie under a trenchcoat.
+    // Two garments on one patch of skin at the same layer is the redundancy
+    // worth catching; an undershirt beneath a coat is not.
+    int torso_outerwear = 0;
+    for( const itype_id &coat : { itype_hoodie, itype_trenchcoat, itype_sweater } ) {
+        torso_outerwear += guy.amount_worn( coat );
+    }
+    CHECK( torso_outerwear <= 2 );
+
+    // And none of the junk came along: a rock is not a weapon, bleach is not
+    // a drink, and a filthy shirt loses to the clean one beside it.
+    CHECK( count_of( guy, itype_rock ) == 0 );
+    CHECK( count_of( guy, itype_bleach ) == 0 );
+    int filthy_worn = 0;
+    guy.visit_items( [&guy, &filthy_worn]( const item * node, item * ) {
+        if( guy.is_worn( *node ) && node->is_filthy() ) {
+            filthy_worn++;
+        }
+        return VisitResponse::NEXT;
+    } );
+    CHECK( filthy_worn == 0 );
+}
+
+TEST_CASE( "npc_gear_up_does_not_stack_four_coats_on_one_torso", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // Four garments that all sit on the torso at the same layer.  Wearing the
+    // lot is what the layering check exists to stop -- the engine permits it
+    // with a discomfort penalty, so nothing else will.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    for( const itype_id &coat : {
+             itype_sweater, itype_hoodie, itype_trenchcoat, itype_jacket_light
+         } ) {
+        here.add_item_or_charges( tile, item( coat ) );
+    }
+
+    run_gear_up( guy );
+
+    int stacked = 0;
+    for( const itype_id &coat : {
+             itype_sweater, itype_hoodie, itype_trenchcoat, itype_jacket_light
+         } ) {
+        stacked += guy.amount_worn( coat );
+    }
+    CHECK( stacked <= 2 );
+}
 
 TEST_CASE( "npc_gear_up_dresses_bare_skin_in_ordinary_clothes", "[npc][gear_up]" )
 {
