@@ -760,11 +760,20 @@ void collect_from( const Character &who, item_location parent,
     }
 }
 
+// No line-of-sight test here, deliberately, and none in
+// tile_has_anything_wanted() either.  map::could_see_items() answers false for
+// a tile of container furniture -- a locker, a dresser, a crate -- unless the
+// character is standing next to it, which is exactly the furniture a camp
+// keeps its clothes in.  Gating on it means a locker across the room is never
+// worth walking to, because you cannot see inside it until you have walked
+// there: the character loots whatever is within arm's reach and reports the
+// job done.  Loot sorting reads its own zone tiles without asking, and these
+// are the same tiles, in the character's own camp.
 std::vector<item_location> candidates_at( Character &who, const tripoint_bub_ms &tile )
 {
     std::vector<item_location> out;
     map &here = get_map();
-    if( !here.inbounds( tile ) || !here.sees_some_items( tile, who ) ) {
+    if( !here.inbounds( tile ) ) {
         return out;
     }
     for( item &it : here.i_at( tile ) ) {
@@ -1406,8 +1415,7 @@ bool pile_has_anything_wanted( Character &p, const item &it, gear_stage stage, i
 bool tile_has_anything_wanted( Character &p, const tripoint_bub_ms &tile, gear_stage stage )
 {
     map &here = get_map();
-    if( !here.inbounds( tile ) || !here.sees_some_items( tile, p ) ||
-        tile_is_off_limits( p, tile ) ) {
+    if( !here.inbounds( tile ) || tile_is_off_limits( p, tile ) ) {
         return false;
     }
     for( item &it : here.i_at( tile ) ) {
@@ -1451,9 +1459,13 @@ void transfer_contents( Character &who, item &from, item &to, const tripoint_bub
     const std::list<item *> contents = from.all_items_top( pocket_type::CONTAINER );
     for( item *inner : contents ) {
         const item copy = *inner;
-        if( to.can_contain( copy ).success() ) {
+        // Insert first, remove second, and let the insert itself decide:
+        // can_contain() will pass a pocket that put_in() then refuses -- over
+        // liquids, over length -- and taking the item out of the old pack
+        // before finding that out destroys it.  Asked quietly because a
+        // refusal here is an ordinary answer, not a fault.
+        if( to.put_in( copy, pocket_type::CONTAINER, false, nullptr, true ).success() ) {
             from.remove_item( *inner );
-            to.put_in( copy, pocket_type::CONTAINER );
             who.mod_moves( -handle_cost_moves );
             continue;
         }
@@ -1895,6 +1907,14 @@ std::unordered_set<tripoint_abs_ms> multi_gear_up_activity_actor::multi_activity
 // beforehand.
 void multi_gear_up_activity_actor::do_turn( player_activity &act, Character &you )
 {
+    // A follower who fell asleep holding this order never acts on it again:
+    // the sleeping AI does not run activities, so the job sits there and the
+    // conversation option to re-issue it is hidden behind "already busy".
+    // Waking here fixes the one already stuck as well as the next one.
+    if( npc *guy = you.as_npc(); guy && guy->in_sleep_state() ) {
+        talk_function::wake_up( *guy );
+    }
+
     const activity_id prior_act = get_type();
     const bool activity_continues = simulate_turn( act, you, false );
     const bool travelling = you.has_destination();

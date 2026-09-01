@@ -130,6 +130,7 @@ static const activity_id ACT_MULTIPLE_CRAFT( "ACT_MULTIPLE_CRAFT" );
 static const activity_id ACT_MULTIPLE_DIS( "ACT_MULTIPLE_DIS" );
 static const activity_id ACT_MULTIPLE_FARM( "ACT_MULTIPLE_FARM" );
 static const activity_id ACT_MULTIPLE_FISH( "ACT_MULTIPLE_FISH" );
+static const activity_id ACT_MULTIPLE_GEAR_UP( "ACT_MULTIPLE_GEAR_UP" );
 static const activity_id ACT_MULTIPLE_READ( "ACT_MULTIPLE_READ" );
 static const activity_id ACT_MULTIPLE_STUDY( "ACT_MULTIPLE_STUDY" );
 static const activity_id ACT_OPERATION( "ACT_OPERATION" );
@@ -1541,8 +1542,16 @@ void npc::move()
     act_on_danger_assessment();
     // Forage/harvest activities skip BT re-evaluation to prevent backlog
     // flooding, but must yield to danger so the NPC can fight or flee.
-    if( activity.id() == ACT_FORAGE || activity.id() == ACT_HARVEST ) {
+    // Gearing up joins them for a different reason: address_needs() runs
+    // before the activity branch below, so an NPC who wants to sleep never
+    // reaches the order at all and it sits assigned and unstarted forever.
+    // Getting ready for a fight outranks a nap, and still yields to danger.
+    if( activity.id() == ACT_FORAGE || activity.id() == ACT_HARVEST ||
+        activity.id() == ACT_MULTIPLE_GEAR_UP ) {
         if( ai_cache.danger <= NPC_DANGER_VERY_LOW ) {
+            if( in_sleep_state() ) {
+                talk_function::wake_up( *this );
+            }
             execute_action( npc_player_activity );
             return;
         }

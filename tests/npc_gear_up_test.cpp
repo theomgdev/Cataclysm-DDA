@@ -425,6 +425,62 @@ TEST_CASE( "npc_gear_up_respects_what_a_pocket_will_actually_hold", "[npc][gear_
     }
 }
 
+TEST_CASE( "npc_gear_up_walks_to_a_locker_it_cannot_see_into", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // A camp keeps its clothes in lockers and dressers, and the map answers
+    // "can you see the items on that tile" with a flat no for container
+    // furniture unless you are standing next to it.  Routing on that answer
+    // means the locker across the room is never worth walking to, because you
+    // cannot see inside until you have walked there.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    map &here = get_map();
+    const tripoint_bub_ms tile = guy.pos_bub() + tripoint( 5, 0, 0 );
+    zone_manager &mgr = zone_manager::get_manager();
+    mgr.add( "test_locker_zone", zone_type_CAMP_STORAGE, guy.get_fac_id(), false, true,
+             here.get_abs( tile ), here.get_abs( tile ) );
+    mgr.cache_data();
+
+    here.furn_set( tile, furn_id( "f_locker" ) );
+    here.add_item_or_charges( tile, item( itype_kevlar ) );
+    REQUIRE_FALSE( here.sees_some_items( tile, guy ) );
+
+    run_gear_up( guy );
+
+    CHECK( wearing( guy, itype_kevlar ) );
+}
+
+TEST_CASE( "npc_gear_up_wakes_a_follower_who_fell_asleep_holding_the_order",
+           "[npc][gear_up]" )
+{
+    reset_world();
+
+    // The order is already assigned and the follower is asleep: the sleeping
+    // AI never runs the activity, and the conversation option to re-issue it
+    // is hidden while they are busy, so the job sits there forever.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+
+    start_gear_up_from_stores( guy );
+    guy.add_effect( effect_sleep, 8_hours );
+    REQUIRE( guy.in_sleep_state() );
+    REQUIRE_FALSE( guy.activity.is_null() );
+
+    // Driven through the NPC's own decision loop rather than by calling the
+    // activity directly: address_needs() runs before the activity branch, so
+    // a sleeping follower never reaches the order at all, and a test that
+    // pokes the activity by hand cannot see that.
+    for( int turn = 0; turn < 20 && guy.in_sleep_state(); turn++ ) {
+        guy.set_moves( guy.get_speed() );
+        guy.move();
+    }
+
+    CHECK_FALSE( guy.in_sleep_state() );
+}
+
 TEST_CASE( "npc_gear_up_wields_what_no_pocket_would_take", "[npc][gear_up]" )
 {
     reset_world();
@@ -1401,9 +1457,14 @@ void scatter_draw_over( const tripoint_bub_ms &tile, const std::vector<itype_id>
     item crate( itype_duffelbag );
     for( size_t i = 0; i < draw.size(); i++ ) {
         item made( draw[i] );
-        if( i % 3 == 0 && crate.can_contain( made ).success() ) {
-            crate.put_in( made, pocket_type::CONTAINER );
-        } else {
+        // can_contain() and put_in() do not ask quite the same question -- the
+        // first will accept a pocket the second then refuses, over liquids and
+        // over length -- so the insert's own answer is what decides, asked
+        // quietly because a draw from the whole item database is expected to
+        // turn up things no duffel bag will take.  Anything it refuses goes on
+        // the tile rather than being dropped from the draw.
+        if( i % 3 != 0 ||
+            !crate.put_in( made, pocket_type::CONTAINER, false, nullptr, true ).success() ) {
             here.add_item_or_charges( tile, made, true );
         }
     }
