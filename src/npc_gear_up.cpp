@@ -450,16 +450,16 @@ std::optional<tripoint_bub_ms> home_for( Character &who, const item &it,
     return std::nullopt;
 }
 
-// Somewhere sensible for a displaced piece: a pocket first, then the zone the
-// zone manager picks for it.  False means neither worked, and every caller
-// answers that by putting it down on the crate rather than losing it.
+// Somewhere sensible for a displaced piece: the zone the zone manager picks
+// for it, never the character's own pockets.  A displaced piece is camp
+// property being put away, not a keepsake -- whoever is doing the gearing up
+// is standing in the camp already, so there is nowhere better to carry it to,
+// and one character's "might need it later" is everyone else's item made
+// unavailable and everyone's carry weight made worse for nothing.  False
+// means even that failed, and every caller answers that by putting it down on
+// the crate rather than losing it -- also in the camp, so no worse a home.
 bool put_away( Character &who, const item &it, const tripoint_bub_ms &fallback )
 {
-    if( who.can_stash( it ) &&
-        who.weight_carried() + it.weight() <= who.weight_capacity() &&
-        who.i_add( it ) ) {
-        return true;
-    }
     map &here = get_map();
     const std::optional<tripoint_bub_ms> home = home_for( who, it, fallback );
     if( !home ) {
@@ -1550,9 +1550,13 @@ bool do_equipment_stage( Character &p, const tripoint_bub_ms &tile )
                 }
                 return true;
             }
-            // Or the displaced weapon out-scores its replacement from the shelf
-            // on a later pass and the two trade places forever.
-            p.gear_up_rejected.insert( old.typeId() );
+            // The old weapon is not blacklisted here: weapon_score() scores a
+            // wielded item and a shelved one on the same uncached terms now, so
+            // a strictly worse weapon stays strictly worse and cannot trade
+            // places with its replacement.  Blacklisting it would only cost the
+            // one role gear_up_rejected does not distinguish -- the same item
+            // as a candidate backup blade, back on a store tile where it now
+            // belongs and genuinely worth carrying.
         } else if( !wield_loc( p, best ) ) {
             p.gear_up_rejected.insert( taken_type );
             return true;
