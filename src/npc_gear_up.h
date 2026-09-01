@@ -14,4 +14,11 @@ bool gear_up_stores_available( Character &who );
 // Reset the sweep state and assign the gear-up activity.
 void start_gear_up_from_stores( Character &who );
 
+// Invalidate every per-turn scan this order caches (best weapon/backup/
+// garment/ammo type in reach).  Real play never needs this -- calendar::turn
+// only advances -- but a test process reuses the same avatar object and resets
+// calendar::turn to the same constant for every TEST_CASE, so without an
+// explicit invalidation a scan cached by one test can answer for another.
+void reset_gear_up_caches();
+
 #endif // CATA_SRC_NPC_GEAR_UP_H

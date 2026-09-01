@@ -92,6 +92,14 @@ static const zone_type_id zone_type_NO_NPC_PICKUP( "NO_NPC_PICKUP" );
 namespace
 {
 
+// Bumped by reset_gear_up_caches() to invalidate every (turn, character)
+// cache below out of band.  In real play calendar::turn only ever advances,
+// so a (turn, character) key alone is safe; a test process reuses the same
+// avatar object and resets calendar::turn to the same constant for every
+// TEST_CASE, which without this would let a scan cached by one test answer
+// for a completely different scenario in the next one.
+unsigned int gear_up_cache_generation = 0;
+
 // What "enough supplies for a fight" means, in numbers, so that falling short
 // of it is something the code can act on.
 constexpr int want_healing_items = 3;
@@ -164,19 +172,26 @@ bool is_healing_item( const item &it )
     return it.is_medical_tool();
 }
 
-// Same patch of skin?  Sub-part granularity, the same the engine's own
-// conflict rule uses (outfit::check_rigid_conflicts): kneepads and shin
-// guards share a leg but not a sub-part.
+// Same patch of skin?  Sub-part granularity where both sides have it, the
+// same the engine's own conflict rule uses (outfit::check_rigid_conflicts):
+// kneepads and shin guards share a leg but not a sub-part.  A towel and most
+// old-format garments carry no sub-bodypart armor data at all, so
+// get_covered_sub_body_parts() comes back empty for them and the fine check
+// would report no overlap no matter what -- whole-bodypart coverage is the
+// fallback, since every armor entry has that much.
 bool shares_sub_part( const item &a, const item &b )
 {
     const std::vector<sub_bodypart_id> a_parts = a.get_covered_sub_body_parts();
     const std::vector<sub_bodypart_id> b_parts = b.get_covered_sub_body_parts();
-    for( const sub_bodypart_id &sbp : a_parts ) {
-        if( std::find( b_parts.begin(), b_parts.end(), sbp ) != b_parts.end() ) {
-            return true;
+    if( !a_parts.empty() && !b_parts.empty() ) {
+        for( const sub_bodypart_id &sbp : a_parts ) {
+            if( std::find( b_parts.begin(), b_parts.end(), sbp ) != b_parts.end() ) {
+                return true;
+            }
         }
+        return false;
     }
-    return false;
+    return a.get_covered_body_parts().make_intersection( b.get_covered_body_parts() ).any();
 }
 
 // Same sub-part *and* same layer as something worn: that is the redundancy
@@ -190,9 +205,31 @@ bool conflicts_with_worn( const Character &who, const item &candidate )
         if( !who.is_worn( *node ) || !shares_sub_part( *node, candidate ) ) {
             return VisitResponse::NEXT;
         }
-        for( const sub_bodypart_id &sbp : cand_parts ) {
-            const std::vector<layer_level> cand_layers = candidate.get_layer( sbp );
-            const std::vector<layer_level> worn_layers = node->get_layer( sbp );
+        const std::vector<sub_bodypart_id> worn_parts = node->get_covered_sub_body_parts();
+        if( !cand_parts.empty() && !worn_parts.empty() ) {
+            for( const sub_bodypart_id &sbp : cand_parts ) {
+                if( std::find( worn_parts.begin(), worn_parts.end(), sbp ) == worn_parts.end() ) {
+                    continue;
+                }
+                const std::vector<layer_level> cand_layers = candidate.get_layer( sbp );
+                const std::vector<layer_level> worn_layers = node->get_layer( sbp );
+                for( const layer_level &l : cand_layers ) {
+                    if( std::find( worn_layers.begin(), worn_layers.end(), l ) != worn_layers.end() ) {
+                        conflict = true;
+                        return VisitResponse::ABORT;
+                    }
+                }
+            }
+            return VisitResponse::NEXT;
+        }
+        // One side has no sub-bodypart data: compare at whole-bodypart
+        // granularity instead, or a second towel never conflicts with the first.
+        for( const bodypart_id &bp : who.get_all_body_parts() ) {
+            if( !candidate.covers( bp ) || !node->covers( bp ) ) {
+                continue;
+            }
+            const std::vector<layer_level> cand_layers = candidate.get_layer( bp );
+            const std::vector<layer_level> worn_layers = node->get_layer( bp );
             for( const layer_level &l : cand_layers ) {
                 if( std::find( worn_layers.begin(), worn_layers.end(), l ) != worn_layers.end() ) {
                     conflict = true;
@@ -332,7 +369,11 @@ bool tile_is_off_limits( const Character &who, const tripoint_bub_ms &tile )
 
 // Every loot zone the faction owns, plus the basecamp's own storage and food
 // zones, which do not carry the LOOT prefix.  Specific zones and the big
-// general one laid over them overlap heavily; the set deduplicates.
+// general one laid over them overlap heavily; the set deduplicates.  NPC and
+// avatar look at exactly the same set -- relying on which specific LOOT_*
+// zone types exist would be its own kind of fragile -- and lean on the
+// existing exceptions (NO_NPC_PICKUP, LOOT_IGNORE, favourites, someone else's
+// property, a no-go position) to keep an NPC out of what it should not touch.
 std::unordered_set<tripoint_abs_ms> stores_within_reach( Character &who )
 {
     zone_manager &mgr = zone_manager::get_manager();
@@ -721,11 +762,14 @@ const std::set<ammotype> &ammo_types_in_reach( Character &who )
     static std::set<ammotype> types;
     static time_point cached_turn = calendar::before_time_starts;
     static character_id cached_who;
-    if( cached_turn == calendar::turn && cached_who == who.getID() ) {
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == who.getID() &&
+        cached_generation == gear_up_cache_generation ) {
         return types;
     }
     cached_turn = calendar::turn;
     cached_who = who.getID();
+    cached_generation = gear_up_cache_generation;
     types.clear();
 
     const auto note = [&]( const item & it ) {
@@ -800,11 +844,14 @@ double unarmed_score( const Character &p )
     static double score = 0.0;
     static time_point cached_turn = calendar::before_time_starts;
     static character_id cached_who;
-    if( cached_turn == calendar::turn && cached_who == p.getID() ) {
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == p.getID() &&
+        cached_generation == gear_up_cache_generation ) {
         return score;
     }
     cached_turn = calendar::turn;
     cached_who = p.getID();
+    cached_generation = gear_up_cache_generation;
     score = p.evaluate_weapon( null_item_reference(), false );
     return score;
 }
@@ -817,20 +864,26 @@ double current_weapon_score( Character &p )
     static time_point cached_turn = calendar::before_time_starts;
     static character_id cached_who;
     static itype_id cached_weapon;
+    static unsigned int cached_generation = 0;
 
     item_location wielded = p.get_wielded_item();
     const itype_id now = wielded ? wielded->typeId() : itype_id::NULL_ID();
-    if( cached_turn == calendar::turn && cached_who == p.getID() && cached_weapon == now ) {
+    if( cached_turn == calendar::turn && cached_who == p.getID() && cached_weapon == now &&
+        cached_generation == gear_up_cache_generation ) {
         return score;
     }
     cached_turn = calendar::turn;
     cached_who = p.getID();
     cached_weapon = now;
+    cached_generation = gear_up_cache_generation;
     score = wielded ? weapon_score( p, *wielded ) : unarmed_score( p );
     return score;
 }
 
-bool wants_as_weapon( Character &p, const item &it )
+// Everything asked of a weapon candidate except whether some other tile in
+// reach holds a better one.  best_weapon_in_reach() scans with this, so this
+// side must never call back into wants_as_weapon() or the two recurse.
+bool is_weapon_upgrade( Character &p, const item &it )
 {
     // A weapon this order already gave up gets no second look, or the two trade
     // places forever, each briefly ahead of the other.
@@ -849,6 +902,65 @@ bool wants_as_weapon( Character &p, const item &it )
         return false;
     }
     return weapon_score( p, it ) > current_weapon_score( p );
+}
+
+// Walks every store tile in reach and remembers the single best pick, so a
+// weapon or backup blade taken from the first crate visited cannot lose to
+// one two tiles further on that this sweep would otherwise never compare it
+// against.  Recomputed once a turn like ammo_types_in_reach(): stores get
+// emptied and carried gear changes, and this walks the whole reachable area.
+item_location best_candidate_in_reach( Character &p,
+        const std::function<bool( Character &, const item & )> &wants,
+        const std::function<double( Character &, const item & )> &value )
+{
+    item_location best;
+    double best_value = 0.0;
+    map &here = get_map();
+    for( const tripoint_abs_ms &tile : stores_within_reach( p ) ) {
+        const tripoint_bub_ms bub = here.get_bub( tile );
+        if( !here.inbounds( bub ) ) {
+            continue;
+        }
+        for( item_location &loc : candidates_at( p, bub ) ) {
+            if( !loc || !wants( p, *loc ) ) {
+                continue;
+            }
+            const double v = value( p, *loc );
+            if( !best || v > best_value ) {
+                best = loc;
+                best_value = v;
+            }
+        }
+    }
+    return best;
+}
+
+item_location best_weapon_in_reach( Character &p )
+{
+    static item_location best;
+    static time_point cached_turn = calendar::before_time_starts;
+    static character_id cached_who;
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == p.getID() &&
+        cached_generation == gear_up_cache_generation ) {
+        return best;
+    }
+    cached_turn = calendar::turn;
+    cached_who = p.getID();
+    cached_generation = gear_up_cache_generation;
+    best = best_candidate_in_reach( p, is_weapon_upgrade,
+    []( Character & who, const item & it ) {
+        return weapon_score( who, it );
+    } );
+    return best;
+}
+
+// Only the single best weapon anywhere in reach counts as wanted, or the
+// character wields whatever mediocre gun the walk happens to reach first and
+// never sees the better one sitting on the next shelf.
+bool wants_as_weapon( Character &p, const item &it )
+{
+    return is_weapon_upgrade( p, it ) && best_weapon_in_reach( p ).get_item() == &it;
 }
 
 // Nobody who knows what they are doing walks out with a rifle and nothing else.
@@ -872,7 +984,10 @@ bool needs_backup_blade( Character &p )
     return !found;
 }
 
-bool wants_as_backup( Character &p, const item &it )
+// Everything asked of a backup-blade candidate except whether some other
+// tile in reach holds a better one -- see is_weapon_upgrade() for why this
+// side must not call wants_as_backup().
+bool is_backup_upgrade( Character &p, const item &it )
 {
     if( !is_weapon_candidate( it ) || it.is_gun() ||
         p.gear_up_rejected.count( it.typeId() ) > 0 || !p.can_wield( it ).success() ) {
@@ -886,10 +1001,39 @@ bool wants_as_backup( Character &p, const item &it )
     return weapon_score( p, it, false ) > unarmed_score( p );
 }
 
-// Worth taking off the rack and trying on?  Must ask the same questions
-// try_one_garment() does, or the character walks to a crate and does nothing
-// there, turn after turn.
-bool worth_trying_on( Character &p, const item &it )
+item_location best_backup_in_reach( Character &p )
+{
+    static item_location best;
+    static time_point cached_turn = calendar::before_time_starts;
+    static character_id cached_who;
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == p.getID() &&
+        cached_generation == gear_up_cache_generation ) {
+        return best;
+    }
+    cached_turn = calendar::turn;
+    cached_who = p.getID();
+    cached_generation = gear_up_cache_generation;
+    best = best_candidate_in_reach( p, is_backup_upgrade,
+    []( Character & who, const item & it ) {
+        return weapon_score( who, it, false );
+    } );
+    return best;
+}
+
+// Nothing beats a machete in a crate three tiles away like an umbrella in the
+// crate at hand: only the single best backup anywhere in reach is wanted.
+bool wants_as_backup( Character &p, const item &it )
+{
+    return is_backup_upgrade( p, it ) && best_backup_in_reach( p ).get_item() == &it;
+}
+
+// Everything asked of a garment candidate except whether some other tile in
+// reach holds a better one -- see is_weapon_upgrade() for why this side must
+// not call worth_trying_on().  Must ask the same questions try_one_garment()
+// does, or the character walks to a crate and does nothing there, turn after
+// turn.
+bool is_garment_upgrade( Character &p, const item &it )
 {
     if( !it.is_armor() || p.gear_up_rejected.count( it.typeId() ) > 0 ) {
         return false;
@@ -925,6 +1069,38 @@ bool worth_trying_on( Character &p, const item &it )
         return VisitResponse::NEXT;
     } );
     return better_than_something;
+}
+
+item_location best_garment_in_reach( Character &p )
+{
+    static item_location best;
+    static time_point cached_turn = calendar::before_time_starts;
+    static character_id cached_who;
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == p.getID() &&
+        cached_generation == gear_up_cache_generation ) {
+        return best;
+    }
+    cached_turn = calendar::turn;
+    cached_who = p.getID();
+    cached_generation = gear_up_cache_generation;
+    best = best_candidate_in_reach( p, is_garment_upgrade,
+    []( Character & who, const item & it ) {
+        return wear_proxy( who, it, target_warmth_for( planning_temperature( who ) ) );
+    } );
+    return best;
+}
+
+// Only the single best garment anywhere in reach counts as wanted: comparing
+// only what one tile happens to offer against whatever is already worn is how
+// a character ends up trying on and shedding half the camp's wardrobe walking
+// past crate after crate, never seeing that a better piece was two tiles back.
+// Processed one at a time in strictly improving order this way, several
+// non-conflicting pieces still end up worn -- each pass finds whatever is now
+// the single best remaining upgrade, worn or not, anywhere in reach.
+bool worth_trying_on( Character &p, const item &it )
+{
+    return is_garment_upgrade( p, it ) && best_garment_in_reach( p ).get_item() == &it;
 }
 
 bool wants_magazine( Character &p, const item &it )
@@ -1102,11 +1278,11 @@ int rations_wanted( const Character &p, const item &it )
 bool wanted_for_stage( Character &p, const item &it, gear_stage stage )
 {
     if( stage == gear_stage::equipment ) {
-        // wants_as_backup() first: it is a handful of cheap tests, where
-        // needs_backup_blade() walks the whole inventory, and this runs for
-        // every item in the camp.
+        // needs_backup_blade() first now: it only walks carried gear, where
+        // wants_as_backup() scans every store tile in reach for the best
+        // candidate, and this runs for every item in the camp.
         return wants_as_weapon( p, it ) ||
-               ( wants_as_backup( p, it ) && needs_backup_blade( p ) ) ||
+               ( needs_backup_blade( p ) && wants_as_backup( p, it ) ) ||
                worth_trying_on( p, it );
     }
     // A supply that could not be carried (no room, too heavy) never stops
@@ -1410,34 +1586,13 @@ bool do_equipment_stage( Character &p, const tripoint_bub_ms &tile )
         }
     }
 
-    // Then clothing, biggest internal volume first -- a pack worn early is
-    // where everything displaced later can go.  Ties fall back to the score,
-    // so among plain garments the good coat is still measured before the
-    // pile of shirts underneath it.  Scored once each rather than inside the
-    // comparator: nothing the score reads moves during the sort, and a crate
-    // of fifty garments would otherwise pay for it several hundred times.
-    const int target_warmth = target_warmth_for( planning_temperature( p ) );
-    std::vector<std::pair<item_location, double>> wearables;
+    // Then clothing: at most one entry in this tile's pool can be the single
+    // best garment anywhere in reach, worth_trying_on() having already ruled
+    // out every runner-up.  Nothing to sort between candidates that compete
+    // with each other any more -- only whether the winner happens to be here.
     for( item_location &loc : pool ) {
         if( loc && worth_trying_on( p, *loc ) ) {
-            wearables.emplace_back( loc, wear_proxy( p, *loc, target_warmth ) );
-        }
-    }
-    std::sort( wearables.begin(), wearables.end(),
-    []( const std::pair<item_location, double> &a, const std::pair<item_location, double> &b ) {
-        const units::volume va = a.first->get_volume_capacity();
-        const units::volume vb = b.first->get_volume_capacity();
-        if( va != vb ) {
-            return va > vb;
-        }
-        return a.second > b.second;
-    } );
-    for( std::pair<item_location, double> &entry : wearables ) {
-        if( !entry.first ) {
-            continue;
-        }
-        if( try_one_garment( p, entry.first, tile ) || p.get_moves() <= 0 ) {
-            return true;
+            return try_one_garment( p, loc, tile );
         }
     }
     return false;
@@ -1603,8 +1758,14 @@ void report_gear_up_finished( Character &you )
         return;
     }
     you.gear_up_done_reported = true;
-    you.add_msg_player_or_npc( m_good, _( "You finish gearing up from the stores." ),
-                               _( "<npcname> finishes gearing up from the stores." ) );
+    if( npc *p = you.as_npc() ) {
+        // Unconditional, unlike add_msg_player_or_npc: whether an order the
+        // player gave is finished is worth knowing off-screen too, not only
+        // at the moment the player happens to be looking at whoever got it.
+        p->add_msg_if_npc( m_good, _( "<npcname> finishes gearing up from the stores." ) );
+    } else {
+        you.add_msg_if_player( m_good, _( "You finish gearing up from the stores." ) );
+    }
 }
 
 } // namespace
@@ -1717,6 +1878,11 @@ bool multi_gear_up_activity_actor::multi_activity_do( Character &you,
 bool gear_up_stores_available( Character &who )
 {
     return !stores_within_reach( who ).empty();
+}
+
+void reset_gear_up_caches()
+{
+    gear_up_cache_generation++;
 }
 
 void start_gear_up_from_stores( Character &who )

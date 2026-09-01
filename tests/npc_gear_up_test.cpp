@@ -49,12 +49,15 @@ static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
 static const itype_id itype_kevlar( "kevlar" );
 static const itype_id itype_knife_combat( "knife_combat" );
+static const itype_id itype_machete( "machete" );
 static const itype_id itype_mutagen( "mutagen" );
 static const itype_id itype_pointy_stick( "pointy_stick" );
 static const itype_id itype_sandwich_cheese( "sandwich_cheese" );
 static const itype_id itype_wrench( "wrench" );
 static const itype_id itype_shot_00( "shot_00" );
+static const itype_id itype_towel( "towel" );
 static const itype_id itype_tshirt( "tshirt" );
+static const itype_id itype_umbrella( "umbrella" );
 static const itype_id itype_water_clean( "water_clean" );
 
 static const zone_type_id zone_type_CAMP_STORAGE( "CAMP_STORAGE" );
@@ -190,6 +193,11 @@ void reset_world()
     clear_map_without_vision();
     clear_avatar();
     zone_manager::get_manager().clear();
+    // Every test resets calendar::turn to the same constant and the avatar
+    // cases all reuse the same singleton character, so the order's per-turn
+    // scan caches need an explicit kick or a later test can be answered by a
+    // scan a completely different earlier test cached.
+    reset_gear_up_caches();
 }
 
 } // namespace
@@ -497,6 +505,58 @@ TEST_CASE( "npc_gear_up_keeps_a_backup_blade", "[npc][gear_up]" )
     run_gear_up( guy );
 
     CHECK( count_of( guy, itype_knife_combat ) == 1 );
+}
+
+TEST_CASE( "npc_gear_up_picks_the_best_backup_blade_in_reach", "[npc][gear_up]" )
+{
+    reset_world();
+
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    map &here = get_map();
+
+    // A pistol in hand settles the weapon stage immediately, so only backup
+    // selection is under test.
+    item pistol( itype_glock_19 );
+    REQUIRE( guy.wield( pistol ) );
+    REQUIRE( guy.get_wielded_item()->is_gun() );
+
+    // A poor blade sits on the near tile, a genuinely good one two tiles
+    // further out.  Wanting whichever the walk happens to reach first, rather
+    // than the best one anywhere in reach, is the bug this guards: it once
+    // took the umbrella and left the machete on the shelf.
+    const tripoint_bub_ms near_tile = make_zone( guy, zone_type_CAMP_STORAGE, tripoint::east );
+    const tripoint_bub_ms far_tile = make_zone( guy, zone_type_CAMP_STORAGE, tripoint( 6, 0, 0 ) );
+    REQUIRE( guy.evaluate_weapon( item( itype_machete ), false ) >
+             guy.evaluate_weapon( item( itype_umbrella ), false ) );
+    here.add_item_or_charges( near_tile, item( itype_umbrella ) );
+    here.add_item_or_charges( far_tile, item( itype_machete ) );
+
+    run_gear_up( guy );
+
+    CHECK( count_of( guy, itype_machete ) > 0 );
+    CHECK( count_of( guy, itype_umbrella ) == 0 );
+}
+
+TEST_CASE( "npc_gear_up_never_doubles_up_on_a_garment_with_no_sub_body_part_data",
+           "[npc][gear_up]" )
+{
+    reset_world();
+
+    // A towel carries only whole-bodypart armor data, no sub-bodypart entries
+    // at all -- get_covered_sub_body_parts() comes back empty for it.  The
+    // conflict check has to fall back to whole-bodypart granularity, or a
+    // second one never reads as redundant and this paces the shelf forever.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    for( int i = 0; i < 3; i++ ) {
+        here.add_item_or_charges( tile, item( itype_towel ) );
+    }
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_towel ) <= 1 );
 }
 
 TEST_CASE( "npc_gear_up_matches_ammunition_to_the_weapon", "[npc][gear_up]" )
@@ -822,6 +882,25 @@ TEST_CASE( "avatar_gear_up_equips_from_the_stores", "[npc][gear_up][avatar]" )
     REQUIRE( you.get_wielded_item() );
     CHECK( you.get_wielded_item()->typeId() == itype_knife_combat );
     CHECK( count_of( you, itype_bandages ) > 0 );
+}
+
+TEST_CASE( "avatar_gear_up_uses_specific_loot_zones", "[npc][gear_up][avatar]" )
+{
+    reset_world();
+
+    // Unlike an NPC given the order, the avatar gearing itself up is trusted
+    // with however the rest of the camp has been sorted: a camp that has been
+    // sorted keeps armour in LOOT_ARMOR, not CAMP_STORAGE.
+    avatar &you = prepare_avatar( { 50, 50 } );
+    const tripoint_bub_ms tile = make_zone( you, zone_type_LOOT_ARMOR, tripoint::east );
+    map &here = get_map();
+
+    you.worn.wear_item( you, item( itype_tshirt ), false, false );
+    here.add_item_or_charges( tile, item( itype_kevlar ) );
+
+    run_gear_up( you );
+
+    CHECK( wearing( you, itype_kevlar ) );
 }
 
 TEST_CASE( "avatar_gear_up_leaves_favourites_alone", "[npc][gear_up][avatar]" )
