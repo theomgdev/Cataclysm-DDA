@@ -537,6 +537,35 @@ TEST_CASE( "npc_gear_up_picks_the_best_backup_blade_in_reach", "[npc][gear_up]" 
     CHECK( count_of( guy, itype_umbrella ) == 0 );
 }
 
+TEST_CASE( "npc_gear_up_leaves_no_unworn_clothing_debris_from_repeated_swaps",
+           "[npc][gear_up]" )
+{
+    reset_world();
+
+    // A bare follower and several identical, individually-adequate shirts on
+    // one shelf.  Comparing each only against whatever the last one happened
+    // to be, the way a per-tile-local comparison once did, would wear the
+    // first, then displace it for the second, then the third -- and every
+    // displaced piece lands in the follower's own pack rather than the shelf,
+    // because put_away() tries the follower's own pockets first. Only the
+    // single best one anywhere in reach should ever be worn at all; the rest
+    // should still be sitting untouched where they were put down, not
+    // carried, not worn twice over.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    for( int i = 0; i < 4; i++ ) {
+        here.add_item_or_charges( tile, item( itype_tshirt ) );
+    }
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_tshirt ) == 1 );
+    CHECK( count_of( guy, itype_tshirt ) == 1 );
+    CHECK( items_on( tile ) == 3 );
+}
+
 TEST_CASE( "npc_gear_up_never_doubles_up_on_a_garment_with_no_sub_body_part_data",
            "[npc][gear_up]" )
 {
