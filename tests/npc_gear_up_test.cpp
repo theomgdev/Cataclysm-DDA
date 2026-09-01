@@ -4,6 +4,7 @@
 
 #include "activity_actor_definitions.h"
 #include "avatar.h"
+#include "bodypart.h"
 #include "calendar.h"
 #include "cata_catch.h"
 #include "character.h"
@@ -34,6 +35,8 @@
 #include "units.h"
 #include "weather.h"
 
+static const efftype_id effect_sleep( "sleep" );
+
 static const faction_id faction_free_merchants( "free_merchants" );
 
 static const item_category_id item_category_weapons( "weapons" );
@@ -47,6 +50,7 @@ static const itype_id itype_canteen( "canteen" );
 static const itype_id itype_duffelbag( "duffelbag" );
 static const itype_id itype_glock_19( "glock_19" );
 static const itype_id itype_glockmag( "glockmag" );
+static const itype_id itype_jeans( "jeans" );
 static const itype_id itype_kevlar( "kevlar" );
 static const itype_id itype_knife_combat( "knife_combat" );
 static const itype_id itype_machete( "machete" );
@@ -201,6 +205,80 @@ void reset_world()
 }
 
 } // namespace
+
+TEST_CASE( "npc_gear_up_dresses_bare_skin_in_ordinary_clothes", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // Plain clothing carries almost no armour value, and trousers are charged
+    // double for encumbrance because losing mobility kills.  Judged against
+    // zero, jeans land a hair under it and a follower walks out bare-legged
+    // in a camp full of clothes.  Bare skin is what they actually have to
+    // beat, and they beat it easily.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    here.add_item_or_charges( tile, item( itype_jeans ) );
+    here.add_item_or_charges( tile, item( itype_tshirt ) );
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_jeans ) > 0 );
+    CHECK( guy.amount_worn( itype_tshirt ) > 0 );
+}
+
+TEST_CASE( "npc_gear_up_wakes_a_sleeping_follower", "[npc][gear_up]" )
+{
+    reset_world();
+
+    // An order handed to a sleeping follower otherwise sits there unstarted:
+    // the sleeping AI does not act on an activity at all.  Getting ready for
+    // a fight is reason enough to cut sleep short.
+    npc &guy = spawn_gear_up_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+    guy.add_effect( effect_sleep, 8_hours );
+    REQUIRE( guy.in_sleep_state() );
+
+    run_gear_up( guy );
+
+    CHECK_FALSE( guy.in_sleep_state() );
+    CHECK( guy.get_wielded_item() );
+}
+
+TEST_CASE( "npc_gear_up_seeks_pockets_before_competing_with_them_on_score",
+           "[npc][gear_up]" )
+{
+    reset_world();
+
+    // No pockets at all, and real armour on the same shelf as the backpack
+    // that would outscore it on raw wear_proxy every time.  Letting storage
+    // lose that contest is how a follower ends up in a corset and boots,
+    // starting naked in a camp full of gear and never getting the one thing
+    // -- a bag, a pair of pockets -- that unlocks carrying anything else:
+    // can_stash() refuses a backup blade and bandages alike without it.
+    npc &guy = spawn_bare_npc( { 50, 50 } );
+    const tripoint_bub_ms tile = make_storage_zone( guy );
+    map &here = get_map();
+
+    item shotgun( itype_glock_19 );
+    REQUIRE( guy.wield( shotgun ) );
+    here.add_item_or_charges( tile, item( itype_kevlar ) );
+    here.add_item_or_charges( tile, item( itype_backpack ) );
+    here.add_item_or_charges( tile, item( itype_knife_combat ) );
+    item bandages( itype_bandages );
+    bandages.charges = 10;
+    here.add_item_or_charges( tile, bandages );
+
+    run_gear_up( guy );
+
+    CHECK( guy.amount_worn( itype_backpack ) > 0 );
+    CHECK( count_of( guy, itype_knife_combat ) > 0 );
+    CHECK( count_of( guy, itype_bandages ) > 0 );
+}
 
 TEST_CASE( "npc_gear_up_needs_a_zone_to_draw_from", "[npc][gear_up]" )
 {
@@ -1112,6 +1190,55 @@ void report_gear_up_outcome( npc &guy, const tripoint_bub_ms &tile,
     CHECK( loose_liquid_desc.empty() );
     if( !loose_liquid_desc.empty() ) {
         print_list( "!! loose liquid in inventory", loose_liquid_desc );
+    }
+
+    // Walking away bare-skinned while something that would cover that skin is
+    // still on the shelf is the failure a whole-body reading catches and an
+    // item-by-item one does not: plain clothing carries so little armour value
+    // that a bar set at zero turns nearly all of it down, and the character
+    // ends up in whatever few pieces happened to be real armour.
+    const auto bare_with_cover_left = [&guy, &tile]( const bodypart_id & bp ) {
+        bool clothed = false;
+        guy.visit_items( [&guy, &clothed, &bp]( const item * node, item * ) {
+            if( guy.is_worn( *node ) && node->covers( bp ) ) {
+                clothed = true;
+                return VisitResponse::ABORT;
+            }
+            return VisitResponse::NEXT;
+        } );
+        if( clothed ) {
+            return false;
+        }
+        for( item &shelved : get_map().i_at( tile ) ) {
+            if( shelved.is_armor() && shelved.covers( bp ) &&
+                guy.can_wear( shelved ).success() ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    for( const bodypart_id &bp : {
+             body_part_torso.id(), body_part_leg_l.id(), body_part_leg_r.id()
+         } ) {
+        const bool left_bare = bare_with_cover_left( bp );
+        CHECK_FALSE( left_bare );
+        if( left_bare ) {
+            printf( "!! %s left bare with wearable cover still on the tile\n", bp.id().c_str() );
+            for( item &shelved : get_map().i_at( tile ) ) {
+                if( !shelved.is_armor() || !shelved.covers( bp ) ||
+                    !guy.can_wear( shelved ).success() ) {
+                    continue;
+                }
+                printf( "     %s: rejected=%d enc=%d cov=%d warmth=%d weight_g=%d headroom_g=%d\n",
+                        describe_item( shelved ).c_str(),
+                        static_cast<int>( guy.gear_up_rejected.count( shelved.typeId() ) ),
+                        static_cast<int>( shelved.get_avg_encumber( guy ) ),
+                        static_cast<int>( shelved.get_avg_coverage() ),
+                        static_cast<int>( shelved.get_warmth() ),
+                        static_cast<int>( to_gram( shelved.weight( false ) ) ),
+                        static_cast<int>( to_gram( guy.weight_capacity() - guy.weight_carried() ) ) );
+            }
+        }
     }
     // Informational, not a hard invariant: a backpack plus a war belt plus a
     // chest rig is a realistic loadout, not redundant stacking.  What the

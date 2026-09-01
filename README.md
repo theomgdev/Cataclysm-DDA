@@ -52,12 +52,18 @@ speed here means removing wasted work, never adding parallelism.
   you threw over the top — and inside the boxes and kits, not just what is loose
   on the floor. Displaced gear goes back to the zone it belongs in, so gearing up
   leaves the camp sorted rather than strewn.
-- Every piece is judged against the one piece it would replace: coverage-weighted
-  protection, encumbrance with legs and eyes or mouth weighted extra since losing
-  mobility or vision is how survivors die, weather, and carrying capacity up to
-  what is actually useful. Nobody puts on a parka in August, strips a gas mask
-  for a slightly better hat, or keeps stacking bags once there is nowhere left to
-  put anything.
+- Every piece is judged against the one piece it would replace, or against bare
+  skin where there is nothing to replace: coverage-weighted protection,
+  encumbrance with legs and eyes or mouth weighted extra since losing mobility or
+  vision is how survivors die, weather, and carrying capacity up to what is
+  actually useful. Nobody strips a gas mask for a slightly better hat, keeps
+  stacking bags once there is nowhere left to put anything, or pulls a parka on
+  over a shirt in August — but an uncovered back gets covered whatever the month,
+  because plain clothing is worth more than nothing even when it is worth almost
+  nothing as armour.
+- Pockets come before plating. Somebody with nothing to carry things in looks for
+  a bag or a pair of cargo pockets first, since without them a backup blade,
+  spare rounds and bandages alike have nowhere to go.
 - It knows what it cannot use. A rifle the camp has no round for stays on the
   shelf rather than replacing the knife that was working. Somebody already
   overheating puts nothing else on; somebody freezing is dressed first.

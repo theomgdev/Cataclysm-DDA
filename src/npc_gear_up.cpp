@@ -15,6 +15,7 @@
 #include "activity_handlers.h"
 #include "activity_item_handling.h"
 #include "avatar.h"
+#include "body_part_set.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "character.h"
@@ -61,7 +62,9 @@
  * Equipment first (weapon, backup blade, clothing), supplies second
  * (magazines, ammunition, medical, rations, water).  The stage advances only
  * once no tile offers an equipment improvement, so the weapon is settled
- * before ammunition is chosen for it.
+ * before ammunition is chosen for it.  Within clothing, pockets come first
+ * while there are none: everything the supply stage does needs somewhere to
+ * put what it picks up.
  *
  * Termination hinges on gear_up_rejected: types tried and turned down, or that
  * could not be carried, are remembered.  The engine's loop detector cannot see
@@ -116,6 +119,22 @@ constexpr int want_drink_vessels = 2;
 constexpr double want_storage_liters = 25.0;
 constexpr double weight_storage_per_liter = 0.30;
 constexpr double weight_storage_marginal = weight_storage_per_liter * 0.1;
+
+// Below this, a bag or a pair of pockets is sought to the exclusion of
+// everything else armour has to offer.  Storage is a prerequisite, not one
+// candidate competing on its own merits: can_stash() refuses a backup blade,
+// spare ammunition and medical supplies alike without room to put them, so
+// deferring pockets to a raw score contest against real armour can starve
+// them indefinitely whenever the camp has enough of the latter.
+constexpr double want_storage_liters_floor = 3.0;
+
+// What exposure costs.  Bare skin is not a free baseline: cloth that stops
+// thorns, sun, weather and scrapes registers as almost no armour at all, so
+// judged on resistance alone a plain pair of jeans lands a fraction under
+// nothing and the character walks into a fight bare-legged.  A piece covering
+// skin has to beat this instead of zero; one going over something already
+// worn still has to beat the piece it displaces.
+constexpr double weight_bare_skin = 6.0;
 
 // Extra encumbrance weight for legs (can't run) and eyes/mouth (a gas mask
 // that blinds you is not a free upgrade), scoped to the covered part.
@@ -282,6 +301,33 @@ double warmth_under( const Character &who, const item &it )
     }
     const double mean = total / parts;
     return who.is_worn( it ) ? std::max( 0.0, mean - it.get_warmth() ) : mean;
+}
+
+// How much of what this piece would cover is bare skin right now, as a
+// fraction of its own coverage.  Worn pieces are gathered once rather than
+// asked per body part: this runs for every candidate in the camp.
+double exposed_share( const Character &who, const item &it )
+{
+    body_part_set clothed;
+    who.visit_items( [&who, &clothed]( const item * node, item * ) {
+        if( who.is_worn( *node ) ) {
+            clothed.unify_set( node->get_covered_body_parts() );
+        }
+        return VisitResponse::NEXT;
+    } );
+
+    int covered = 0;
+    int bare = 0;
+    for( const bodypart_id &bp : who.get_all_body_parts() ) {
+        if( !it.covers( bp ) ) {
+            continue;
+        }
+        covered++;
+        if( !clothed.test( bp.id() ) ) {
+            bare++;
+        }
+    }
+    return covered > 0 ? static_cast<double>( bare ) / covered : 0.0;
 }
 
 double local_encumbrance_weight( const item &it )
@@ -1047,7 +1093,12 @@ bool is_garment_upgrade( Character &p, const item &it )
     }
     const int target_warmth = target_warmth_for( planning_temperature( p ) );
     const double candidate_proxy = wear_proxy( p, it, target_warmth );
-    if( candidate_proxy <= 0.0 ) {
+    // What it has to beat: bare skin where it would cover any, nothing where
+    // the skin under it is already clothed.  A parka in August still loses to
+    // the shirt already on, and still wins against a bare back.
+    const double bar = -weight_bare_skin * exposed_share( p, it ) *
+                       ( it.get_avg_coverage() / 100.0 );
+    if( candidate_proxy <= bar ) {
         return false;
     }
     // Straight onto an empty slot: can_wear() only forbids a second rigid
@@ -1091,15 +1142,50 @@ item_location best_garment_in_reach( Character &p )
     return best;
 }
 
+bool needs_storage( const Character &p )
+{
+    return units::to_liter( p.volume_capacity() ) < want_storage_liters_floor;
+}
+
+item_location best_storage_in_reach( Character &p )
+{
+    static item_location best;
+    static time_point cached_turn = calendar::before_time_starts;
+    static character_id cached_who;
+    static unsigned int cached_generation = 0;
+    if( cached_turn == calendar::turn && cached_who == p.getID() &&
+        cached_generation == gear_up_cache_generation ) {
+        return best;
+    }
+    cached_turn = calendar::turn;
+    cached_who = p.getID();
+    cached_generation = gear_up_cache_generation;
+    best = best_candidate_in_reach( p, []( Character & who, const item & it ) {
+        return it.get_volume_capacity() > 0_ml && is_garment_upgrade( who, it );
+    },
+    []( Character & who, const item & it ) {
+        return wear_proxy( who, it, target_warmth_for( planning_temperature( who ) ) );
+    } );
+    return best;
+}
+
 // Only the single best garment anywhere in reach counts as wanted: comparing
 // only what one tile happens to offer against whatever is already worn is how
 // a character ends up trying on and shedding half the camp's wardrobe walking
 // past crate after crate, never seeing that a better piece was two tiles back.
 // Processed one at a time in strictly improving order this way, several
 // non-conflicting pieces still end up worn -- each pass finds whatever is now
-// the single best remaining upgrade, worn or not, anywhere in reach.
+// the single best remaining upgrade, worn or not, anywhere in reach.  While
+// storage is critically low, the search narrows to pocket-bearing candidates
+// only, unless the camp genuinely has none to offer.
 bool worth_trying_on( Character &p, const item &it )
 {
+    if( needs_storage( p ) ) {
+        item_location storage_pick = best_storage_in_reach( p );
+        if( storage_pick ) {
+            return storage_pick.get_item() == &it && is_garment_upgrade( p, it );
+        }
+    }
     return is_garment_upgrade( p, it ) && best_garment_in_reach( p ).get_item() == &it;
 }
 
@@ -1861,6 +1947,14 @@ bool multi_gear_up_activity_actor::multi_activity_do( Character &you,
         ? do_equipment_stage( you, src_loc )
         : do_supply_stage( you, src_loc );
 
+    // The per-turn scans name one specific item as the thing to go and get,
+    // and working a tile invalidates that answer: the item is off the shelf,
+    // or its type has just been turned down.  Either way every later question
+    // this turn would match nothing and read as "nothing wanted anywhere",
+    // which ends the sweep a couple of items in.  The scans still only run
+    // once per pass over the locations, which is where the cost is.
+    reset_gear_up_caches();
+
     if( npc *p = you.as_npc() ) {
         // Let the NPC's own AI re-examine what it is now carrying; it scores
         // weapons with the same function used here, so it will agree.
@@ -1933,6 +2027,13 @@ void talk_function::gear_up_from_stores( npc &p )
         add_msg( m_info, _( "%s has no loot or camp storage zone in range to draw from." ),
                  p.get_name() );
         return;
+    }
+
+    // Preparing for a fight is reason enough to cut sleep short: an order
+    // assigned to a sleeping follower otherwise sits there unstarted, since
+    // the sleeping AI does not act on an activity at all.
+    if( p.in_sleep_state() ) {
+        wake_up( p );
     }
 
     start_gear_up_from_stores( p );
